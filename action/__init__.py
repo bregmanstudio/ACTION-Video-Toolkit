@@ -6,7 +6,7 @@ __copyright__ = "Copyright (C) 2012-2013  Thomas Stoll, Michael Casey, Dartmouth
 __license__ = "gpl 2.0 or higher"
 __email__ = 'thomas.m.stoll@dartmouth.edu'
 
-__all__ = ["color_features_lab", "opticalflow24", "actiondata", "opticalflow"]
+__all__ = ["color_features_lab", "opticalflow", "actiondata", "action_filmdb"]
 
 # import the ACTION modules
-import color_features_lab, opticalflow24, actiondata, opticalflow
+import color_features_lab, opticalflow, actiondata, action_filmdb
