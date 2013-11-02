@@ -67,7 +67,8 @@ Next, do some thresholding based on the differences between data frames. The ``T
 
 Here is the similarity matrix between the segment data (one set of data per frame from segmenter).
 
-.. image:: /images/action_ex5
+..
+	.. image:: /images/action_ex5
 
 Get the Euclidean distances among/of the differences between frames.
 
@@ -99,7 +100,8 @@ Only look at segments whose diff is above a threshold
 
 ``divs`` holds a pattern of 1's and 0's that show your segmentation frames. You can plot this.
 
-.. image:: /images/action/ex5_
+..
+	.. image:: /images/action/ex5_
 
 Viewing the segmentation data
 =============================
