@@ -1,0 +1,22 @@
+PUSH DATA FROM ANALYSIS COMPUTER TO RSTOR:
+rsync -azv --progress --max-size=1G \
+--exclude '*/*Feature*/' \ 
+--exclude '*/*/VIDEO_TS' \
+--include '*' \
+/Volumes/ACTION/ \
+/afs/northstar.dartmouth.edu/users/m/mcasey.BMARS/ACTION/
+
+
+
+METADATA ONLY, DROP LINES 2 and/or 3 TO GET MOVIE/SOUND:
+rsync -rv --progress \
+--exclude '*/*.mov' \
+--exclude '*/*.wav' \
+--exclude '.*' \
+--include '*' \
+/afs/northstar.dartmouth.edu/users/m/mcasey.BMARS/ACTION/ \
+/Users/kfl/Movies/action/
+
+
+
+rsync -v --progress /afs/northstar.dartmouth.edu/users/m/mcasey/BMARS.ACTION/Rope/Rope.mov /Users/kfl/Movies/action/Rope/
