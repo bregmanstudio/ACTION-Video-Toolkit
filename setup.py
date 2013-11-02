@@ -7,9 +7,9 @@ for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib'] 
 
 setup(name='Action',
-      version='0.12-11-01',
+      version='0.13-11-02',
       description='Action Cinematic Information Retrieval Python Toolkit',
-      long_description="""This package provides tools for reading, analyzing, manipulating, storing, retrieving, viewing, and evaluating, information processing operations on video files.""",
+      long_description="""This package provides tools for reading, analyzing, manipulating, storing, retrieving, viewing and information processing operations on video files.""",
 
       author='Thomas Stoll',      
       author_email='thomas.m.stoll [AT] dartmouth [DOT] edu',
