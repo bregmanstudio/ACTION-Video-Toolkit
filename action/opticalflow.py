@@ -2,29 +2,32 @@
 # Bregman:ACTION - Cinematic information retrieval toolkit
 
 """
-Part of Bregman:ACTION - Cinematic information retrieval toolkit
+Part of Bregman:ACTION - Cinematic information retrieval toolkit.
 
 Overview
 ========
 
-Use the OpticalFlow24 class to generate analysis data of general motion on screen. A histogram of angular data is gathered. There are 64 bins for screen location and 8 bins for vectors' angles. 
+Use the OpticalFlow class to generate analysis data of general motion on screen. A histogram of angular data is gathered. There are 64 bins for screen location and 8 bins for vectors' angles. 
 
-OpticalFlow24, as its name implies, analyzes all 24 frames for every second of each film. Users may later access the data with a skip parameter so that the amount of data is reduced, as it is in color_features...
+OpticalFlow analyzes all 24 frames for every second of each film. Users may later access the data with a skip parameter so that the amount of data is reduced, as it is in color_features...
+
+OpticalFlow's central analysis algorithm is adapted from the lk_track example from the Python sample code provided with OpenCV.
+
 
 Creation
 ========
 
-Instantiate the OpticalFlow24 class, optionally with additional keyword arguments:
+Instantiate the OpticalFlow class, optionally with additional keyword arguments:
 
 .. code-block:: python
 
-	myOpticalFlow24 = OpticalFlow24(movie-name-string, param1=value1, param2=value2, ...)
+	myOpticalFlow = OpticalFlow(movie-name-string, param1=value1, param2=value2, ...)
 
 The global default opticalflow-extractor parameters are defined in a parameter dictionary: 
 
 .. code-block:: python
 
-	default_opticalflow24_params = {
+	default_opticalflow_params = {
 		'action_dir' : '~/Movies/action', # default dir
 		ETC...
 	}
@@ -84,8 +87,8 @@ Upon creation of an OpticalFlow object, parameter keywords can be passed explici
 
 .. code-block:: python
 
-   oflow = OpticalFlow24(fileName, , verbose=True )
-   oflow = OpticalFlow24(fileName, **{'':, 'verbose':True} )
+   oflow = OpticalFlow(fileName, , verbose=True )
+   oflow = OpticalFlow(fileName, **{'':, 'verbose':True} )
 
 Using OpticalFlow
 =================
@@ -96,21 +99,21 @@ Analyze a full film:
 
 .. code-block:: python
 
-	oflow = OpticalFlow24('Psycho')
+	oflow = OpticalFlow('Psycho')
 	oflow.analyze_movie()
 
 This also works, so you can define your own filing system:
 
 .. code-block:: python
 
-	oflow = OpticalFlow24('Psycho', action_dir='~/data/action')
+	oflow = OpticalFlow('Psycho', action_dir='~/data/action')
 	oflow.analyze_movie()
 
 To screen (the video only) your film as it is analyzed:
 
 .. code-block:: python
 
-	oflow = OpticalFlow24('Psycho')
+	oflow = OpticalFlow('Psycho')
 	oflow.analyze_movie_with_display()
 
 To play back your analysis later:
@@ -124,7 +127,7 @@ To directly access your analysis data as a memory-mapped array:
 
 .. code-block:: python
 
-	oflow = OpticalFlow24('Psycho')
+	oflow = OpticalFlow('Psycho')
 	segment_in_seconds = Segment(60, 600) # requesting ten-minute segment from 1'00" to 11'00"
 	data = oflow.opticalflow_for_segment(segment_in_seconds)
 
@@ -145,7 +148,7 @@ There is a default stride time of 1 frames (so, actually, no striding), unless o
 
 .. code-block:: python
 
-	oflow = OpticalFlow24('Psycho', stride=6)
+	oflow = OpticalFlow('Psycho', stride=6)
 	
 *Very important*: It does not make sense to skip frames when analyzing, only when accessing. Also, since optical flow is based on comparisons between consecutive frames (in our case we are limiting ourselves to first-order differences) we are comparing adjoining frames in the movie, even though we then 'stride' forward to the next analysis frame. For one second at 24 fps with a stride value of 6, we examine frames 0, 1, 6, 7, 12, 13, 18, and 19, giving us 4 frames of analysis data. Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
 
@@ -172,7 +175,7 @@ GRID_X_DIVISIONS = 8
 GRID_Y_DIVISIONS = 8
 THETA_DIVISIONS = 8
 
-class OpticalFlow24:
+class OpticalFlow:
 	"""
 	Optical flow analysis of consecutive frames (see note above on stride parameter) using a Lucas-Kanade optical flow algorithm operating tracked features (corner detector) of monochrome image data.
 	
@@ -191,7 +194,7 @@ class OpticalFlow24:
 		"""
 		"""
 
-		self.analysis_params = self.default_opticalflow24_params()
+		self.analysis_params = self.default_opticalflow_params()
 		self._check_opticalflow_params(analysis_params)
 
 		ap = self.analysis_params
@@ -222,13 +225,13 @@ class OpticalFlow24:
 		Simple mechanism to read in default parameters while substituting custom parameters.
 		"""
 		self.analysis_params = analysis_params if analysis_params is not None else self.analysis_params
-		ap = self.default_opticalflow24_params()
+		ap = self.default_opticalflow_params()
 		for k in ap.keys():
 			self.analysis_params[k] = self.analysis_params.get(k, ap[k])
 		return self.analysis_params
 
 	@staticmethod
-	def default_opticalflow24_params():
+	def default_opticalflow_params():
 		analysis_params = {
 			'action_dir' : '~/Movies/action/',	# set a default location for movie and data files
 			'movie_extension' : '.mov',
@@ -261,7 +264,7 @@ class OpticalFlow24:
 		
 		::
 		
-			oflow = OpticalFlow24('Psycho')
+			oflow = OpticalFlow('Psycho')
 			seg = Segment(0, duration=60)
 			raw_oflow24_data = opticalflow_for_segment(seg)
 			raw_oflow24_data.shape

@@ -23,7 +23,7 @@ import pylab as P
 import matplotlib.pyplot as plt
 
 import color_features_lab
-import opticalflow24
+import opticalflow
 
 DEFAULT_IMAGESC_KWARGS={'origin':'upper', 'cmap':P.cm.hot, 'aspect':'auto', 'interpolation':'nearest'}
 
@@ -177,7 +177,7 @@ class ActionData:
 
 		for title in titles:
 			# set up an instance of the ColorFeaturesLAB class
-			oflow = opticalflow24.OpticalFlow24(title, action_dir=movie_dir)
+			oflow = opticalflow.OpticalFlow(title, action_dir=movie_dir)
 			# determine the film's length (in seconds)
 			length = oflow.determine_movie_length()
 			# create a segment spanning the full length of the film
