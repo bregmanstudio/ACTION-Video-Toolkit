@@ -84,8 +84,7 @@ ACTION Python Modules
    :maxdepth: 1
    
 	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
-	opticalflow24 - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow24>
-	opticalflow - ABOUT TO BE REMOVED - use opticalflow24 <opticalflow>
+	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
 	actiondata - data analysis and view routines <actiondata>
 
 
