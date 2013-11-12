@@ -10,7 +10,6 @@ import pprint, pickle
 import multiprocessing
 # ACTION_DIR = '/Volumes/ACTION/'
 ACTION_DIR = '/Users/kfl/Movies/action/'
-WITH_METADATA = True
 
 def actionAnalyzeAll(inputlist, proc_limit):
 	print "Inputlist received..."
@@ -21,51 +20,43 @@ def actionAnalyzeAll(inputlist, proc_limit):
 
 
 def actionWorkerAudio(title):
-	ds_segs = []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
-	if WITH_METADATA:
-		outfile = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_mfccs_hc_full.pkl'))), 'wb')
-	else:
-		outfile = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_mfccs_hc.pkl'))), 'wb')
-	
-	length = cfl.determine_movie_length() # in seconds
-	length_in_frames = length * 4
+ds_segs = []
+cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+outfile = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_mfccs_hc_full.pkl'))), 'wb')
 
-	full_segment = bseg.Segment(0, duration=length)
+length = cfl.determine_movie_length() # in seconds
+length_in_frames = length * 4
+
+full_segment = bseg.Segment(0, duration=length)
+try:
 	Dmfccs = adb.read('/Users/kfl/Movies/action/' + title + '/' + title + '.mfcc_13_M2_a0_C2_g0_i16000')
-
-	ad = actiondata.ActionData()
-	decomposed = Dmfccs[:] # ad.calculate_pca_and_fit(Dmfccs, locut=0)
-	print "<<<<  ", decomposed.shape
-# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
-
-	nc = length_in_frames / 10
-	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
-	print "title: ", title
-	print "A: ", len(hc_assigns)
-	segs = ad.convert_clustered_frames_to_segs(hc_assigns, nc)
-	print "title: ", title
-	print "B: ", type(segs)
-	print "C: ", len(segs)
-	segs.sort()
-	del segs[0]
-
-	if WITH_METADATA:
-		for seg in segs:
-			if seg[0] > 0:
-				ds_segs += [bseg.Segment(
-					seg[0]*0.25,
-					duration=(seg[1]*0.25),
-					features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
-	else:
-		for seg in segs:
-			if seg[1] > 0:
-				ds_segs += [{'onset': seg[0], 'duration': seg[1]}]
-
-	print len(ds_segs)
-	pickle.dump(ds_segs, outfile, -1)
+except TypeError:
 	outfile.close()
 	return 1
+ad = actiondata.ActionData()
+
+decomposed = ad.meanmask_data(Dmfccs[:]) # ad.calculate_pca_and_fit(Dmfccs, locut=0)
+print "<<<<  ", decomposed.shape
+
+nc = length_in_frames / 10
+
+hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
+segs = ad.convert_clustered_frames_to_segs(hc_assigns, nc)
+
+segs.sort()
+del segs[0]
+
+for seg in segs:
+	if seg[0] > 0:
+		ds_segs += [bseg.Segment(
+			seg[0]*0.25,
+			duration=(seg[1]*0.25),
+			features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+
+print len(ds_segs)
+pickle.dump(ds_segs, outfile, -1)
+outfile.close()
+return 1
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -82,10 +73,8 @@ if __name__ == '__main__':
 
 	os.chdir(ACTION_DIR)
 	names = [os.path.dirname(file) for file in glob.glob('*/*.mfcc*')]
-	if WITH_METADATA:
-		names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_mfccs_hc_full.pkl')]
-	else:
-		names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_mfccs_hc.pkl')]
+	names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_mfccs_hc_full.pkl')]
+	
 	to_be_pickled = [ttl for ttl in names if ttl not in set(names_with_proper_pkl_exts)]	
 	print ''
 	print to_be_pickled
