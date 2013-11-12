@@ -1,18 +1,18 @@
 .. ACTION documentation master file, created by
    sphinx-quickstart on Fri Oct  5 14:35:42 2012.
 
-Welcome to the ACTION toolbox from the Bregman Music and Audio Research Studio at Dartmouth College. These pages document the toolbox and show examples of its use.
+Welcome to the ACTION toolbox from the `Bregman Music and Audio Research Studio <http://bregman.dartmouth.edu>`_ at Dartmouth College. These pages document the toolbox and show examples of its use.
 
 What is ACTION?
 ===============
 
 Audio-visual Cinematic Toolkit for Interaction, Organization, and Navigation
 
-Sponsored by the National Endowment for the Humanities (NEH), Office of Digital Humanities (ODH) `Grant #HD-51394-11 <https://securegrants.neh.gov/PublicQuery/main.aspx?f=1&gn=HD-51394-11>`_
-
 ACTION provides a work bench to study such features in combination with machine learning methods to yield latent stylistic patterns distributed among films and directors. As such, ACTION is a platform for researching new methodologies in the study of film and media history.
 
 The platform allows such features as access to and analysis of low-level frame-by-frame data, automated segmentation and clustering of this data, audio analysis for soundtracks, and other content analysis tools. ACTION provides Python tools to support research and development, and depends on the Bregman Python Toolkit. OpenCV 2.4 compiled with Python bindings is required for analysis.
+
+Co-principle investigators: `Michael Casey <http://bregman.dartmouth.edu/~mcasey/index.casey.html>`_ (Bregman) and `Mark Williams <http://dartmouth.edu/faculty-directory/mark-j-williams>`_ (Film and Media Studies). Postdoctoral researcher: `Tom Stoll (Bregman) <http://bregman.dartmouth.edu/~tstoll/>`_. Sponsored by the National Endowment for the Humanities (NEH), Office of Digital Humanities (ODH) `Grant #HD-51394-11 <https://securegrants.neh.gov/PublicQuery/main.aspx?f=1&gn=HD-51394-11>`_
 
 Who Is ACTION for?
 ==================

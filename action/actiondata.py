@@ -271,6 +271,11 @@ class ActionData:
 		D = np.ma.masked_invalid(data)
 		return D.filled(D.mean())
 
+	def zeromask_data(self, data):
+		D = np.ma.masked_invalid(data)
+		return D.filled(0.0)
+
+
 class ActionView:
 	"""
 	ActionView is a collection of plotting and playback routines for viewing data generated in ACTION. It is lightly documented and subject to change at any time, but still useful.
