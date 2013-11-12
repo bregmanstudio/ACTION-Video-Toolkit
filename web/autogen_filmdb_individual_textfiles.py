@@ -1,13 +1,15 @@
-import film_db as fdb
+import action.action_filmdb as fdb
 import HTML, glob, os, md5, shutil
 
 ACTIONDIR = '/Users/kfl/Movies/action'
 WEBDIR = '/Users/kfl/Sites/actiondata'
 
 # FILM_DB controls what films are active 
-titles = set(fdb.actionDB.keys())
+full_db = fdb.FilmDB()
+actionDB = full_db.actionDB
+titles = set(actionDB)
 
-print list(titles)[:10]
+print len(titles)
 
 html_filestring = '/Users/kfl/Sites/action_db.html'
 htmlfile = open(html_filestring, 'w')
@@ -19,10 +21,9 @@ years = []
 colors = []
 hashes = []
 
-for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab")[:10]:
+for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
 	ttl = os.path.splitext(os.path.basename( file ))[0]
-# 	print 'title: ', ttl
-# 	print titles
+	print 'title: ', ttl
 	# check that the title is in our master list
 	if ttl in titles:
 
@@ -41,20 +42,20 @@ for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab")[:10]:
 		
 		# Write to it...
 		f.write(hashstr + "\n")
-		f.write(str(fdb.actionDB[ttl][0]) + "\n")
-		f.write(HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr)) + "\n")
-		f.write(str(fdb.actionDB[ttl][1]) + "\n")
-		f.write(str(fdb.actionDB[ttl][3]) + "\n")
-		f.write(str(fdb.actionDB[ttl][2]) + "\n")
+		f.write(str(actionDB[ttl][0]) + "\n")
+		f.write(HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60")) + "\n")
+		f.write(str(actionDB[ttl][1]) + "\n")
+		f.write(str(actionDB[ttl][3]) + "\n")
+		f.write(str(actionDB[ttl][2]) + "\n")
 		f.close()
 		
 		# Record tabular data for the HTML page...
 # 		print 'ttl: ', ttl
-		htitles += [str(fdb.actionDB[ttl][0])]
-		links += [HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr + "&mf=20"))]
-		dirs += [str(fdb.actionDB[ttl][1])]
-		years += [str(fdb.actionDB[ttl][3])]
-		colors += [str(fdb.actionDB[ttl][2])]
+		htitles += [str(actionDB[ttl][0])]
+		links += [HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60"))]
+		dirs += [str(actionDB[ttl][1])]
+		years += [str(actionDB[ttl][3])]
+		colors += [str(actionDB[ttl][2])]
 		hashes += [hashstr]
 		
 		# Copy the TITLE.color_lab from ACTIONDIR to WEBDIR/hash
@@ -63,7 +64,10 @@ for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab")[:10]:
 		
 		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
 		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc_full.pkl"))))
-		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_mfccs_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc_full.pkl"))))
+		try:
+			shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_mfccs_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc_full.pkl"))))
+		except IOError:
+			pass
 
 print len(links)
 full_table = [["Title", "Link", "Director", "Year", "Color", "Hash"]]
