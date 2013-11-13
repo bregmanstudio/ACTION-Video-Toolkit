@@ -1,4 +1,4 @@
-action
+ACTION
 ======
 
 Public repo for the ACTION project at Dartmouth
