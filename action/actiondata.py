@@ -80,27 +80,6 @@ class ActionData:
 		
 		pca.n_components = np.where(pca.explained_variance_>locut)[0].shape[0]
 		return pca.fit_transform(raw_data)
-	
-	
-# 	def average_over_sliding_window_old(self, raw_data, width, hop, frames, dtype='float32'):
-# 		"""
-# 		Average groups of consecutive frames.
-# 		"""
-# 		channels = raw_data.shape[1]
-# 		win_hops = range(0, frames, hop)
-# 		chunked_data = np.array([], dtype=dtype)
-# 
-# 		w = width - (width%2)
-# 		raw_data = np.append(raw_data[:w/2,:], raw_data)
-# 		raw_data = np.reshape(raw_data, (-1, channels))
-# 		raw_data = np.append(raw_data, raw_data[-1*(w/2):,:])
-# 		raw_data = np.reshape(raw_data, (-1, channels))
-# 		
-# 		for h in win_hops:
-# 			chunked_data = np.append(chunked_data, np.mean(raw_data[h:(h+w)], axis=0))
-# 		
-# 		return np.reshape(chunked_data, (-1, channels))
-
 
 	def average_over_sliding_window(self, raw_data, width, hop, dtype='float32'):
 		"""
