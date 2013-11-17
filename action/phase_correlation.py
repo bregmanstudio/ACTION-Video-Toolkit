@@ -549,7 +549,7 @@ class PhaseCorrelation:
 
 		while self.frame_idx < end_frame:
 			
-			if verbose: print 'fr. idx: ', self.frame_idx, ' (', self.frame_idx / float(end_frame), ' | ', end_frame, ')'
+			if (self.frame_idx % 1000) == 0: print 'fr. idx: ', self.frame_idx, ' (', self.frame_idx / float(end_frame), ' | ', end_frame, ')'
 
 			# grab next frame
 			ret, frame = self.capture.read()
@@ -567,9 +567,9 @@ class PhaseCorrelation:
 				fp[self.frame_idx][64] = [(fret[0]/frame_width),(fret[1]/frame_height)]
 			else:
 				fp[self.frame_idx][64] = [0,0]
-			print fp[self.frame_idx][64]
+			#print fp[self.frame_idx][64]
 			#if verbose: 
-			print (65, fret, fres)
+			#print (65, fret, fres)
 			
 			# display stage (full)
 # 				if ap['display']:
@@ -600,12 +600,12 @@ class PhaseCorrelation:
 
 					prev_sub_grays[(row*xdivs)+col] = sub_gray
 					#if verbose:
-					print (row, col, (gret, gres))
+					#print (row, col, (gret, gres))
 					if abs(gres) > 0.01:
 						fp[self.frame_idx][(row*xdivs)+col] = [(gret[0]/grid_width),(gret[1]/grid_height)]
  					else:
 						fp[self.frame_idx][(row*xdivs)+col] = [0,0]
-					print fp[self.frame_idx][(row*xdivs)+col]
+					#print fp[self.frame_idx][(row*xdivs)+col]
 					# display stage (grid)
 # 						if ap['display']:
 # 							for  d in range (dims):
