@@ -199,6 +199,8 @@ class ColorFeaturesLAB:
 		else:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
+		
+		self.default_color_features_for_segment()
 	
 	def _check_analysis_params(self, analysis_params=None):
 		"""
@@ -237,7 +239,7 @@ class ColorFeaturesLAB:
 		}
 		return analysis_params
 	
-	def color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -253,10 +255,10 @@ class ColorFeaturesLAB:
 		
 		"""
 		res = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-		# 4 = 24 / 6 !!!
-		return (res[0].reshape((segment.time_span.duration*4), -1), res[1].reshape((segment.time_span.duration*4), -1))
+		#return (res[0].reshape((segment.time_span.duration*4), -1), res[1].reshape((segment.time_span.duration*4), -1))
+		return (res[0].reshape(-1, 48), res[1].reshape(-1, 768))
 	
-	def full_color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def full_color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		Equivalent to:
 		::
@@ -264,9 +266,9 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape((segment.time_span.duration*4), -1)
+		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48) #((segment.time_span.duration*4), -1)
 	
-	def gridded_color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def gridded_color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms (all 16 bins) in the following order:
 		::
@@ -282,9 +284,9 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape((segment.time_span.duration*4), -1)
+		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 768) #((segment.time_span.duration*4), -1)
 	
-	def center_quad_color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def center_quad_color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -300,9 +302,9 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
+		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[5,6,9,10],...].reshape(-1, 192) #((segment.time_span.duration*4), -1)
 
-	def middle_band_color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def middle_band_color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -320,9 +322,10 @@ class ColorFeaturesLAB:
 		"""
 		# print segment
 		# print segment.time_span
-		return self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape((int(segment.time_span.duration*4)), -1)
+		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 384) # (int(segment.time_span.duration*4)), -1)
+		return self.X
 	
-	def plus_band_color_features_for_segment(self, segment=bseg.Segment(0, 60)):
+	def plus_band_color_features_for_segment(self, segment=bseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -338,7 +341,16 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape((segment.time_span.duration*4), -1)
+		
+		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape(-1, 576) #((segment.time_span.duration*4), -1)
+
+	
+	def default_color_features_for_segment(self, func='middle_band_color_features_for_segment', segment=bseg.Segment(0, -1)):
+		"""
+		DYNAMIC ACCESS FUNCTION
+		"""
+		return getattr(self,func)(segment)
+
 
 	def _color_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
 		"""
@@ -353,7 +365,10 @@ class ColorFeaturesLAB:
 		ap = self.analysis_params
 
 		onset_frame = int(onset_time * (ap['fps'] / ap['stride']))
-		dur_frames = int(duration * (ap['fps'] / ap['stride']))
+		if duration < 0:
+			dur_frames = self.determine_movie_length() * (ap['fps'] / ap['stride'])
+		else:
+			dur_frames = int(duration * (ap['fps'] / ap['stride']))
 		
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
