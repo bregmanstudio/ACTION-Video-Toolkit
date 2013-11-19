@@ -166,7 +166,7 @@ class ActionData:
 		
 		return res
 	
-	def cluster_hierarchically(self, raw_data, num_clusters, cmtrx):
+	def cluster_hierarchically(self, raw_data, num_clusters, cmtrx=None):
 		"""
 		"""
 		if cmtrx is None: cmtrx = self.generate_connectivity_matrix(raw_data.shape[0])
