@@ -166,8 +166,8 @@ __email__ = 'thomas.m.stoll@dartmouth.edu'
 import sys, time, os
 # import the necessary things for OpenCV
 try:
-	import cv3
-	import cv3.cv as cv
+	import cv2
+	import cv2.cv as cv
 	have_cv = True
 except ImportError:
 	print 'WARNING: Access only, use of methods other than *_color_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
