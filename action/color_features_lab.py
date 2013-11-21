@@ -165,8 +165,13 @@ __email__ = 'thomas.m.stoll@dartmouth.edu'
 
 import sys, time, os
 # import the necessary things for OpenCV
-import cv2
-import cv2.cv as cv
+try:
+	import cv3
+	import cv3.cv as cv
+	have_cv = True
+except ImportError:
+	print 'WARNING: Access only, use of methods other than *_color_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
+	have_cv = False
 import numpy as np
 import action.segment as aseg
 
@@ -373,21 +378,6 @@ class ColorFeaturesLAB:
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
-
-# MOVED TO ACTIONDATA CLASS!	
-# 	def convert_lab_to_l(self, data):
-# 		data_L = np.empty_like(data)
-# 		data_L[:] = data
-# 		data_L = np.reshape(data_L, (data.shape[0], -1, 3))
-# 		data_L[:,:,1:] = 0.0
-# 		return np.reshape(data_L, (data.shape[0], -1))
-
-	
-# 	def compact_histogram(numbins, hdata, frames):
-# 		compacted = []
-# 		for i in range(numbins):
-# 			if (hdata[:,i].sum() > 0.0): compacted = np.append(compacted, [hdata[:,i]])
-# 			return np.reshape(compacted, (-1,frames))
 		
 	def playback_movie(self, offset=0, duration=-1):
 		"""
@@ -417,7 +407,7 @@ class ColorFeaturesLAB:
 	
 		ap = self._check_analysis_params(kwargs)
 	
-		if os.path.exists(self.movie_path):
+		if os.path.exists(self.movie_path) and have_cv:
 			capture = cv.CaptureFromFile(self.movie_path)
 			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
 		else:
@@ -481,6 +471,8 @@ class ColorFeaturesLAB:
 		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
 		
 		"""
+		if not have_cv:
+			return
 		
 		if (self.movie_path is None) or (self.data_path is None):
 			print "Must supply both a movie and a data path!"
@@ -680,7 +672,10 @@ class ColorFeaturesLAB:
 		esc = quit visualization
 		
 		"""
-
+		
+		if not have_cv:
+			return
+		
 		if (self.movie_path is None) or (self.data_path is None):
 			print "Must supply both a movie and a data path!"
 			return
