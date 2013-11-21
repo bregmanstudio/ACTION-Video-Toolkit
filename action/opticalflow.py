@@ -372,7 +372,7 @@ class OpticalFlow:
 		Note: this function merely plays frames with no analysis data overlaid. It is meant for checking segmentation algorithm outputs and playing short clips of video from a film.
 		TO DO: add optical-flow display.
 		"""
-		if self.movie_file is None:
+		if self.movie_path is None:
 			print 'Movie path or data path missing!'
 			return
 				
