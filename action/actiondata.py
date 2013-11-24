@@ -11,11 +11,14 @@ import sys, time, os, glob, pickle, pdb
 import numpy as np
 from bregman.suite import *
 import bregman.segment as bseg
-
-from sklearn.decomposition import *
-import sklearn.decomposition as decomp
-from sklearn.cluster import Ward
-
+try:
+	from sklearn.decomposition import *
+	import sklearn.decomposition as decomp
+	from sklearn.cluster import Ward
+	have_sklearn = True
+except ImportError:
+	print 'WARNING: sklearn not found. Ward (hierarchical) clustering disabled.'
+	have_sklearn = False
 from scipy import sparse
 from scipy import ndimage
 import mpl_toolkits.mplot3d.axes3d as p3
@@ -74,7 +77,12 @@ class ActionData:
 	def calculate_pca_and_fit(self, raw_data, locut=0.1, print_var=False):
 		"""
 		"""
-		pca = decomp.PCA()
+		try:
+			pca = decomp.PCA()
+		except NameError:
+			print 'WARNING: sklearn decomposition function disabled.'
+			return None
+			
 		pca.fit(raw_data)
 		if print_var: print 'explained variance: ', pca.explained_variance_
 		
@@ -170,7 +178,11 @@ class ActionData:
 		"""
 		"""
 		if cmtrx is None: cmtrx = self.generate_connectivity_matrix(raw_data.shape[0])
-		ward_clusters = Ward(n_clusters=num_clusters, connectivity=cmtrx).fit(raw_data)
+		try:
+			ward_clusters = Ward(n_clusters=num_clusters, connectivity=cmtrx).fit(raw_data)
+		except NameError:
+			print 'WARNING: sklearn Ward clustering disabled.'
+			return None
 		return ward_clusters.labels_
 	
 	
