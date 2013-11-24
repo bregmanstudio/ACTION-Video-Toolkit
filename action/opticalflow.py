@@ -163,7 +163,13 @@ __email__ = 'thomas.m.stoll@dartmouth.edu'
 
 import sys, time, os, math, glob
 # import the necessary things for OpenCV
-import cv, cv2
+try:
+	import cv2
+	import cv2.cv as cv
+	have_cv = True
+except ImportError:
+	print 'WARNING: Access only, use of methods other than *_opticalflow_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
+	have_cv = False
 import numpy as np
 from numpy import *
 import bregman.segment as bseg
@@ -237,12 +243,12 @@ class OpticalFlow:
 			'movie_extension' : '.mov',
 			'data_extension' : '.opticalflow24',
 			'mode' : 'analyze',					# 'playback' or 'analyze'
+			'grid_divs_x' : 8,
+			'grid_divs_y' : 8,
 			'fps' : 24,							# fps: frames per second
 			'offset' : 0,						# time offset (in seconds) into film
 			'duration' : -1,					# duration (in seconds) of segment, -1 maps to full duration of media
 			'stride' : 1,						# stride is set to 1
-			'verbose' : True,					# useful for debugging
-			'display' : True,					# Launch display screen
 			'winSize' : (15, 15),				# @ full resolution, must be odd & square
 			'maxLevel' : 2,						# how many Pyramids (downsampling stages)
 			'criteria' : (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03),
@@ -251,7 +257,14 @@ class OpticalFlow:
 			'minDistance' : 7,
 			'blockSize' : 7,
 			'trackLength' : 10,
-			'trackDepth' : 9
+			'trackDepth' : 9,
+			'verbose' : False,			# useful for debugging
+			'display' : True,			# Launch display screen
+			'hist_shrink_factor' : 0.5,	# (adjustable) ratio for size of histogram window
+			'hist_width_ratio' : 1.0,	# (adjustable) ratio for width of histogram window size
+			'hist_height' : 1.0,		# (adjustable) ratio for height of histogram window size
+			'horiz_offset' : 1.0,		# (adjustable) horizontal distance of histogram window upper left corner offset from video window
+			'vert_offset' : 0.0			# (adjustable) vertical distance of histogram window upper left corner offset from video window
 			
 		}
 		return analysis_params
@@ -324,7 +337,7 @@ class OpticalFlow:
 		"""	
 		ap = self._check_opticalflow_params(kwargs)
 	
-		if os.path.exists(self.movie_path):
+		if os.path.exists(self.movie_path) and have_cv:
 			capture = cv.CaptureFromFile(self.movie_path)
 			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
 		else:
@@ -332,6 +345,33 @@ class OpticalFlow:
 			dur_total_seconds = dsize / (2048 * 24)
 			print "total secs: ", dur_total_seconds
 		return dur_total_seconds
+
+
+
+	def playback_movie(self, offset=0, duration=-1):
+		"""
+		Play the movie alongside the analysis data visualization. Played back according to the analysis stride. Equivalent to:
+		::
+		
+			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+		
+		"""
+		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
+	
+	def playback_movie_frame_by_frame(self, offset=0, duration=-1, **kwargs):
+		"""
+		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Equivalent to:
+		::
+		
+			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+		
+		"""
+		ap = self._check_analysis_params(kwargs)
+		offset_s = float(offset) / (ap['fps'] / ap['stride'])
+		dur_s = float(duration) / (ap['fps'] / ap['stride'])
+		
+		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
+
 	
 	def playback_movie_frames(self, offset=0, duration=-1):
 		"""
@@ -412,8 +452,6 @@ class OpticalFlow:
 			print "FPS: ", fps
 			print "stride_frames: ", stride_frames
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
-# 		self.fctrw = self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH) / 2.0
-# 		self.fctrh = self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT) / 2.0
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
 		  		
@@ -487,15 +525,12 @@ class OpticalFlow:
 		print 'dur. strides: ', dur_strides
 		
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
-# 		self.fctrw = self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH) / 2.0
-# 		self.fctrh = self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT) / 2.0
-# 		if verbose: print 'center pt.: ', self.fctrw, ' | ', self.fctrh
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
 		tdepth = ap['trackDepth']
 		
-# 		if ap['display']:
-# 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+		if ap['display']:
+			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 		
 		while self.frame_idx < end_frame:
 		
@@ -516,9 +551,6 @@ class OpticalFlow:
 # 				print "good: ", good
 				new_tracks = []
 				for tr, (x, y), good_flag in zip(self.tracks, p1.reshape(-1, 2), good):
-# 					print "tr: ", tr
-# 					print "(x, y): ", (x, y)
-# 					print "good_flag: ", good_flag
 					if not good_flag:
 						continue
 					tr.append((x, y))
@@ -527,14 +559,12 @@ class OpticalFlow:
 					new_tracks.append(tr)
 					if ap['display'] is True: cv2.circle(vis, (x, y), 2, (0, 255, 0), -1)
 				self.tracks = new_tracks
-# 				print ''
-# 				print self.tracks
-# 				print ''
+
 				if self.frame_idx % ap['stride'] == 0:
 					
 					tracks_now = [np.float32(tr) for tr in self.tracks]
 
-					# if ap['display'] is True: cv2.polylines(vis, tracks_now, False, (0, 255, 0))
+					if ap['display'] is True: cv2.polylines(vis, tracks_now, False, (0, 255, 0))
 
 					try:
 						seq = tracks_now[0]
@@ -553,31 +583,18 @@ class OpticalFlow:
 						
 						xbin = np.floor(track_vectors[:,0] / grid_width)
 						ybin = np.floor(track_vectors[:,1] / grid_height)
-						
-# 						print [np.min(xbin), np.max(xbin), np.min(ybin), np.max(ybin)]
-						
+												
 						# filter out vectors less than 1 pixel!
 #						print np.min(mags), " || ", np.max(mags)
 						weighted = np.where(mags > 1, mags, 0.0)
-# 						print ''
-# 						print nz_cond
-# 						print ''
 						theta_bins = np.floor_divide(np.add(thetas, math.pi), QPI)
-# 						ctheta_bins = np.floor_divide(np.add(cthetas, math.pi), QPI)
 												
 						combo_bins = ((np.add(np.multiply(ybin, GRID_X_DIVISIONS), xbin) * GRID_Y_DIVISIONS) + theta_bins) #  8 = num. of bins for theta!!!
 
 						if combo_bins.shape[0] > 0:
 
-#	 						print "-----------------------------------------------"
-# 							print combo_bins.shape
-# 							print np.max(combo_bins)
-
 							bins_histo, bin_edges = np.histogram(combo_bins, (GRID_X_DIVISIONS*GRID_Y_DIVISIONS*THETA_DIVISIONS), weights=weighted)
 							
-#							print "-----------------------------------------------"
-#							print bins_histo
-#							print "-----------------------------------------------"
 							
 							fd = self.frame_idx - offset_strides
 							fp[fd] = bins_histo
