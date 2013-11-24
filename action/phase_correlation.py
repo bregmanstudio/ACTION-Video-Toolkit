@@ -152,14 +152,19 @@ __email__ = 'thomas.m.stoll@dartmouth.edu'
 
 import sys, time, os
 # import the necessary things for OpenCV
-import cv2
-import cv2.cv as cv
+try:
+	import cv2
+	import cv2.cv as cv
+	have_cv = True
+except ImportError:
+	print 'WARNING: Access only, use of methods other than *_phasecorr_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
+	have_cv = False
 import numpy as np
 import bregman.segment as bseg
 
 # GRID_X_DIVISIONS = 4
 # GRID_Y_DIVISIONS = 4
-DISPLAY_SHRINK_FACTOR = 0.5
+# DISPLAY_SHRINK_FACTOR = 0.5
 
 class PhaseCorrelation:
 	"""
@@ -204,17 +209,21 @@ class PhaseCorrelation:
 			'movie_extension' : '.mov',
 			'data_extension' : '.phasecorr',
 			'mode' : 'analyze',			# 'playback' or 'analyze'
+			'grid_divs_x' : 8,
+			'grid_divs_y' : 8,
 			'fps' : 24,					# fps: frames per second
 			'offset' : 0,				# time offset in seconds
 			'duration' : -1,			# time duration in seconds, -1 (default) maps to full duration of media
 			'stride' : 1,				# number of frames to that comprise one analysis point, skips stride - 1 frames
 			'grid_divs_x' : 8,
 			'grid_divs_y' : 8,
-			'verbose' : True,			# useful for debugging
+			'verbose' : False,			# useful for debugging
 			'display' : True,			# Launch display screen
-			'hist_width' : 640,			# to-do
-			'hist_height' : 480,		# to-do
-			'vert_offset' : 500			# to-do: vertical offset for 17th histogram (the one for the whole, non-gridded frame)
+			'hist_shrink_factor' : 0.5,	# (adjustable) ratio for size of histogram window
+			'hist_width_ratio' : 1.0,	# (adjustable) ratio for width of histogram window size
+			'hist_height_ratio' : 1.0,	# (adjustable) ratio for height of histogram window size
+			'horiz_offset' : 1.0,		# (adjustable) horizontal distance of histogram window upper left corner offset from video window
+			'vert_offset' : 0.0			# (adjustable) vertical distance of histogram window upper left corner offset from video window
 		}
 		return analysis_params
 	
@@ -235,7 +244,7 @@ class PhaseCorrelation:
 		"""
 		res = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
 		# 4 = 24 / 6 !!!
-		#return (res[0].reshape((segment.time_span.duration*4), -1), res[1].reshape((segment.time_span.duration*4), -1))
+		# return (res[0].reshape((segment.time_span.duration*4), -1), res[1].reshape((segment.time_span.duration*4), -1))
 		return None
 	
 	def full_phasecorr_features_for_segment(self, segment=bseg.Segment(0, 60)):
@@ -334,7 +343,7 @@ class PhaseCorrelation:
 			dur_frames = self.determine_movie_length()
 		else:
 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-		print self.determine_movie_length()
+		print self.s_movie_length()
 		print dur_frames
 		
 		if grid_flag == 0:
@@ -372,7 +381,7 @@ class PhaseCorrelation:
 		
 	def playback_movie(self, offset=0, duration=-1, stride=6):
 		"""
-		Play the movie alongside the analysis data visualization. Note that the stride parameter is meaningless. No resampling will be done. Equivalent to:
+		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
 		::
 		
 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
@@ -396,7 +405,7 @@ class PhaseCorrelation:
 	
 		ap = self._check_analysis_params(kwargs)
 	
-		if os.path.exists(self.movie_path):
+		if os.path.exists(self.movie_path) and have_cv:
 			capture = cv.CaptureFromFile(self.movie_path)
 			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
 		else:
@@ -451,19 +460,14 @@ class PhaseCorrelation:
 		if verbose: print fps, ' | ', frame_size, ' | ', grid_size
 				
 # 		grid_img = cv.CreateImage (grid_size, cv.CV_8UC1, 1)
-		
- 		prev_sub_grays = []
 # 		grid_rgb = cv.CreateImage (grid_size, cv.CV_8UC1, 3 )
-	
 # 		full_img = cv.CreateImage (frame_size, cv.CV_8UC1, 1)
-		
 # 		mask = cv.CreateImage (frame_size, cv.CV_8UC1, 1)
 # 		full_rgb = cv.CreateImage (frame_size, cv.CV_8UC1, 3 )
-
 # 		dims = ap['ldims']
 		
-		bin_w = int(ap['hist_width'] / ap['grid_divs_x'])
-			
+ 		prev_sub_grays = []
+		bin_w = int(ap['hist_width'] / ap['grid_divs_x'])			
 		third_bin_w = int(bin_w/3)
 		
 		if ap['verbose']: print third_bin_w
