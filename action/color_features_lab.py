@@ -168,16 +168,13 @@ import sys, time, os
 try:
 	import cv2
 	import cv2.cv as cv
-	have_cv = True
+	HAVE_CV = True
 except ImportError:
 	print 'WARNING: Access only, use of methods other than *_color_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
-	have_cv = False
+	HAVE_CV = False
 import numpy as np
 import action.segment as aseg
 
-GRID_X_DIVISIONS = 4
-GRID_Y_DIVISIONS = 4
-DISPLAY_SHRINK_FACTOR = 0.5
 
 class ColorFeaturesLAB:
 	"""
@@ -293,8 +290,9 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 768) #((segment.time_span.duration*4), -1)
-	
+		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1].reshape(-1, 768)
+		return self.X
+
 	def center_quad_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
@@ -311,7 +309,8 @@ class ColorFeaturesLAB:
 			color_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[5,6,9,10],...].reshape(-1, 192) #((segment.time_span.duration*4), -1)
+		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,[5,6,9,10],...].reshape(-1, 192)
+		return self.X
 
 	def middle_band_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
@@ -331,7 +330,7 @@ class ColorFeaturesLAB:
 		"""
 		# print segment
 		# print segment.time_span
-		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 384) # (int(segment.time_span.duration*4)), -1)
+		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 384)
 		return self.X
 	
 	def plus_band_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
@@ -351,8 +350,8 @@ class ColorFeaturesLAB:
 		
 		"""
 		
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape(-1, 576) #((segment.time_span.duration*4), -1)
-
+		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 576)
+		return self.X
 	
 	def default_color_features_for_segment(self, func='middle_band_color_features_for_segment', segment=aseg.Segment(0, -1)):
 		"""
@@ -360,6 +359,27 @@ class ColorFeaturesLAB:
 		"""
 		return getattr(self,func)(segment)
 
+	def color_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
+
+		ap = self._check_analysis_params()
+		
+		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
+		print onset_frame
+		if segment.time_span.duration < 0:
+			dur_frames = self.determine_movie_length()
+		else:
+			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
+		print self.s_movie_length()
+		print dur_frames
+		
+		if grid_flag == 0:
+			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
+			# probably should have some error handling here if the reshape fails
+			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 48))
+		else:
+			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
+			# probably should have some error handling here if the reshape fails
+			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
 
 	def _color_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
 		"""
@@ -411,9 +431,10 @@ class ColorFeaturesLAB:
 	
 		ap = self._check_analysis_params(kwargs)
 	
-		if os.path.exists(self.movie_path) and have_cv:
-			capture = cv.CaptureFromFile(self.movie_path)
-			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
+		if os.path.exists(self.movie_path) and HAVE_CV:
+# 			self.capture = cv.CaptureFromFile(self.movie_path)
+			self.capture = cv2.VideoCapture(self.movie_path)
+			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
 		else:
 			dsize = os.path.getsize(self.data_path)
 			# since we are reading raw color analysis data that always has the same size on disc!
@@ -447,33 +468,35 @@ class ColorFeaturesLAB:
 		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
 		
 		"""
-		if not have_cv:
+		if not HAVE_CV:
 			return
 		
 		if (self.movie_path is None) or (self.data_path is None):
 			print "Must supply both a movie and a data path!"
 			return
 		
-#		analysis_params['colorspace'] = 'lab' # now redundant...
 		ap = self._check_analysis_params(kwargs)
 				
-		capture = cv.CaptureFromFile(self.movie_path)
+		self.capture = cv2.VideoCapture(self.movie_path)
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		frame_width = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH))
-		frame_height = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT))
+		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 		frame_size = (frame_width, frame_height)
-		grid_width = int(frame_width/grid_x_divs)
-		grid_height = int(frame_height/grid_y_divs)
+		hist_width = int(frame_width * ap['hist_width_ratio'])
+		hist_height = int(frame_height * ap['hist_width_ratio'])
+		hist_size = (hist_width, hist_height)
+		grid_width = int(hist_width/grid_x_divs)
+		grid_height = int(hist_height/grid_y_divs)
 		grid_size = (grid_width, grid_height)
 
 		verbose = ap['verbose']
 		
 		if verbose:
 			print ap['lrange'][0], ' | ', ap['arange'][0], ' | ', ap['brange'][0], ' | ', ap['lrange'][1], ' | ', ap['arange'][1], ' | ', ap['brange'][1]
-			print fps, ' | ', frame_size, ' | ', grid_size
+			print fps, ' | ', hist_size, ' | ', grid_size
 		
 		grid_l_star = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
 		grid_a_star = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
@@ -482,18 +505,18 @@ class ColorFeaturesLAB:
 		grid_mask = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
 		grid_lab = cv.CreateImage (grid_size, cv.CV_8UC2, 3 )
 	
-		l_star = cv.CreateImage (frame_size, cv.CV_8UC2, 1)
-		a_star = cv.CreateImage (frame_size, cv.CV_8UC2, 1)
-		b_star = cv.CreateImage (frame_size, cv.CV_8UC2, 1)
+		l_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
+		a_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
+		b_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
 		
-		mask = cv.CreateImage (frame_size, cv.CV_8UC2, 1)
-		lab = cv.CreateImage (frame_size, cv.CV_8UC2, 3 )
+		mask = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
+		lab = cv.CreateImage (hist_size, cv.CV_8UC2, 3 )
 
 		dims = ap['ldims']
 		
 		lab_min = cv.Scalar(ap['lrange'][0], ap['arange'][0], ap['brange'][0], 0)
 		lab_max = cv.Scalar(ap['lrange'][1], ap['arange'][1], ap['brange'][1], 0)
-		bin_w = int((frame_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
+		bin_w = int((hist_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
 		third_bin_w = int(bin_w/3)
 	
 		l_histo = cv.CreateHist ([ap['ldims']], cv.CV_HIST_ARRAY, [ap['lrange']], 1)
@@ -502,10 +525,10 @@ class ColorFeaturesLAB:
 		
 		if ap['verbose']: print third_bin_w
 				
-		histimg = cv.CreateImage ((int(frame_width*ap['hist_width_ratio']), int(frame_height*ap['hist_height_ratio']*1.25)), cv.IPL_DEPTH_8U, 3)
+		histimg = cv.CreateImage ((int(hist_width), int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
-		dur_total_secs = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
 		stride_frames = ap['stride']
 		if ap['duration'] < 0:
 			dur_secs = dur_total_secs
@@ -521,7 +544,7 @@ class ColorFeaturesLAB:
 				
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-			print 'FRAMES: ', int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT))
+			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
 			print 'DUR TOTAL: ', dur_total_secs
 			print "OFFSET (SECONDS): ", offset_secs
 			print "OFFSET (STRIDES): ", offset_strides
@@ -546,8 +569,8 @@ class ColorFeaturesLAB:
 		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-			cv.NamedWindow('Histogram', frame_width)
-			cv.ResizeWindow('Histogram', int(frame_width*ap['hist_width_ratio']*1.0), int(frame_height*ap['hist_height_ratio']*1.25))
+			cv.NamedWindow('Histogram', hist_width)
+			cv.ResizeWindow('Histogram', int(hist_width*1.0), int(hist_height*1.25))
 			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
 			
 			lcolors, acolors, bcolors= range(16), range(16), range(16)
@@ -557,14 +580,15 @@ class ColorFeaturesLAB:
 				acolors[d] = cv.Scalar(gray_val, 128., 128.)
 				bcolors[d] = cv.Scalar(gray_val, gray_val, gray_val)
 			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w)
-			cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 
 		while self.frame_idx < end_frame:
 			
 			if verbose: print 'fr. idx: ', self.frame_idx / float(end_frame), ' (/ ', end_frame, ')'
 
 			if (self.frame_idx%stride_frames) == 0:
-				frame = cv.QueryFrame(capture)
+				ret, frame = self.capture.read()
+				# frame = cv.QueryFrame(self.capture)
 				curr_stride_frame = self.frame_idx/stride_frames
 				if frame is None: 
 					print 'Frame error! Exiting...'
@@ -583,7 +607,7 @@ class ColorFeaturesLAB:
 					for d in range(dims):
 						# for all the bins, get the value, and scale to the size of the grid
 						if ap['mode'] == 'playback' and ap['display'] == True:
-							lval, aval, bval = int(lbins[d]*grid_height_ratio*255.), int(abins[d]*grid_height_ratio*255.), int(bbins[d]*grid_height_ratio*255.)
+							lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 						else:
 							lval, aval, bval = cv.Round(cv.GetReal1D (lbins, d) * grid_height_ratio*255.), cv.Round (cv.GetReal1D (abins, d) * grid_height_ratio*255.), cv.Round (cv.GetReal1D (bbins, d) * grid_height_ratio*255.)
 						#draw the rectangle in the wanted color
@@ -603,7 +627,7 @@ class ColorFeaturesLAB:
 							for  d in range (dims):
 								# for all the bins, get the value, and scale to the size of the grid
 								if ap['mode'] == 'playback' and ap['display'] == True:
-									lval, aval, bval = int(lbins[d] * grid_height_ratio * 255.0), int(abins[d] * grid_height_ratio * 255.0), int(bbins[d] * grid_height_ratio * 255.0)
+									lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 								else:
 									lval, aval, bval = cv.Round(cv.GetReal1D (lbins, d) * grid_height_ratio*255.), cv.Round (cv.GetReal1D (abins, d) * grid_height_ratio*255.), cv.Round (cv.GetReal1D (bbins, d) * grid_height_ratio*255.)
 								#draw the rectangle in the wanted color
@@ -611,14 +635,13 @@ class ColorFeaturesLAB:
 				
 				#### SHOW
 				if ap['display']:
-					cv.ShowImage('Image', frame)
-					print type (histimg)
+					cv.ShowImage('Image', cv.fromarray(frame))
 					cv.ShowImage('Histogram', histimg)
 				fp.flush()
 				self.frame_idx += 1
 				
 			elif (self.frame_idx%stride_frames) == 1:
-				cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, int((self.frame_idx / stride_frames) + 1) * stride_frames)
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, int((self.frame_idx / stride_frames) + 1) * stride_frames)
 				self.frame_idx += 5
 			
 			# handle events
@@ -652,7 +675,7 @@ class ColorFeaturesLAB:
 		
 		"""
 		
-		if not have_cv:
+		if not HAVE_CV:
 			return
 		
 		if (self.movie_path is None) or (self.data_path is None):
@@ -662,13 +685,17 @@ class ColorFeaturesLAB:
 		ap = self._check_analysis_params(kwargs)
 		verbose = ap['verbose']
 		
-		capture = cv.CaptureFromFile(self.movie_path)
+		# self.capture = cv.CaptureFromFile(self.movie_path)
+ 		self.capture = cv2.VideoCapture(self.movie_path)
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		hist_width = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH) * ap['hist_width_ratio'])
-		hist_height = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT) * ap['hist_width_ratio'])
+		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		frame_size = (frame_width, frame_height)
+		hist_width = int(frame_width * ap['hist_width_ratio'])
+		hist_height = int(frame_height * ap['hist_width_ratio'])
 		hist_size = (hist_width, hist_height)
 		grid_width = int(hist_width/grid_x_divs)
 		grid_height = int(hist_height/grid_y_divs)
@@ -685,7 +712,7 @@ class ColorFeaturesLAB:
 		
 		
 		# last but not least, get total_frame_count and set up the memmapped file
-		dur_total_secs = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
 		stride_frames = ap['stride']
 		if ap['duration'] < 0:
 			dur_secs = dur_total_secs
@@ -701,7 +728,7 @@ class ColorFeaturesLAB:
 				
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-			print 'FRAMES: ', int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT))
+			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
 			print 'DUR TOTAL: ', dur_total_secs
 			print "OFFSET (SECONDS): ", offset_secs
 			print "OFFSET (STRIDES): ", offset_strides
@@ -718,15 +745,13 @@ class ColorFeaturesLAB:
 			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),17,3,16))
 		
 			# set some drawing constants
-			vert_offset = int(hist_height*ap['hist_vert_offset_ratio'])
+			vert_offset = int(frame_height*ap['hist_vert_offset_ratio'])
 			grid_height_ratio = grid_height/255.
 			
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv.NamedWindow('Histogram')
-#  			cv.ResizeWindow('Histogram', int(hist_width*1.333), int(hist_height*0.75))
-# 			cv.MoveWindow('Histogram', (hist_width*2), 40)
 			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.25))
-			cv.MoveWindow('Histogram', int(hist_width*ap['hist_horiz_offset_ratio']), vert_offset)
+			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
 			
 			lcolors, acolors, bcolors= range(16), range(16), range(16)
 			for d in range (dims):
@@ -735,7 +760,7 @@ class ColorFeaturesLAB:
 				acolors[d] = cv.Scalar(gray_val, 128., 128.)
 				bcolors[d] = cv.Scalar(gray_val, gray_val, gray_val)
 			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w)
-# 			cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+# 			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		
 			self.frame_idx = offset_frames
 			playing_flag = True
@@ -744,7 +769,8 @@ class ColorFeaturesLAB:
 			while playing_flag:			
 				# div. by 6 everywhere (except in log prints) to count by strides
 				if (self.frame_idx%stride_frames) == 0:
-					frame = cv.QueryFrame(capture)
+# 					frame = cv.QueryFrame(self.capture)
+					ret, frame = self.capture.read()
 					curr_stride_frame = self.frame_idx/stride_frames
 					if frame is None: 
 						print 'Frame error! Exiting...'
@@ -757,7 +783,7 @@ class ColorFeaturesLAB:
 					cv.SetZero(histimg) # clear/zero
 					for d in range(dims):
 						# for all the bins, get the value, and scale to the size of the grid
-						lval, aval, bval = int(lbins[d] * grid_height_ratio * 255.0), int(abins[d] * grid_height_ratio * 255.0), int(bbins[d] * grid_height_ratio * 255.0)
+						lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 						#draw the rectangle in the wanted color
 						self.make_rectangles(histimg, six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=int(hist_height*1.25))
 					for i in range(4):
@@ -768,13 +794,12 @@ class ColorFeaturesLAB:
 							for  d in range (dims):
 								# for all the bins, get the value, and scale to the size of the grid
 								if ap['mode'] == 'playback' and ap['display'] == True:
-									lval, aval, bval = int(lbins[d] * grid_height_ratio * 255.0), int(abins[d] * grid_height_ratio * 255.0), int(bbins[d] * grid_height_ratio * 255.0)
+									lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 								#draw the rectangle in the wanted color
 								self.make_rectangles(histimg, six_points, 6, i, j, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors]) #, voffset=0, hoffset=int(hist_width*2)
 					
 					#### SHOW
-					cv.ShowImage('Image', frame)
-					print type (histimg)
+					cv.ShowImage('Image', cv.fromarray(frame))
 					cv.ShowImage('Histogram', histimg)
 					fp.flush()
 		
@@ -783,24 +808,19 @@ class ColorFeaturesLAB:
 				# check p_state				
 				if p_state == 1: # rew. 10 sec.
 					self.frame_idx -= 240
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
 				elif p_state == 2: # rew. 1 sec.
 					self.frame_idx -= 24
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
 				elif p_state == 3:
 					self.frame_idx -= 6
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
 				elif p_state == 0:
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
+					pass
 				elif p_state == 7:
 					self.frame_idx += 6
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
 				elif p_state == 8: # adv. 1 sec.
 					self.frame_idx += 24
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)					
 				elif p_state == 9: # adv. 10 sec.
 					self.frame_idx += 240
-					cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 				
 				# handle key events
 				k = cv.WaitKey (25)
@@ -868,13 +888,11 @@ class ColorFeaturesLAB:
 	# GUI helper functions
 	def build_bars(self, gw, gh, bw, tbw):
 		"""
-		Display helper function. Build list of points for the 16 trios of bars.
+		Display helper function. Build list of points for the trios of histogram bars.
 		"""
 		ap = self._check_analysis_params(None)
-# 		grid_divs_x = ap['grid_divs_x']
-# 		grid_divs_y = ap['grid_divs_y']
-		grid_divs_x = 4
-		grid_divs_y = 4
+		grid_divs_x = ap['grid_divs_x']
+		grid_divs_y = ap['grid_divs_y']
 		six_points = np.ndarray((16,16,6,2), dtype=int)
 		for i in range(grid_divs_x):
 			for j in range(grid_divs_y):
@@ -891,21 +909,14 @@ class ColorFeaturesLAB:
 	
 	def make_rectangles(self, h_img, pts, num_pts, i, j, h, vals, grid_height_ratio, colors, hoffset=0, voffset=0):
 		"""
-		Display helper function. Make a bar for the histogram.
+		Display helper function. Make a bank of three bars for the histogram. (16 in total, via 16 calls of this function.)
 		"""
-		
-# 		print 'H_IMG - ', h_img
-# 		print type(h_img)
-# 		print 'PTS - ', pts
-# 		print type(pts)
-# 		print 'LVAL type: ', type(vals[0])
-		
 		ap = self._check_analysis_params(None)
 		grid_divs_x = ap['grid_divs_x']
 		grid_divs_y = ap['grid_divs_y']
+		# the 0.95 scalar is there so that there are gaps between the histograms in the grid view!
 		for n in range(int(num_pts/2)):
-# 			print 'r point type: ', type(pts[h][(i*grid_divs_x)+j][2*n][0])
 			cv.Rectangle (h_img,
 							((pts[h][(i*grid_divs_x)+j][2*n][0] + hoffset),   (pts[h][(i*grid_divs_x)+j][2*n][1] + int(voffset))),
-							((pts[h][(i*grid_divs_x)+j][2*n+1][0] + hoffset), (pts[h][(i*grid_divs_x)+j][2*n+1][1] + int(voffset) - int(vals[n]*grid_height_ratio))),
+							((pts[h][(i*grid_divs_x)+j][2*n+1][0] + hoffset), (pts[h][(i*grid_divs_x)+j][2*n+1][1] + int(voffset) - int(vals[n]*grid_height_ratio*0.95))), 
 							colors[n][h], -1, 8, 0)
