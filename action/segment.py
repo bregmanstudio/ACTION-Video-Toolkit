@@ -1,6 +1,3 @@
-# import classifier
-# import features
-# import sound
 import numpy as np
 import pylab as P
 import scipy.signal
