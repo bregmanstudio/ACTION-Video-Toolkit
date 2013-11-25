@@ -487,7 +487,7 @@ class ColorFeaturesLAB:
 		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 		frame_size = (frame_width, frame_height)
 		hist_width = int(frame_width * ap['hist_width_ratio'])
-		hist_height = int(frame_height * ap['hist_width_ratio'])
+		hist_height = int(frame_height * ap['hist_height_ratio'])
 		hist_size = (hist_width, hist_height)
 		grid_width = int(hist_width/grid_x_divs)
 		grid_height = int(hist_height/grid_y_divs)
@@ -499,35 +499,17 @@ class ColorFeaturesLAB:
 			print ap['lrange'][0], ' | ', ap['arange'][0], ' | ', ap['brange'][0], ' | ', ap['lrange'][1], ' | ', ap['arange'][1], ' | ', ap['brange'][1]
 			print fps, ' | ', hist_size, ' | ', grid_size
 		
-# 		grid_l_star = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
-# 		grid_a_star = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
-# 		grid_b_star = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
-# 		grid_l_star = np.zeros(grid_size, dtype=np.float32)
-# 		grid_a_star = np.zeros(grid_size, dtype=np.float32)
-# 		grid_b_star = np.zeros(grid_size, dtype=np.float32)
 		grid_l_star = np.zeros((16,1), dtype=np.float32)
 		grid_a_star = np.zeros((16,1), dtype=np.float32)
 		grid_b_star = np.zeros((16,1), dtype=np.float32)
 		
-# 		grid_mask = cv.CreateImage (grid_size, cv.CV_8UC2, 1)
-# 		grid_lab = cv.CreateImage (grid_size, cv.CV_8UC2, 3 )
 		grid_mask = np.zeros(grid_size, dtype=np.float32)
 		grid_lab = np.zeros((grid_size[0], grid_size[1], 3), dtype=np.float32)
 	
-# 		l_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
-# 		a_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
-# 		b_star = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
-# 		l_star = np.zeros(hist_size, dtype=np.float32)
-# 		a_star = np.zeros(hist_size, dtype=np.float32)
-# 		b_star = np.zeros(hist_size, dtype=np.float32)
 		l_star = np.zeros((16,1), dtype=np.float32)
 		a_star = np.zeros((16,1), dtype=np.float32)
 		b_star = np.zeros((16,1), dtype=np.float32)
 		
-		
-		
-# 		mask = cv.CreateImage (hist_size, cv.CV_8UC2, 1)
-# 		lab = cv.CreateImage (hist_size, cv.CV_8UC2, 3 )
 		mask = np.zeros((frame_size[0], frame_size[1], 3), dtype=np.float32)
 		lab = np.zeros((frame_size[0], frame_size[1], 3), dtype=np.float32)
 
@@ -538,22 +520,18 @@ class ColorFeaturesLAB:
 		bin_w = int((hist_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
 		third_bin_w = int(bin_w/3)
 	
-# 		l_histo = cv.CreateHist ([ap['ldims']], cv.CV_HIST_ARRAY, [ap['lrange']], 1)
-# 		a_histo = cv.CreateHist ([ap['adims']], cv.CV_HIST_ARRAY, [ap['arange']], 1)
-# 		b_histo = cv.CreateHist ([ap['bdims']], cv.CV_HIST_ARRAY, [ap['brange']], 1)
 		l_histo = np.arange(ap['lrange'][0], ap['lrange'][1], ap['ldims']).reshape((ap['ldims'],1))
 		a_histo = np.arange(ap['arange'][0], ap['arange'][1], ap['adims']).reshape((ap['adims'],1))
 		b_histo = np.arange(ap['brange'][0], ap['brange'][1], ap['bdims']).reshape((ap['bdims'],1))
 		
 		if ap['verbose']: print third_bin_w
 				
-# 		histimg = cv2.CreateImage ((int(hist_width), int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
-		histimg = np.zeros((int(hist_width), int(hist_height*1.25), 3), np.uint8)
+		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
 		stride_frames = ap['stride']
-		stride_hop = stride_frames - 1 
+		stride_hop = stride_frames - 1
 		if ap['duration'] < 0:
 			dur_secs = dur_total_secs
 		else:
@@ -565,8 +543,7 @@ class ColorFeaturesLAB:
 		dur_strides = int(dur_secs * (fps / stride_frames))
 		offset_frames = offset_strides * stride_frames
 		dur_frames = dur_strides * stride_frames
-
-				
+		
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
 			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
@@ -597,7 +574,7 @@ class ColorFeaturesLAB:
 		if display:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv.NamedWindow('Histogram', hist_width)
-			cv.ResizeWindow('Histogram', int(hist_width*1.0), int(hist_height*1.25))
+			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.25))
 			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
 			
 			# should probably assert that ldims == adims == bdims, but hey we trust people
@@ -638,7 +615,7 @@ class ColorFeaturesLAB:
 						# for all the bins, get the value, and scale to the size of the grid
 						lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 						#draw the rectangle in the wanted color
-						self.make_rectangles(cv.fromarray(histimg), six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=vert_offset)
+						self.make_rectangles(cv.fromarray(histimg), six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=hist_height)
 				
 				# access stage (gridded)
 				for i in range(grid_x_divs):
@@ -735,12 +712,13 @@ class ColorFeaturesLAB:
 		bin_w = int((hist_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
 		third_bin_w = int(bin_w/3)
 		
-		histimg = cv.CreateImage ((hist_width, int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
-		
+		# histimg = cv.CreateImage ((hist_width, int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
+		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
 		stride_frames = ap['stride']
+		stride_hop = stride_frames - 1
 		if ap['duration'] < 0:
 			dur_secs = dur_total_secs
 		else:
@@ -786,8 +764,8 @@ class ColorFeaturesLAB:
 				lcolors[d] = cv.Scalar(255., gray_val, gray_val)
 				acolors[d] = cv.Scalar(gray_val, 128., 128.)
 				bcolors[d] = cv.Scalar(gray_val, gray_val, gray_val)
-			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w)
-# 			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w, grid_x_divs, grid_y_divs, 16) # 16: number of bins
+			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		
 			self.frame_idx = offset_frames
 			playing_flag = True
@@ -796,7 +774,6 @@ class ColorFeaturesLAB:
 			while playing_flag:			
 				# div. by 6 everywhere (except in log prints) to count by strides
 				if (self.frame_idx%stride_frames) == 0:
-# 					frame = cv.QueryFrame(self.capture)
 					ret, frame = self.capture.read()
 					curr_stride_frame = self.frame_idx/stride_frames
 					if frame is None: 
@@ -805,29 +782,30 @@ class ColorFeaturesLAB:
 		
 					trio = fp[curr_stride_frame]
 					lbins, abins, bbins = trio[0][0], trio[0][1], trio[0][2]
-					# if verbose: print (np.sum(lbins), np.sum(abins), np.sum(bbins))
+
 					# display stage (full)
-					cv.SetZero(histimg) # clear/zero
+					histimg[:] = 0 # clear/zero
 					for d in range(dims):
 						# for all the bins, get the value, and scale to the size of the grid
 						lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 						#draw the rectangle in the wanted color
-						self.make_rectangles(histimg, six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=int(hist_height*1.25))
-					for i in range(4):
-						for j in range(4):
+						self.make_rectangles(cv.fromarray(histimg), six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=hist_height)
+
+					# access stage (gridded)
+					for i in range(grid_x_divs):
+						for j in range(grid_y_divs):
 							lbins, abins, bbins = trio[(j*4)+i+1][0], trio[(j*4)+i+1][1], trio[(j*4)+i+1][2]
 							# if verbose: print (np.sum(lbins), np.sum(abins), np.sum(bbins))
 							# display stage (grid)
 							for  d in range (dims):
 								# for all the bins, get the value, and scale to the size of the grid
-								if ap['mode'] == 'playback' and ap['display'] == True:
-									lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
+								lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
 								#draw the rectangle in the wanted color
-								self.make_rectangles(histimg, six_points, 6, i, j, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors]) #, voffset=0, hoffset=int(hist_width*2)
+								self.make_rectangles(cv.fromarray(histimg), six_points, 6, i, j, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors]) #, voffset=0
 					
 					#### SHOW
 					cv.ShowImage('Image', cv.fromarray(frame))
-					cv.ShowImage('Histogram', histimg)
+					cv.ShowImage('Histogram', cv.fromarray(histimg))
 					fp.flush()
 		
 					print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
@@ -895,12 +873,7 @@ class ColorFeaturesLAB:
 		cv2.normalize(np.where(item>thresh,item,0),a_star,alpha=1.0,norm_type=cv2.NORM_L2)
 		item = cv2.calcHist([lab],[2],None,[16],[0,255])
 		cv2.normalize(np.where(item>thresh,item,0),b_star,alpha=1.0,norm_type=cv2.NORM_L2)
-		
-## 		print '------------------------------'
-## 		print l_star[:]
-##		print a_star[:]
-## 		print b_star[:]
-		
+				
 		mfp[fpindex][ ((grid_divs_x*i)+j)+grid_flag ][0] = np.reshape(l_star[:], (16))
 		mfp[fpindex][ ((grid_divs_x*i)+j)+grid_flag ][1] = np.reshape(a_star[:], (16))
 		mfp[fpindex][ ((grid_divs_x*i)+j)+grid_flag ][2] = np.reshape(b_star[:], (16))
@@ -917,7 +890,7 @@ class ColorFeaturesLAB:
 		six_points = np.ndarray((16,16,6,2), dtype=int)
 		for i in range(xdivs):
 			for j in range(ydivs):
-				for h in range(nnumbins):
+				for h in range(numbins):
 					foo = six_points[h][(i*xdivs)+j]
 					foo[0] = [(j*gw)+(h * bw), (i+1)*gh]
 					foo[1] = [(j*gw)+((h+1) * bw)-(2*tbw), ((i+1)*gh)]
