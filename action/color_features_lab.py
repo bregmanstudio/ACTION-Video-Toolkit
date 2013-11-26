@@ -11,8 +11,8 @@ Use the color features (L*a*b*) extractor class to analyze streams of images or 
 
 In order to reduce the amount of data involved (and the processing time involved), a stride parameter is used. This number is the number of movie frames to account for in one analysis frame. The default is 6. As of version 1.0, there is no averaging or interpolation, the "skipped" frames are simply dropped.
 
-Use
-===
+Creation and Parameters
+=======================
 
 Instantiate the ColorFeaturesLAB class, optionally with additional keyword arguments:
 
@@ -402,6 +402,15 @@ class ColorFeaturesLAB:
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
+
+	def convert_lab_to_l(self, data):
+		data_L = np.empty_like(data)
+		data_L[:] = data
+		data_L = np.reshape(data_L, (data.shape[0], -1, 3))
+		data_L[:,:,1:] = 0.0
+		return np.reshape(data_L, (data.shape[0], -1))
+
+
 		
 	def playback_movie(self, offset=0, duration=-1):
 		"""
@@ -805,7 +814,7 @@ class ColorFeaturesLAB:
 					
 					#### SHOW
 					cv.ShowImage('Image', cv.fromarray(frame))
-					cv.ShowImage('Histogram', cv.fromarray(histimg))
+					cv.ShowImage('Histogram', cv.fromarray(e))
 					fp.flush()
 		
 					print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)

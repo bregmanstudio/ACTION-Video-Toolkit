@@ -14,8 +14,8 @@ OpticalFlow analyzes all 24 frames for every second of each film. Users may late
 OpticalFlow's central analysis algorithm is adapted from the lk_track example from the Python sample code provided with OpenCV.
 
 
-Creation
-========
+Creation and Parameters
+=======================
 
 Instantiate the OpticalFlow class, optionally with additional keyword arguments:
 
