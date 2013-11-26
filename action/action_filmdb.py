@@ -105,7 +105,6 @@ class FilmDB:
 			'Schindlers_List': ['Schindlers_List', 'SS', 1, 1993],
 			'Seven_Samurai': ['Seven_Samurai', 'AK', 1, 1954],
 			'Shadow_of_a_Doubt': ['Shadow_of_a_Doubt', 'AH', 0, 1943],
-			#'Sherlock_Holmes_Baffled_1900': ['Sherlock_Holmes_Baffled_1900', 'other', 0, 1909],
 			'Soigne_ta_Droite': ['Soigne_ta_Droite', 'JLG', 1, 1987],
 			'Stagecoach': ['Stagecoach', 'JF', 0, 1939],
 			'Straight_Story': ['Straight_Story', 'DL', 1, 1999],
@@ -121,18 +120,13 @@ class FilmDB:
 			'The_Hidden_Fortress': ['The_Hidden_Fortress', 'AK', 0, 1958],
 			'The_Hudsucker_Proxy': ['The_Hudsucker_Proxy', 'CB', 1, 1994],
 			'The_Lady_Vanishes': ['The_Lady_Vanishes', 'AH', 0, 1938],
-			#'The_Light_That_Came_1909': ['The_Light_That_Came_1909', 'other', 0, 1909],
 			'The_Man_Who_Knew_Too_Much': ['The_Man_Who_Knew_Too_Much', 'AH', 1, 1956],
 			'The_Man_Who_Shot_Liberty_Valence': ['The_Man_Who_Shot_Liberty_Valence', 'JF', 0, 1962],
 			'The_Milky_Way': ['The_Milky_Way', 'JLG', 1, 1969],
-			#'The_Necklace_1909': ['The_Necklace_1909', 'other', 0, 1909],
 			'The_Phantom_of_Liberty': ['The_Phantom_of_Liberty', 'JLG', 1, 1974],
 			'The_Pleasure_Garden': ['The_Pleasure_Garden', 'AH', 0, 1925],
 			'The_Quiet_Man': ['The_Quiet_Man', 'JF', 1, 1952],
-			#'The_Restoration_1909': ['The_Restoration_1909', 'other', 0, 1909],
 			'The_Searchers': ['The_Searchers', 'JF', 1, 1956],
-			#'The_Tramp_and_the_Muscular_Cook_1898': ['The_Tramp_and_the_Muscular_Cook_1898', 'other', 0, 1898],
-			#'The_Two_Paths_1911': ['The_Two_Paths_1911', 'other', 0, 1911],
 			'The_Wrestler': ['The_Wrestler', 'DA', 1, 2008],
 			'The_Wrong_Man': ['The_Wrong_Man', 'AH', 0, 1956],
 			'Throne_of_Blood': ['Throne_of_Blood', 'AK', 0, 1957],
@@ -151,12 +145,22 @@ class FilmDB:
 			'Viridiana': ['Viridiana', 'LB', 0, 1961],
 			'War_Horse': ['War_Horse', 'SS', 1, 2011],
 			'Weekend': ['Weekend', 'JLG', 1, 1967],
-			#'Whats_Your_Hurry_1909': ['Whats_Your_Hurry_1909', 'other', 0, 1909],
-			#'Who_Pays_for_the_Drinks_1903': ['Who_Pays_for_the_Drinks_1903', 'other', 0, 1903],
 			'Wild_at_Heart': ['Wild_at_Heart', 'DL', 1, 1990],
-			#'Winning_Back_His_Love_1910': ['Winning_Back_His_Love_1910', 'other', 0, 1910],
-			#'With_the_Enemys_Help_1912': ['With_the_Enemys_Help_1912', 'other', 0, 1912],
 			'Young_Mr_Lincoln': ['Young_Mr_Lincoln', 'JF', 1, 1939]}
+		
+		self.actionPaperPrintDB = {
+			'Sherlock_Holmes_Baffled_1900': ['Sherlock_Holmes_Baffled_1900', 'other', 0, 1900],
+			'The_Light_That_Came_1909': ['The_Light_That_Came_1909', 'other', 0, 1909],					
+			'The_Necklace_1909': ['The_Necklace_1909', 'other', 0, 1909],
+			'The_Restoration_1909': ['The_Restoration_1909', 'other', 0, 1909],
+			'The_Tramp_and_the_Muscular_Cook_1898': ['The_Tramp_and_the_Muscular_Cook_1898', 'other', 0, 1898],
+			'The_Two_Paths_1911': ['The_Two_Paths_1911', 'other', 0, 1911],
+			'Whats_Your_Hurry_1909': ['Whats_Your_Hurry_1909', 'other', 0, 1909],
+			'Who_Pays_for_the_Drinks_1903': ['Who_Pays_for_the_Drinks_1903', 'other', 0, 1903],
+			'Winning_Back_His_Love_1910': ['Winning_Back_His_Love_1910', 'other', 0, 1910],
+			'With_the_Enemys_Help_1912': ['With_the_Enemys_Help_1912', 'other', 0, 1912]}
+		
+		
 		# mapping of directors from name to name/num. b+w/num. color
 		self.actionDirectors = {
 			'AH'  : ['Alfred Hitchcock', 0, 0],
