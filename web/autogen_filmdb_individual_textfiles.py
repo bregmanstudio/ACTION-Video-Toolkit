@@ -1,12 +1,13 @@
 import action.action_filmdb as fdb
 import HTML, glob, os, md5, shutil
 
-ACTIONDIR = '/Users/kfl/Movies/action'
-WEBDIR = '/Users/kfl/Sites/actiondata'
+ACTIONDIR = os.path.expanduser('~/Movies/action')
+WEBDIR = os.path.expanduser('~/Sites/actiondata')
 
 # FILM_DB controls what films are active 
 full_db = fdb.FilmDB()
 actionDB = full_db.actionDB
+actionDirectors = full_db.actionDirectors
 titles = set(actionDB)
 
 print len(titles)
@@ -14,12 +15,7 @@ print len(titles)
 html_filestring = '/Users/kfl/Sites/action_db.html'
 htmlfile = open(html_filestring, 'w')
 
-htitles = []
-links = []
-dirs = []
-years = []
-colors = []
-hashes = []
+htitles, clinks, alinks, dirs, years, colors, hashes = [], [], [], [], [], [], []	
 
 for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
 	ttl = os.path.splitext(os.path.basename( file ))[0]
@@ -34,48 +30,65 @@ for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
 		# Check to see if there is a folder/film with that unique ID
 		if not os.path.exists(os.path.join(WEBDIR,hashstr)):
 			os.makedirs(os.path.join(WEBDIR,hashstr))
+
+		audioflag = 0
+		# Copy the TITLE.*_hc_*.pkl files from ACTIONDIR to WEBDIR/hash		
+		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
+		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc_full.pkl"))))
+		try:
+			shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_mfccs_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc_full.pkl"))))
+			audioflag = 1
+		except IOError:
+			pass
 		
 		# Create the text file for the metadata
 		txtfile = os.path.join(WEBDIR, hashstr, (str(ttl) + '.txt'))
 # 		print txtfile
 		f = open(txtfile, 'w')
 		
-		# Write to it...
+		# Write to text file...
 		f.write(hashstr + "\n")
-		f.write(str(actionDB[ttl][0]) + "\n")
-		f.write(HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60")) + "\n")
-		f.write(str(actionDB[ttl][1]) + "\n")
+		f.write(str(actionDB[ttl][0]).replace("_"," ") + "\n")
+		f.write(HTML.link("COLOR FEATURES", ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60")) + "\n")
+		if audioflag == 1:
+			f.write(HTML.link("AUDIO FEATURES", ("film_detail_audio.php?hash=" + hashstr + "&t=30&mf=20&g=60")) + "\n")
+		else:
+			f.write("n/a\n")
+		print str(actionDB[ttl][1])
+		f.write(str(actionDirectors[ str(actionDB[ttl][1]) ][0] ) + "\n")
 		f.write(str(actionDB[ttl][3]) + "\n")
-		f.write(str(actionDB[ttl][2]) + "\n")
+		if actionDB[ttl][2] == 1:
+			cflag = "Color"
+		else:
+			cflag = "B/W"
+		colors += [cflag]
+		f.write(str(cflag) + "\n")
 		f.close()
 		
 		# Record tabular data for the HTML page...
 # 		print 'ttl: ', ttl
-		htitles += [str(actionDB[ttl][0])]
-		links += [HTML.link(str(ttl), ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60"))]
-		dirs += [str(actionDB[ttl][1])]
+		htitles += [str(actionDB[ttl][0]).replace("_"," ")]
+
+		clinks += [HTML.link("COLOR FEATURES", ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=60"))]
+		if audioflag == 1:
+			alinks += [HTML.link("AUDIO FEATURES", ("film_detail_audio.php?hash=" + hashstr + "&t=30&mf=20&g=60"))]
+		else:
+			alinks += ["n/a"]
+		dirs += [actionDirectors[ str(actionDB[ttl][1]) ][0] ]
 		years += [str(actionDB[ttl][3])]
-		colors += [str(actionDB[ttl][2])]
+		colors += [cflag]
 		hashes += [hashstr]
 		
-		# Copy the TITLE.color_lab from ACTIONDIR to WEBDIR/hash
-		
-		#shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+".color_lab"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+".color_lab"))))
-		
-		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
-		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc_full.pkl"))))
-		try:
-			shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_mfccs_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc_full.pkl"))))
-		except IOError:
-			pass
 
-print len(links)
-full_table = [["Title", "Link", "Director", "Year", "Color", "Hash"]]
+print len(clinks)
+print len(alinks)
+full_table = [["Title", "Color Seg.", "Audio Seg.", "Director", "Year", "Color", "Hash"]]
 
-for i, t in enumerate(links):
+for i, t in enumerate(clinks):
 	full_table += [[
 		htitles[i],
-		links[i],
+		clinks[i],
+		alinks[i],
 		dirs[i],
 		years[i],
 		colors[i],
