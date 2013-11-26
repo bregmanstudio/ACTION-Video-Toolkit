@@ -77,6 +77,7 @@ Examples
 	Example Three - similarity plots <example_three_similarity_plots>
 	Example Four - viewing distributions of color data <example_four_distributions>
 	Example Five - in-depth example of segmentation <example_five_segmentation>
+	Example Six - in-depth example of a simple director prediction ML task <example_six_director_prediction>
 
 ACTION Python Modules
 =====================
@@ -85,6 +86,7 @@ ACTION Python Modules
    
 	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
 	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
+	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
 	actiondata - data analysis and view routines <actiondata>
 
 

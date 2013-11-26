@@ -113,4 +113,9 @@ Kmeans is not deterministic; Hierarchical is
 
 Since K means clustering is not deterministic, the resulting clusterings will be different each time. To cope with this, you can rerun the above several times and find an average. Hierarchical clustering of the same data performs the same each time, so we can do this simple clustering in one pass.
 
+Using clustering to view lots of films
+--------------------------------------
+
+We will use clustering in a future example to view data from a large collection of films.
+
 `Next <example_two_centers_of_mass.html>`_: Plotting centers of mass of several film's data.
