@@ -313,7 +313,7 @@ class ActionView:
 		"""
 		segs_sorted_by_length = self.ad.sort_segs_by_duration(segs)
 		print segs_sorted_by_length
- 		fig = plt.figure()
+		fig = plt.figure()
 		plt.plot(np.arange(len(segs_sorted_by_length)-1), np.array(segs_sorted_by_length)[:-1,1])
 		plt.show()
 	
