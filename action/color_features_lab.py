@@ -75,12 +75,17 @@ The full list of settable parameters, with default values and explanations:
 +-----------------+-----------------+----------------------------------------------------+
 | brange          | [0, 256]        | range to map to/from b                             |
 +-----------------+-----------------+----------------------------------------------------+
-| hist_width      | 640             | for visualization                                  |
-+-----------------+-----------------+----------------------------------------------------+
-| hist_height     | 480             | for visualization                                  |
-+-----------------+-----------------+----------------------------------------------------+
-| vert_offset     | 500             | for 17th/full histogram in visualization           |
-+-----------------+-----------------+----------------------------------------------------+
+| Parameters for display...                                                                     |
++------------------------+-----------------+----------------------------------------------------+
+| viz_width_ratio        | 1.0             | for visualization of histogram (ratio of movie     |
+|                        |                 | viewer width)                                      |
++------------------------+-----------------+----------------------------------------------------+
+| viz_height_ratio       | 1.0             | for visualization of histogram (ratio)             |
++------------------------+-----------------+----------------------------------------------------+
+| viz_horiz_offset_ratio | 1.0             | horizontal offset for view window (ratio)          |
++------------------------+-----------------+----------------------------------------------------+
+| viz_vert_offset_ratio  | 0.0             | vertical offset for view window (ratio)            |
++------------------------+-----------------+----------------------------------------------------+
 
 
 Parameter keywords can be passed explicitly as formal arguments or as a keyword argument parameter dict:, e.g.:
@@ -125,9 +130,10 @@ To play back your analysis later:
 To directly access your analysis data as a memory-mapped array:
 
 .. code-block:: python
-
+	
+	import action.segment as aseg
 	cflab = ColorFeaturesLAB('Psycho')
-	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
+	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
 	data = cflab.cflab_for_segment(segment_in_seconds)
 
 A Note on Paths
@@ -633,7 +639,7 @@ class ColorFeaturesLAB:
 							lbins, abins, bbins = fp[(curr_stride_frame)][(j*grid_x_divs)+i+1][0], fp[curr_stride_frame][(j*grid_x_divs)+i+1][1], fp[curr_stride_frame][(j*grid_x_divs)+i+1][2]
 						else:
 							sub = frame[(i*grid_width):((i+1)*grid_width),(j*grid_height):((j+1)*grid_height)]
-							lbins, abins, bbins = self._analyze_image(sub, fp, (self.frame_idx/stride_frames), grid_lab, lab_min, lab_max, grid_l_star, grid_a_star, grid_b_star, grid_mask, l_histo, a_histo, b_histo, i, j, 1, 1., thresh=100.)
+							lbins, abins, bbins = self._analyze_image(sub, fp, (self.frame_idx/stride_frames), grid_lab, lab_min, lab_max, grid_l_star, grid_a_star, grid_b_star, grid_mask, l_histo, a_histo, b_histo, i, j, 1, 1., thresh=ap['threshold'])
 
 						# display stage (gridded)
 						if display:
