@@ -31,50 +31,50 @@ The global default color_features-extractor parameters are defined in a paramete
 
 The full list of settable parameters, with default values and explanations:
 
-+-----------------+-----------------+----------------------------------------------------+
-| keyword         | default         | explanation                                        |
-+=================+=================+====================================================+
-| action_dir      | ~/Movies/action | default dir                                        |
-+-----------------+-----------------+----------------------------------------------------+
-| movie_extension | .mov            |                                                    |
-+-----------------+-----------------+----------------------------------------------------+
-| data_extension  | .color_lab      | this is what will be output and expected for input |
-+-----------------+-----------------+----------------------------------------------------+
-| mode            | analyze         | 'playback' or 'analyze'                            |
-+-----------------+-----------------+----------------------------------------------------+
-| fps             | 24              | fps: frames per second                             |
-+-----------------+-----------------+----------------------------------------------------+
-| offset          | 0               | time offset in seconds                             |
-+-----------------+-----------------+----------------------------------------------------+
-| duration        | -1              | time duration in seconds, -1 (default) maps to full|
-|                 |                 | duration of media                                  |
-+-----------------+-----------------+----------------------------------------------------+
-| stride          | 6               | number of video frames to that comprise one        |
-|                 |                 | analysis frame, skips stride - 1 frames            |
-+-----------------+-----------------+----------------------------------------------------+
-| threshold       | 0.0             | (empirical) threshold for histogram values; set to |
-|                 |                 | a positive number to remove extremely low values   |
-+-----------------+-----------------+----------------------------------------------------+
-| verbose         | True            | useful for debugging                               |
-+-----------------+-----------------+----------------------------------------------------+
-| display         | True            | launch display screen during analysis              |
-+-----------------+-----------------+----------------------------------------------------+
-| Parameters for color features histograms and display...                                |
-+-----------------+-----------------+----------------------------------------------------+
-| colorspace      | lab             | this is redundant, don't try to change it          |
-+-----------------+-----------------+----------------------------------------------------+
-| ldims           | 16              | number of dimensions for L (luminosity)            |
-+-----------------+-----------------+----------------------------------------------------+
-| adims           | 16              | number of dimensions for a (color)                 |
-+-----------------+-----------------+----------------------------------------------------+
-| bdims           | 16              | number of dimensions for b (color)                 |
-+-----------------+-----------------+----------------------------------------------------+
-| lrange          | [0, 256]        | range to map to/from L                             |
-+-----------------+-----------------+----------------------------------------------------+
-| arange          | [0, 256]        | range to map to/from a                             |
-+-----------------+-----------------+----------------------------------------------------+
-| brange          | [0, 256]        | range to map to/from b                             |
-+-----------------+-----------------+----------------------------------------------------+
++------------------------+-----------------+----------------------------------------------------+
+| keyword                | default         | explanation                                        |
++========================+=================+====================================================+
+| action_dir             | ~/Movies/action | default dir                                        |
++------------------------+-----------------+----------------------------------------------------+
+| movie_extension        | .mov            |                                                    |
++------------------------+-----------------+----------------------------------------------------+
+| data_extension         | .color_lab      | this is what will be output and expected for input |
++------------------------+-----------------+----------------------------------------------------+
+| mode                   | analyze         | 'playback' or 'analyze'                            |
++------------------------+-----------------+----------------------------------------------------+
+| fps                    | 24              | fps: frames per second                             |
++------------------------+-----------------+----------------------------------------------------+
+| offset                 | 0               | time offset in seconds                             |
++------------------------+-----------------+----------------------------------------------------+
+| duration               | -1              | time duration in seconds, -1 (default) maps to full|
+|                        |                 | duration of media                                  |
++------------------------+-----------------+----------------------------------------------------+
+| stride                 | 6               | number of video frames to that comprise one        |
+|                        |                 | analysis frame, skips stride - 1 frames            |
++------------------------+-----------------+----------------------------------------------------+
+| threshold              | 0.0             | (empirical) threshold for histogram values; set to |
+|                        |                 | a positive number to remove extremely low values   |
++------------------------+-----------------+----------------------------------------------------+
+| verbose                | True            | useful for debugging                               |
++------------------------+-----------------+----------------------------------------------------+
+| display                | True            | launch display screen during analysis              |
++------------------------+-----------------+----------------------------------------------------+
+| Parameters for color features histograms and display...                                       |
++------------------------+-----------------+----------------------------------------------------+
+| colorspace             | lab             | this is redundant, don't try to change it          |
++------------------------+-----------------+----------------------------------------------------+
+| ldims                  | 16              | number of dimensions for L (luminosity)            |
++------------------------+-----------------+----------------------------------------------------+
+| adims                  | 16              | number of dimensions for a (color)                 |
++------------------------+-----------------+----------------------------------------------------+
+| bdims                  | 16              | number of dimensions for b (color)                 |
++------------------------+-----------------+----------------------------------------------------+
+| lrange                 | [0, 256]        | range to map to/from L                             |
++------------------------+-----------------+----------------------------------------------------+
+| arange                 | [0, 256]        | range to map to/from a                             |
++------------------------+-----------------+----------------------------------------------------+
+| brange                 | [0, 256]        | range to map to/from b                             |
++------------------------+-----------------+----------------------------------------------------+
 | Parameters for display...                                                                     |
 +------------------------+-----------------+----------------------------------------------------+
 | viz_width_ratio        | 1.0             | for visualization of histogram (ratio of movie     |
@@ -142,7 +142,6 @@ A Note on Paths
 This class is set up for the following directory structure. You might want to modify this to suit your needs.
 
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.mov
-/Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.wav
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.color_lab
 ...etc...
 
