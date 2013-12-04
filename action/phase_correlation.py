@@ -167,7 +167,7 @@ import action.segment as aseg
 
 class PhaseCorrelation:
 	"""
-	Color analysis of frame and 4-by-4 grid of subframes in L*a*b* colorspace.
+	Phase correlation of frame and 8-by-8 grid of subframes.
 	
 	::
 	
@@ -226,22 +226,24 @@ class PhaseCorrelation:
 		}
 		return analysis_params
 	
-	def phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def all_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
-		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
-		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
+		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from ACTION!
+		Takes a movie/file name and a Segment object that describes the desired timespan.
 		Returns a tuple of memory-mapped arrays corresponding to the full-frame color features followed by the 4 by 4 grid of color histograms: ([NUMBER OF FRAMES, NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (= 48)], [NUMBER OF FRAMES, NUMBER OF GRID-SQUARES(16) * NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (=768)])
 		::
 		
+			pcorr = phase_correlation.PhaseCorrelation('Psycho')
 			seg = Segment(360, 720) # which is the same as seg = Segment(360, duration=360)
-			raw_hist_data = hist.phasecorr_features_for_segment('Psycho.hist', seg)
+			raw_hist_data = pcorr.phasecorr_features_for_segment(seg)
 			raw_hist_data[0].shape
 			>>> (1440, 48)
 			raw_hist_data[1].shape
 			>>> (1440, 768)
 		
 		"""
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)
+		res = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+		return (res[0].reshape(-1, 2), res[1].reshape(-1, 128))
 	
 	def full_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
@@ -251,17 +253,22 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape((segment.time_span.duration*4), -1)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)
+		return self.X
 	
 	def gridded_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
-		Return the gridded histograms (all 16 bins) in the following order:
+		Return the gridded histograms (all 64 bins) in the following order:
 		::
 		
-			 0  1  2  3
-			 4  5  6  7
-			 8  9 10 11
-			12 13 14 15
+			 0  1  2  3  4  5  6  7
+			 8  9 10 11 12 13 14 15
+			 16 .  .  .  .  .  . 23
+			 24 .
+			 .  .
+			 .  .
+			 .  .
+			 56 .  .  .  .  .  . 63
 		
 		Equivalent to:
 		::
@@ -269,63 +276,74 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape((segment.time_span.duration*4), -1)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)
+		return self.X
 	
 	def center_quad_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
 		
-			 X  X  X  X
-			 X  5  6  X
-			 X  9 10  X
-			 X  X  X  X
+			 X  X ..  X  X
+			 X 18 .. 21  X
+			 X  . ..  .  X
+			 X  . ..  .  X
+			 X 42 .. 45  X
+			 X  X ..  X  X
 		
 		Equivalent to:
 		::
 		
-			phasecorr_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
+			phasecorr_features_for_segment(...)[1][:,[18..21,26..29,34..37,42..45,..],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
+		cq_array = range(18,22)+range(26,30)+range(34,38)+range(42,46)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)
+		return self.X
 
 	def middle_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
 		
-			 X  X  X  X
-			 4  5  6  7
-			 8  9 10 11
-			 X  X  X  X
+			 X  X ..  X  X
+			16  . ..  . 23
+			 .  . ..  .  .
+			 .  . ..  .  .
+			40  . ..  . 47
+			 X  X ..  X  X
 		
 		Equivalent to:
 		::
 		
-			phasecorr_features_for_segment(...)[1][:,4:12,...].reshape((segment.time_span.duration*4), -1)
+			phasecorr_features_for_segment(...)[1][:,16:47,...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		# print segment
-		# print segment.time_span
-		return self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape((int(segment.time_span.duration*4)), -1)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:47,...].reshape(-1, 64)
+		return self.X
 	
 	def plus_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
 		
-			 X  1  2  X
-			 4  5  6  7
-			 8  9 10 11
-			 X 13 14  X
+			 X  X  2 ..  5  X  X
+			 X  X 10 .. 13  X  X
+			16  . ..        . 23
+			 .  . ..        .  .
+			 .  . ..        .  .
+			40  . ..        . 47
+			X  X  50 .. 53  X  X
+			X  X  58 .. 61  X  X
 		
 		Equivalent to:
 		::
 		
-			phasecorr_features_for_segment(...)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape((segment.time_span.duration*4), -1)
+			phasecorr_features_for_segment(...)[1][:,[2..5,10..13,16..47,50..53,58..61],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape((segment.time_span.duration*4), -1)
+		plus_array = range(2,6)+range(10,14)+range(16,47)+range(50,53)+range(58,61)
+		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)
 
 	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=aseg.Segment(0, -1)):
 		"""
@@ -445,10 +463,11 @@ class PhaseCorrelation:
 		"""
 		
 		if not HAVE_CV:
+			print "WARNING: You must install OpenCV in order to analyze or view!"
 			return
 		
 		if (self.movie_path is None) or (self.data_path is None):
-			print "Must supply both a movie and a data path!"
+			print "ERROR: Must supply both a movie and a data path!"
 			return
 		ap = self._check_analysis_params(kwargs)
 		
@@ -464,17 +483,20 @@ class PhaseCorrelation:
 		grid_width = int(frame_width/grid_x_divs)
 		grid_height = int(frame_height/grid_y_divs)
 		grid_size = (grid_width, grid_height)
-
+		
+		centers_x = range((frame_width/16),frame_width,(frame_width/8))
+		centers_y = range((frame_height/16),frame_height,(frame_height/8))
+		
 		verbose = ap['verbose']
 		if verbose: print fps, ' | ', frame_size, ' | ', grid_size
 				
  		prev_sub_grays = []
-		bin_w = int((frame_width * ap['viz_width_ratio']) / grid_x_divs)
-		third_bin_w = int(bin_w/3)
-		
-		if ap['verbose']: print third_bin_w
+		# bin_w = int((frame_width * ap['viz_width_ratio']) / grid_x_divs)
+# 		third_bin_w = int(bin_w/3)
+# 		
+		#if ap['verbose']: print third_bin_w
 				
-		vizimg = cv.CreateImage ((frame_width, int(frame_height*ap['viz_height_ratio']*1.5)), cv.IPL_DEPTH_8U, 3)
+		#vizimg = cv.CreateImage ((frame_width, int(frame_height*ap['viz_height_ratio']*1.5)), cv.IPL_DEPTH_8U, 3)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
@@ -520,9 +542,9 @@ class PhaseCorrelation:
 		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-			cv.NamedWindow('Viz', frame_width)
-			cv.ResizeWindow('Viz', int(frame_width*ap['viz_width_ratio']*1.0), int(frame_height*ap['viz_height_ratio']*1.25))
-			cv.MoveWindow('Viz', int(frame_width*ap['viz_horiz_offset_ratio']), vert_offset)
+# 			cv.NamedWindow('Viz', frame_width)
+# 			cv.ResizeWindow('Viz', int(frame_width*ap['viz_width_ratio']*1.0), int(frame_height*ap['viz_height_ratio']*1.25))
+# 			cv.MoveWindow('Viz', int(frame_width*ap['viz_horiz_offset_ratio']), vert_offset)
 
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		
@@ -548,7 +570,6 @@ class PhaseCorrelation:
 
 			# grab next frame
 			ret, frame = self.capture.read()
-# 			frame = cv.QueryFrame(capture)
 			if frame is None: 
 				print 'Frame error! Exiting...'
 				break # no image captured... end the processing
@@ -563,60 +584,35 @@ class PhaseCorrelation:
 					fp[self.frame_idx][64] = [(fret[0]/frame_width),(fret[1]/frame_height)]
 				else:
 					fp[self.frame_idx][64] = [0,0]
-			#print fp[self.frame_idx][64]
-			#if verbose: 
-			#print (65, fret, fres)
 			
-			# display stage (full)
-				if ap['display']:
-					cv.SetZero(vizimg) # clear/zero
-# 					for d in range(dims):
-# 						# for all the bins, get the value, and scale to the size of the grid
-# 						if ap['mode'] == 'playback' and ap['display'] == True:
-# 							lval, aval, bval = int(lbins[d] * ratio*255.), int(abins[d] * ratio*255.), int(bbins[d] *ratio*255.)
-# 						else:
-# 							lval, aval, bval = cv.Round(cv.GetReal1D (lbins, d) * ratio*255.), cv.Round (cv.GetReal1D (abins, d) * ratio*255.), cv.Round (cv.GetReal1D (bbins, d) * ratio*255.)
-# 						#draw the rectangle in the wanted color
-# 						self.make_rectangles(vizimg, six_points, 6, 0, 0, d, [lval, aval, bval], ratio, [lcolors, acolors, bcolors], voffset=vert_offset)
-# 						# 	def make_rectangles(self, h_img, pts, num_pts, i, j, h, vals, ratio, colors, hoffset=0, voffset=0):
+# display stage (full)
+# 				if ap['display']:
+# 					cv.SetZero(vizimg) # clear/zero
 			for row in range(grid_y_divs):
 				for col in range(grid_x_divs):
-# 						if ap['mode'] == 'playback' and ap['display'] == True:
-# 							lbins, abins, bbins = fp[(curr_stride_frame)][(j*GRID_X_DIVISIONS)+i+1][0], fp[curr_stride_frame][(j*GRID_X_DIVISIONS)+i+1][1], fp[curr_stride_frame][(j*GRID_X_DIVISIONS)+i+1][2]
-# 							if verbose: print (np.sum(lbins), np.sum(abins), np.sum(bbins))
-# 						else:
-# 					sub_gray = cv.GetSubRect(cv2.cv.fromarray(frame_gray), (col*grid_width, row*grid_height, grid_width, grid_height))
-# 					ga, gb = cv2.phaseCorrelateRes(np.float32(prev_sub_grays[(row*grid_x_divs)+col]), np.float32(sub_gray))
+					if ap['mode'] == 'playback':
+						cell = ((row*8)+col)
+						gret, gres = fp[self.frame_idx][cell][0], fp[self.frame_idx][cell][1]
+					else:
+						sub_gray = np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)][:])
+						gret, gres = cv2.phaseCorrelateRes(prev_sub_grays[(row*grid_x_divs)+col], sub_gray, ghann)
 
-					sub_gray = np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)][:])
-# 					print '$'
-# 					print prev_sub_grays[(row*grid_x_divs)+col].dtype
-# 					print np.float32(sub_gray[:]).dtype
-					gret, gres = cv2.phaseCorrelateRes(prev_sub_grays[(row*grid_x_divs)+col], sub_gray, ghann)
-
-					prev_sub_grays[(row*grid_x_divs)+col] = sub_gray
-					#if verbose:
-					#print (row, col, (gret, gres))
-					if abs(gres) > 0.01:
-						fp[self.frame_idx][(row*grid_x_divs)+col] = [(gret[0]/grid_width),(gret[1]/grid_height)]
- 					else:
-						fp[self.frame_idx][(row*grid_x_divs)+col] = [0,0]
-					#print fp[self.frame_idx][(row*grid_x_divs)+col]
-					# display stage (grid)
-# 						if ap['display']:
-# 							for  d in range (dims):
-# 								# for all the bins, get the value, and scale to the size of the grid
-# 								if ap['mode'] == 'playback' and ap['display'] == True:
-# 									lval, aval, bval = int(lbins[d] * ratio * 255.0), int(abins[d] * ratio * 255.0), int(bbins[d] * ratio * 255.0)
-# 								else:
-# 									lval, aval, bval = cv.Round(cv.GetReal1D (lbins, d) * ratio*255.), cv.Round (cv.GetReal1D (abins, d) * ratio*255.), cv.Round (cv.GetReal1D (bbins, d) * ratio*255.)
-# 								#draw the rectangle in the wanted color
-# 								self.make_rectangles(vizimg, six_points, 6, i, j, d, [lval, aval, bval], ratio, [lcolors, acolors, bcolors], voffset=0)
+						prev_sub_grays[(row*grid_x_divs)+col] = sub_gray
+						# if verbose:
+						#	print (row, col, (gret, gres))
+						if abs(gres) > 0.01:
+							fp[self.frame_idx][(row*grid_x_divs)+col] = [(gret[0]/grid_width),(gret[1]/grid_height)]
+ 						else:
+							fp[self.frame_idx][(row*grid_x_divs)+col] = [0,0]
+					if ap['display'] == True:
+						xval = int((gret*100)+centers_x[col])
+						yval = int((gres*100)+centers_y[row])
+						# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
+						cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
 				
 				#### SHOW
 				if ap['display']:
 					cv.ShowImage('Image', cv.fromarray(frame))
-					cv.ShowImage('Viz', vizimg)
 				fp.flush()
 			
 			self.frame_idx += 1
@@ -631,43 +627,6 @@ class PhaseCorrelation:
 		del fp
 		if ap['display']:
 			cv.DestroyWindow('Image')
-			cv.DestroyWindow('Viz')	
 	
+	# regular playback function
 	# frame-by-frame display function
-
-	
-	
-	# GUI helper functions
-	
-# 	def build_bars(self, gw, gh, bw, tbw):
-# 		"""
-# 		Display helper function. Build list of points for the 16 trios of bars.
-# 		"""
-# 		six_points = np.ndarray((16,16,6,2), dtype=int)
-# 		for i in range(GRID_X_DIVISIONS):
-# 			for j in range(GRID_Y_DIVISIONS):
-# 				for h in range(16):
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][0] = [(j*gw)+(h * bw), (i+1)*gh]
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][1] = [(j*gw)+((h+1) * bw)-(2*tbw), ((i+1)*gh)]
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][2] = [(j*gw)+(h * bw)+(tbw), (i+1)*gh]
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][3] = [(j*gw)+((h+1) * bw)-(tbw), ((i+1)*gh)]
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][4] = [(j*gw)+(h * bw)+(2*tbw), (i+1)*gh]
-# 					six_points[h][(i*GRID_X_DIVISIONS)+j][5] = [(j*gw)+((h+1) * bw), ((i+1)*gh)]
-# 		return six_points
-# 	
-# 	def make_rectangles(self, h_img, pts, num_pts, i, j, h, vals, ratio, colors, hoffset=0, voffset=0):
-# 		"""
-# 		Display helper function. Make a bar for the histogram.
-# 		"""
-# 		#print pts
-# 		for n in range(int(num_pts/2)):
-# 		# 			print (pts[h][(i*GRID_X_DIVISIONS)+j][2*n][0] + hoffset, pts[h][(i*GRID_X_DIVISIONS)+j][2*n][1] + int(voffset*1.25)), ' || ', (pts[h][(i*GRID_X_DIVISIONS)+j][2*n+1][0] + hoffset, pts[h][(i*GRID_X_DIVISIONS)+j][2*n+1][1] + int(voffset*1.0) - int(vals[n]*ratio))
-# 			cv.Rectangle (h_img,
-# 							(pts[h][(i*GRID_X_DIVISIONS)+j][2*n][0] + hoffset, pts[h][(i*GRID_X_DIVISIONS)+j][2*n][1] + int(voffset)),
-# 							(pts[h][(i*GRID_X_DIVISIONS)+j][2*n+1][0] + hoffset, pts[h][(i*GRID_X_DIVISIONS)+j][2*n+1][1] + int(voffset) - int(vals[n]*ratio)),
-# 							colors[n][h], -1, 8, 0)
-# 			if (i == 0) and (j == 0):
-# 				print '--00----------------------'
-# 				print pts[h][(i*GRID_X_DIVISIONS)+j][2*n+1][1]
-# 				print int(voffset)
-# 				print int(vals[n]*ratio)
