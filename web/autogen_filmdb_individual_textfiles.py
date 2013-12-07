@@ -1,4 +1,5 @@
 import action.action_filmdb as fdb
+import action.color_features_lab as color_features_lab
 import HTML, glob, os, md5, shutil
 
 ACTIONDIR = os.path.expanduser('~/Movies/action')
@@ -12,12 +13,12 @@ titles = set(actionDB)
 
 print len(titles)
 
-html_filestring = '/Users/kfl/Sites/action_db.html'
+html_filestring = os.path.expanduser('/Sites/action_db.html')
 htmlfile = open(html_filestring, 'w')
 
-htitles, clinks, alinks, dirs, years, colors, hashes = [], [], [], [], [], [], []	
+htitles, clinks, alinks, dirs, years, colors, lengths, hashes = [], [], [], [], [], [], [], []
 
-for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
+for file in glob.glob(os.path.expanduser('~/Movies/action/*/*.color_lab'):
 	ttl = os.path.splitext(os.path.basename( file ))[0]
 	print 'title: ', ttl
 	# check that the title is in our master list
@@ -61,8 +62,10 @@ for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
 			cflag = "Color"
 		else:
 			cflag = "B/W"
-		colors += [cflag]
 		f.write(str(cflag) + "\n")
+		cfl = color_features_lab.ColorFeaturesLAB(ttl)
+		length = cfl.determine_movie_length()
+		f.write(str(length) + "\n")
 		f.close()
 		
 		# Record tabular data for the HTML page...
@@ -77,12 +80,13 @@ for file in glob.glob("/Users/kfl/Movies/action/*/*.color_lab"):
 		dirs += [actionDirectors[ str(actionDB[ttl][1]) ][0] ]
 		years += [str(actionDB[ttl][3])]
 		colors += [cflag]
+		lengths += [length]
 		hashes += [hashstr]
 		
 
 print len(clinks)
 print len(alinks)
-full_table = [["Title", "Color Seg.", "Audio Seg.", "Director", "Year", "Color", "Hash"]]
+full_table = [["Title", "Color Seg.", "Audio Seg.", "Director", "Year", "Color", "Length (s)", "Hash"]]
 
 for i, t in enumerate(clinks):
 	full_table += [[
@@ -92,6 +96,7 @@ for i, t in enumerate(clinks):
 		dirs[i],
 		years[i],
 		colors[i],
+		lengths[i],
 		hashes[i]]]
 
 htmlcode = HTML.table(full_table)
