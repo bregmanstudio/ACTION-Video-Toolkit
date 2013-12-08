@@ -24,17 +24,18 @@ These are the usual includes for working with ACTION data. We will again use opt
 .. code-block:: python
 
 	from action import *
-	import bregman.segment as bseg
+	import action.segment as aseg
+	from bregman.suite import *
 
 	title = 'North_by_Northwest'
-	
+
 	hist = color_features_lab.ColorFeaturesLAB(title)
-	oflow = opticalflow24.OpticalFlow24(title)
+	oflow = opticalflow.OpticalFlow(title)
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
-	ten_minute_segment = bseg.Segment(0, duration=length)
+	ten_minute_segment = aseg.Segment(0, duration=length)
 	histogram_ten_minute_segment = hist.center_quad_color_features_for_segment(ten_minute_segment)
-	oflow_ten_minute_segment = oflow.opticalflow_for_segment_with_stride(ten_minute_segment, 6)
+	oflow_ten_minute_segment = oflow.opticalflow_for_segment_with_stride(ten_minute_segment, 6) # 6 is the default
 
 
 View the similarity matrices
@@ -48,8 +49,8 @@ We now plot similarity matrices using cosine distance. They both show about the 
 	h_decomposed = ad.calculate_pca_and_fit(histogram_ten_minute_segment, locut=0.0001)
 	o_decomposed = ad.calculate_pca_and_fit(oflow_ten_minute_segment, locut=100)
 
-	imagesc(distance.cosine(h_decomposed, h_decomposed), 'Cosine: Histograms-SVD - first 10 minutes')
-	imagesc(distance.cosine(o_decomposed, h_decomposed), 'Cosine: Optical flow-SVD - first 10 minutes')
+	imagesc(distance.cosine(h_decomposed, h_decomposed), 'Cosine: Color Features-SVD - first 10 minutes')
+	imagesc(distance.cosine(o_decomposed, o_decomposed), 'Cosine: Optical flow-SVD - first 10 minutes')
 
 .. image:: /images/action_ex3_cosine_hist_svd.png
 .. image:: /images/action_ex3_cosine_oflow_svd.png
@@ -64,12 +65,14 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 	from action import *
 	from bregman.suite import *
 	import bregman.audiodb as adb
+	import os
 
 	title = 'North_by_Northwest'
 
-	mfccs_ten_minute_segment = adb.adb.read('/Users/kfl/Movies/action/' + title + '.mfcc_13_M2_a0_C2_g0_i16000')[:2400,:]
-	D = np.ma.masked_invalid(mfccs_ten_minute_segment)
-	D = D.filled(D.mean())
+	mfccs_ten_minute_segment = adb.adb.read(os.path.expanduser('~/Movies/action/') + title + '/' + title + '.mfcc_13_M2_a0_C2_g0_i16000')[:2400,:]
+	mfccs_masked = np.ma.masked_invalid(mfccs_ten_minute_segment)
+	mfccs_masked = mfccs_masked.filled(mfccs_masked.mean())
+	# could also use ad.meanmask_data()!
 
 	decomposed = ad.calculate_pca_and_fit(D, locut=0.0001)
 
@@ -90,7 +93,7 @@ Using the same features as above, we combine them (before reducing dimensionalit
 
 .. code-block:: python
 
-	full_feature = np.c_[histogram_ten_minute_segment, oflow_ten_minute_segment, audio]
+	full_feature = np.c_[histogram_ten_minute_segment, oflow_ten_minute_segment, mfccs_masked]
 	full_feature_decomposed = ad.calculate_pca_and_fit(full_feature, locut=0)
 
 	imagesc(distance.cosine(full_feature, full_feature))
