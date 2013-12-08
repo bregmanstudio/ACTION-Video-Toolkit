@@ -24,7 +24,7 @@ These are the usual includes for working with ACTION data.
 .. code-block:: python
 
 	from action import *
-	import bregman.segment as bseg
+	import action.segment as aseg
 	import numpy as np
 
 Get the data
@@ -39,8 +39,8 @@ Create a histogram object, instantiating it with the standardized title (no exte
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
 
-	ten_minute_segment = bseg.Segment(0, duration=length)
-	histogram_ten_minute_segment = cfl.center_quad_histogram_for_segment(ten_minute_segment)
+	ten_minute_segment = aseg.Segment(0, duration=length)
+	histogram_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
 
 
 Perform PCA and average over a sliding window
@@ -77,7 +77,7 @@ Finally, we plot the clusters two ways. First as points in 3-dimensional space (
 .. code-block:: python
 
 	av = actiondata.ActionView()
-	av.plot_clusters(sliding averaged, km_assigns)
+	av.plot_clusters(sliding_averaged, km_assigns)
 	av.plot_hcluster_segments(km_assigns, km_max_assign)
 
 .. image:: /images/action_ex1_kmeans.png
@@ -90,12 +90,12 @@ Instead of k-means clustering, here is an example of hierarchical clustering of 
 
 .. code-block:: python
 
-	nc = 1200
-	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
+nc = 200
+hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
-	av = actiondata.ActionView(None)
-	av.plot_clusters(decomposed, hc_assigns)
-	av.plot_hcluster_segments(hc_assigns, nc)
+av = actiondata.ActionView()
+av.plot_clusters(decomposed, hc_assigns)
+av.plot_hcluster_segments(hc_assigns, nc)
 
 .. image:: /images/action_ex1_lowest_dims.png
 .. image:: /images/action_ex1_segs.png
