@@ -15,10 +15,11 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 .. code-block:: python
 
 	from action import *
-	import bregman.segment as bseg
+	import action.segment as aseg
 	import numpy as np
-	
-	ACTION_DIR = '/Users/kfl/Movies/action/'
+	import os
+
+	ACTION_DIR = os.path.expanduser('~/Movies/action/')
 
 	def actionSegmenterHC(title, abFlag=False):
 		ds_segs = []
@@ -27,7 +28,7 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 		length = cfl.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 
-		full_segment = bseg.Segment(0, duration=length)
+		full_segment = aseg.Segment(0, duration=length)
 		Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 		if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
 
@@ -43,12 +44,12 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 		#      del segs[0]
 
 		for seg in segs:
-		  ds_segs += [bseg.Segment(
+		  ds_segs += [aseg.Segment(
 			   seg[0]*0.25,
 			   duration=(seg[1]*0.25),
 			   features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
 		return ds_segs, hc_assigns, hc_assigns.max()
-	
+
 	dssegs, hca, hcm = actionSegmenterHC('A_Serious_Man')
 
 Filtering the segments
@@ -61,14 +62,13 @@ Next, do some thresholding based on the differences between data frames. The ``T
 	THRESH = 2.5
 	MIN_FRAMES = 10
 
-	# 1. segment full film
+First, view the similarity matrix between the segment data (one set of data per frame from segmenter):
+
 	data = np.array([seg.features for seg in dssegs])
 	imagesc(distance.euc2(data, data))
 
-Here is the similarity matrix between the segment data (one set of data per frame from segmenter).
-
 ..
-	.. image:: /images/action_ex5
+	.. image:: /images/action_ex5_sim_matrix.png
 
 Get the Euclidean distances among/of the differences between frames.
 
@@ -77,18 +77,17 @@ Get the Euclidean distances among/of the differences between frames.
 	num_frames = data.shape[0]
 	sumdiffs = np.sqrt(np.sum(np.power(np.diff(data, axis=0), 2.0), axis=1))
 
-	cleaner = []
-	curr = -1*MIN_FRAMES
-
 Only look at segments whose diff is above a threshold
 
 .. code-block:: python
+
+	cleaner = []
+	curr = -1*MIN_FRAMES
 
 	for val in np.argwhere(sumdiffs>THRESH):
 		if (val[0] - curr) > MIN_FRAMES:
 			cleaner += [val[0]]
 		curr = val[0]
-	#if cleaner[0] != 0: cleaner.insert(0,0)
 
 	divs = []
 	for i in range(num_frames):
@@ -98,10 +97,13 @@ Only look at segments whose diff is above a threshold
 		except ValueError:
 			divs += [0]
 
-``divs`` holds a pattern of 1's and 0's that show your segmentation frames. You can plot this.
+``divs`` holds a pattern of 1's and 0's that show your segmentation frames. You can plot this. These are the segments where the first-order difference (*between segment frames*) is above a threshold.
 
-..
-	.. image:: /images/action/ex5_
+.. code-block:: python
+
+	plt.plot(divs)
+
+.. image:: /images/action/ex5_segs_above_threshold.png
 
 Viewing the segmentation data
 =============================
@@ -124,7 +126,7 @@ Now rebuild your segments--cleaner holds all your segment onsets (as *segment* i
 		new_dur = dssegs[b].time_span.start_time - dssegs[a].time_span.start_time
 		new_med_feature = np.median(data[a:b], axis=0)
 		print (new_start, new_dur,  new_med_feature.shape)
-		final_segs += [bseg.Segment(label=i, start_time=new_start, duration=new_dur, features = new_med_feature)]
+		final_segs += [aseg.Segment(label=i, start_time=new_start, duration=new_dur, features = new_med_feature)]
 		i += 1
 
 	resegmented_data = np.array([seg.features for seg in final_segs])
