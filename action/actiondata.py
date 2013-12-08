@@ -65,13 +65,13 @@ class ActionData:
 		if absflag:		return np.abs(np.diff(raw_data, n=order, axis=0))
 		else:			return np.diff(raw_data, n=order, axis=0)
 	
-	def calculate_self_similarity_matrix(self, raw_data, norm_flag=False):
+	def calculate_self_similarity_matrix(self, raw_data, dist_flag='euc2'):
 		"""
 		Be careful!!! O(N^2)!
 		"""
-		if norm_flag is True:
+		if dist_flag is 'euc_normed':
 			return distance.euc_normed(raw_data, raw_data)
-		else:
+		elif dist_flag is 'euc2':
 			return distance.euc2(raw_data, raw_data)
 	
 	def calculate_pca_and_fit(self, raw_data, locut=0.1, print_var=False):
