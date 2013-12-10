@@ -103,7 +103,7 @@ Only look at segments whose diff is above a threshold
 
 	plt.plot(divs)
 
-.. image:: /images/action/ex5_segs_above_threshold.png
+.. image:: images/action_ex5_segs_above_threshold.png
 
 Viewing the segmentation data
 =============================

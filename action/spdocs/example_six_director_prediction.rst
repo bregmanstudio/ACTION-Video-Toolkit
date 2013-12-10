@@ -177,6 +177,7 @@ Viewing our results
 
 We have included the ``batch_summarize_results.py`` file to allow visualization of our classification of directors using low-level color data. This data shows that a simple classifier can glean enough information from the low-level features to correctly predict the director, given a sampling of color feature frames. It is successful at a rate significantly above chance.
 
-[IMAGE]
+.. image:: /images/action_ex6_8way_rand16_pools_means.png
+.. image:: /images/action_ex6_8way_rand16_pools_errors.png
 
 

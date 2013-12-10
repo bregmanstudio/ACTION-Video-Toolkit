@@ -55,8 +55,8 @@ def plot_embedding(X, y, titles, ttls_per_dir=9, plot_title='???'):
                 continue
             shown_images = np.r_[shown_images, [X[i]]]
     P.xticks([]), P.yticks([])
-    if title is not None:
-        P.title(title)
+    if plot_title is not None:
+        P.title(plot_title)
 
 # params for the overall analysis task
 TITLES_PER_DIR = 9
@@ -101,4 +101,4 @@ clf = manifold.MDS(n_components=2, n_init=1, max_iter=100)
 
 X_mds = clf.fit_transform(D)
 
-plot_embedding(X_mds, yconcat, titles=ttls)
+plot_embedding(X_mds, yconcat, titles=ttls, plot_title='Multi-dimensional Scaling (3 directors + 9 films each)')
