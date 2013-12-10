@@ -78,6 +78,8 @@ Examples
 	Example Four - viewing distributions of color data <example_four_distributions>
 	Example Five - in-depth example of segmentation <example_five_segmentation>
 	Example Six - in-depth example of a simple director prediction ML task <example_six_director_prediction>
+	Example Seven - example of a simple director prediction ML task with joint features *TODO*<example_seven_prediction_joint>
+	Example Eight - example of viewing relationships amonng films with multidimensional scaling (MDS) - <example_eight_mds>
 
 ACTION Python Modules
 =====================
@@ -88,7 +90,7 @@ ACTION Python Modules
 	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
 	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
 	actiondata - data analysis and view routines <actiondata>
-
+	segment - segmentation and container data structure <segment>
 
 Indices and tables
 ==================
