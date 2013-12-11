@@ -250,15 +250,15 @@ class ColorFeaturesLAB:
 		}
 		return analysis_params
 	
-	def color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def all_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
 		Returns a tuple of memory-mapped arrays corresponding to the full-frame color features followed by the 4 by 4 grid of color histograms: ([NUMBER OF FRAMES, NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (= 48)], [NUMBER OF FRAMES, NUMBER OF GRID-SQUARES(16) * NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (=768)])
 		::
-		
+			
 			seg = Segment(360, 720) # which is the same as seg = Segment(360, duration=360)
-			raw_hist_data = hist.color_features_for_segment('Psycho.hist', seg)
+			raw_hist_data = hist.all_color_features_for_segment(seg)
 			raw_hist_data[0].shape
 			>>> (1440, 48)
 			raw_hist_data[1].shape
@@ -266,7 +266,6 @@ class ColorFeaturesLAB:
 
 		"""
 		res = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-		#return (res[0].reshape((segment.time_span.duration*4), -1), res[1].reshape((segment.time_span.duration*4), -1))
 		return (res[0].reshape(-1, 48), res[1].reshape(-1, 768))
 	
 	def full_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
@@ -274,10 +273,11 @@ class ColorFeaturesLAB:
 		Equivalent to:
 		::
 		
-			color_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)		
+			all_color_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)		
 
 		"""
-		return self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48) #((segment.time_span.duration*4), -1)
+		self.X = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48) #((segment.time_span.duration*4), -1)
+		return self.X
 	
 	def gridded_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
@@ -292,7 +292,7 @@ class ColorFeaturesLAB:
 		Equivalent to:
 		::
 		
-			color_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
+			all_color_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1].reshape(-1, 768)
@@ -311,7 +311,7 @@ class ColorFeaturesLAB:
 		Equivalent to:
 		::
 		
-			color_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
+			all_color_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,[5,6,9,10],...].reshape(-1, 192)
@@ -330,11 +330,9 @@ class ColorFeaturesLAB:
 		Equivalent to:
 		::
 		
-			color_features_for_segment(...)[1][:,4:12,...].reshape((segment.time_span.duration*4), -1)
+			all_color_features_for_segment(...)[1][:,4:12,...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		# print segment
-		# print segment.time_span
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 384)
 		return self.X
 	
@@ -351,7 +349,7 @@ class ColorFeaturesLAB:
 		Equivalent to:
 		::
 		
-			color_features_for_segment(...)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape((segment.time_span.duration*4), -1)
+				all_color_features_for_segment(...)[1][:,[1,2,4,5,6,7,8,9,10,11,13,14],...].reshape(-1, 576)
 		
 		"""
 		
