@@ -470,9 +470,9 @@ class PhaseCorrelation:
 			print "ERROR: Must supply both a movie and a data path!"
 			return
 		ap = self._check_analysis_params(kwargs)
+		verbose = ap['verbose']
 		
  		self.capture = cv2.VideoCapture(self.movie_path)
-#		self. capture = cv.CaptureFromFile(self.movie_path)
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
@@ -487,16 +487,10 @@ class PhaseCorrelation:
 		centers_x = range((frame_width/16),frame_width,(frame_width/8))
 		centers_y = range((frame_height/16),frame_height,(frame_height/8))
 		
-		verbose = ap['verbose']
 		if verbose: print fps, ' | ', frame_size, ' | ', grid_size
-				
- 		prev_sub_grays = []
-		# bin_w = int((frame_width * ap['viz_width_ratio']) / grid_x_divs)
-# 		third_bin_w = int(bin_w/3)
-# 		
-		#if ap['verbose']: print third_bin_w
-				
-		#vizimg = cv.CreateImage ((frame_width, int(frame_height*ap['viz_height_ratio']*1.5)), cv.IPL_DEPTH_8U, 3)
+		
+		# container for prev. frame's grayscale subframes
+ 		prev_sub_grays = []				
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
@@ -535,21 +529,17 @@ class PhaseCorrelation:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,(64+1),2))
 		
 		# set some drawing constants
-		vert_offset = int(frame_height*ap['viz_vert_offset_ratio'])
-		ratio = grid_height/255.
+		vert_offset = int(frame_height*ap['viz_vert_offset_ratio'])	# NA
+		ratio = grid_height/255.									# NA
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
 		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-# 			cv.NamedWindow('Viz', frame_width)
-# 			cv.ResizeWindow('Viz', int(frame_width*ap['viz_width_ratio']*1.0), int(frame_height*ap['viz_height_ratio']*1.25))
-# 			cv.MoveWindow('Viz', int(frame_width*ap['viz_horiz_offset_ratio']), vert_offset)
 
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		
 		ret, frame = self.capture.read()
-# 		frame = cv.QueryFrame(self.capture)
 		if frame is None: 
 			print 'Frame error! Exiting...'
 			return # no image captured... end the processing
@@ -585,9 +575,7 @@ class PhaseCorrelation:
 				else:
 					fp[self.frame_idx][64] = [0,0]
 			
-# display stage (full)
-# 				if ap['display']:
-# 					cv.SetZero(vizimg) # clear/zero
+			# display stage (full)
 			for row in range(grid_y_divs):
 				for col in range(grid_x_divs):
 					if ap['mode'] == 'playback':
@@ -626,7 +614,7 @@ class PhaseCorrelation:
 		
 		del fp
 		if ap['display']:
-			cv.DestroyWindow('Image')
+			cv2.destroyAllWindows()
 	
 	# regular playback function
 	# frame-by-frame display function
