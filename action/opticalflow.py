@@ -58,7 +58,12 @@ The full list of settable parameters, with default values and explanations:
 | threshold       | 0.0             | (empirical) threshold for histogram values; set to |
 |                 |                 | a positive number to remove extremely low values   |
 +-----------------+-----------------+----------------------------------------------------+
-| verbose         | True            | useful for debugging                               |
+| grid_divs_x     | 8               | number of divisions along x axis                   |
++-----------------+-----------------+----------------------------------------------------+
+| grid_divs_y     | 8               | number of divisions along y axis                   |
++-----------------+-----------------+----------------------------------------------------+
+| theta_divs      | 8               | number of divisions of angle data                  |
++-----------------+-----------------+----------------------------------------------------+| verbose         | True            | useful for debugging                               |
 +-----------------+-----------------+----------------------------------------------------+
 | display         | True            | launch display screen during analysis              |
 +-----------------+-----------------+----------------------------------------------------+
@@ -177,9 +182,9 @@ import bregman.segment as bseg
 QPI = math.pi / 4.0
 COLS = 64
 
-GRID_X_DIVISIONS = 8
-GRID_Y_DIVISIONS = 8
-THETA_DIVISIONS = 8
+# GRID_X_DIVISIONS = 8
+# GRID_Y_DIVISIONS = 8
+# THETA_DIVISIONS = 8
 
 class OpticalFlow:
 	"""
@@ -245,6 +250,7 @@ class OpticalFlow:
 			'mode' : 'analyze',					# 'playback' or 'analyze'
 			'grid_divs_x' : 8,
 			'grid_divs_y' : 8,
+			'theta_divs' : 8,
 			'fps' : 24,							# fps: frames per second
 			'offset' : 0,						# time offset (in seconds) into film
 			'duration' : -1,					# duration (in seconds) of segment, -1 maps to full duration of media
@@ -406,14 +412,19 @@ class OpticalFlow:
 		"""
 		self._process_movie(mode='analyze', display=True, offset=offset, duration=duration)
 	
-	def _playback_movie(self, **kwargs):
+	def _process_movie(self, **kwargs):
 		"""
-		Play movie back; display on screen.
-		Note: this function merely plays frames with no analysis data overlaid. It is meant for checking segmentation algorithm outputs and playing short clips of video from a film.
-		TO DO: add optical-flow display.
+		Main processing function. This is where the magic happens when we're making optical-flow analyses.
+		Will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
+		
 		"""
-		if self.movie_path is None:
-			print 'Movie path or data path missing!'
+				
+# 		if not HAVE_CV:
+# 			print "WARNING: You must install OpenCV in order to analyze or view!"
+# 			return
+
+		if (self.movie_path is None) or (self.data_path is None):
+			print "ERROR: Must supply both a movie and a data path!"
 			return
 				
 		ap = self._check_opticalflow_params(kwargs)
@@ -421,8 +432,20 @@ class OpticalFlow:
 				
 		self.capture = cv2.VideoCapture(self.movie_path)
 
-		fps = ap['fps']
-						
+		fps = ap['fps']						
+		grid_x_divs = ap['grid_divs_x']
+		grid_y_divs = ap['grid_divs_y']
+		theta_divs = ap['theta_divs']
+		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		frame_size = (frame_width, frame_height)
+		grid_width = int(frame_width/grid_x_divs)
+		grid_height = int(frame_height/grid_y_divs)
+		grid_size = (grid_width, grid_height)
+
+		centers_x = range((frame_width/16),frame_width,(frame_width/8))
+		centers_y = range((frame_height/16),frame_height,(frame_height/8))
+
 		# last but not least, get total_frame_count and set up the memmapped file
 		total_frame_count = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))	
 		dur_total_secs = int(total_frame_count / fps)
@@ -454,74 +477,15 @@ class OpticalFlow:
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
-		  		
-  		while self.frame_idx <= end_frame:
-			ret, frame = self.capture.read()
-			if ap['display'] is True: vis = frame.copy()
-			self.frame_idx += 1
-			if ap['display'] is True: cv2.imshow('lk_track', vis)
-			
-			if ap['display'] is True: 
-				ch = 0xFF & cv2.waitKey(1)
-				if ch == 27:
-					break
 		
-		if ap['display'] is True: cv2.destroyAllWindows()	
-
-
-	def _process_movie(self, **kwargs):
-		"""
-		Main processing function. This is where the magic happens when we're making optical-flow analyses.
-		Will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
-		
-		"""
-				
-		ap = self._check_opticalflow_params(kwargs)
-		verbose = ap['verbose']
-				
-		self.capture = cv2.VideoCapture(self.movie_path)
-		
-		fps = ap['fps']
-		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
-		frame_size = (frame_width, frame_height)
-		grid_width = int(frame_width/GRID_X_DIVISIONS)
-		grid_height = int(frame_height/GRID_Y_DIVISIONS)
-		grid_size = (grid_width, grid_height)
-
-						
-		# last but not least, get total_frame_count and set up the memmapped file
-		total_frame_count = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))	
-		dur_total_secs = int(total_frame_count / fps)
-		stride_frames = ap['stride']
-		if ap['duration'] < 0:
-			dur_secs = dur_total_secs
+		# set up memmap		
+		if ap['mode'] == 'playback' and ap['display'] == True:
+			print 'PLAYBACK!'
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),512))
 		else:
-			dur_secs = ap['duration']
+			print 'ANALYZE!'
+			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,512))
 		
-		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-		dur_secs = min(max(dur_secs, 0), (dur_total_secs - offset_secs))
-		offset_strides = int(offset_secs * (fps / stride_frames))
-		dur_strides = int(dur_secs * (fps / stride_frames))
-		offset_frames = offset_strides * stride_frames
-		dur_frames = dur_strides * stride_frames
-				
-		if verbose:
-			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-			print 'FRAMES: ', total_frame_count
-			print 'DUR TOTAL: ', dur_total_secs
-			print "OFFSET (SECONDS): ", offset_secs
-			print "OFFSET (STRIDES): ", offset_strides
-			print "OFFSET (FRAMES): ", offset_frames
-			print "DUR (SECONDS): ", dur_secs
-			print 'DUR (STRIDES): ', dur_strides
-			print 'DUR (FRAMES): ', dur_frames
-			print "FPS: ", fps
-			print "stride_frames: ", stride_frames
-		
-		# set up memmap
-		print 'ANALYZE!'
-		fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,512))
 		print 'dur. strides: ', dur_strides
 		
 		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
@@ -531,15 +495,22 @@ class OpticalFlow:
 		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-		
+			ROOT2 = math.sqrt(2.0)
+			THETAS_X = [-32, int(-16*ROOT2), 0, int(16*ROOT2), 32, int(16*ROOT2), 0, int(-16*ROOT2)]
+			THETAS_Y = [0, int(-16*ROOT2), -32, int(-16*ROOT2), 0, int(16*ROOT2), 32, int(16*ROOT2)]
+			THETAS = [[pair[0],pair[1]] for pair in zip(THETAS_X, THETAS_Y)]
+
 		while self.frame_idx < end_frame:
 		
+			fd = self.frame_idx - offset_strides
 			if verbose: print 'fr. idx: ', self.frame_idx / float(end_frame), ' (/ ', end_frame, ')'
 			
 			ret, frame = self.capture.read()
 			frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			if ap['display'] is True: vis = frame.copy()
+			if ap['display'] is True:
+				vis = frame.copy()
 			
+			# process moving points
 			if len(self.tracks) > 0:
 				img0, img1 = self.prev_gray, frame_gray
 				p0 = np.float32([tr[-1] for tr in self.tracks]).reshape(-1, 1, 2)
@@ -557,15 +528,15 @@ class OpticalFlow:
 					if len(tr) > ap['trackLength']:
 						del tr[0]
 					new_tracks.append(tr)
-					if ap['display'] is True: cv2.circle(vis, (x, y), 2, (0, 255, 0), -1)
+					#if ap['display'] is True: cv2.circle(vis, (x, y), 2, (0, 255, 0), -1)
 				self.tracks = new_tracks
 
 				if self.frame_idx % ap['stride'] == 0:
 					
 					tracks_now = [np.float32(tr) for tr in self.tracks]
 
-					if ap['display'] is True: cv2.polylines(vis, tracks_now, False, (0, 255, 0))
-
+					#if ap['display'] is True: cv2.polylines(vis, tracks_now, False, (0, 255, 0))
+										
 					try:
 						seq = tracks_now[0]
 						track_vectors = np.append( tracks_now[0][ min(len(seq)-1, tdepth) ], seq[0])
@@ -585,31 +556,26 @@ class OpticalFlow:
 						ybin = np.floor(track_vectors[:,1] / grid_height)
 												
 						# filter out vectors less than 1 pixel!
-#						print np.min(mags), " || ", np.max(mags)
 						weighted = np.where(mags > 1, mags, 0.0)
-						theta_bins = np.floor_divide(np.add(thetas, math.pi), QPI)
+						theta_vals = np.floor_divide(np.add(thetas, math.pi), QPI)
 												
-						combo_bins = ((np.add(np.multiply(ybin, GRID_X_DIVISIONS), xbin) * GRID_Y_DIVISIONS) + theta_bins) #  8 = num. of bins for theta!!!
-
+						combo_bins = ((np.add(np.multiply(ybin, grid_x_divs), xbin) * grid_y_divs) + theta_vals) #  8 = num. of bins for theta!!!
+						
+						# in either case, update fd
+						## fd = self.frame_idx - offset_strides
+						# calc. histo or write all zeros
 						if combo_bins.shape[0] > 0:
-
-							bins_histo, bin_edges = np.histogram(combo_bins, (GRID_X_DIVISIONS*GRID_Y_DIVISIONS*THETA_DIVISIONS), weights=weighted)
-							
-							
-							fd = self.frame_idx - offset_strides
+							bins_histo, bin_edges = np.histogram(combo_bins, (grid_x_divs * grid_y_divs * theta_divs), weights=weighted)	
 							fp[fd] = bins_histo
 						else:
-						
-							fd = self.frame_idx - offset_strides
 	 						if verbose: print 'Zero! frame: ', fd
 							fp[fd] = np.zeros(512, dtype='float32') # 16*8=128 --- 64*8=512
-						
 					except IndexError:
 						
-						fd = self.frame_idx - offset_strides
+						## fd = self.frame_idx - offset_strides
  						if verbose: print 'Index Error! frame: ', fd
-						fp[fd] = np.zeros(512, dtype='float32') # 16*8=128 --- 64*8=512
-							
+						fp[fd] = np.zeros(512, dtype='float32') # 16*8=128 --- 64*8=512					
+			# perform edge detection
 			if self.frame_idx % 24 == 0:
 				
 				mask = np.zeros_like(frame_gray)
@@ -621,13 +587,64 @@ class OpticalFlow:
 					for x, y in np.float32(p).reshape(-1, 2):
 						self.tracks.append([(x, y)])
 			
+			if ap['display']:
+				# visualize frame's histograms
+				print "------------------------------------------------------"
+				#print "FP[FD]: ", fp[fd]
+				currframe = fp[self.frame_idx,:512]
+				framemin = currframe[:512].min()
+				framemax = currframe[:512].max()
+				framerange = framemax - framemin
+				print framemin
+				print framemax
+				print framerange
+				print currframe.shape
+				if framerange > 0:
+					grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
+					grays_ma = np.ma.masked_invalid(grays)
+					grays = grays_ma.filled(0.0)
+					print grays
+					print '><><><><'
+					countt = 0
+					for row in range(grid_y_divs):
+						for col in range(grid_x_divs):
+							for wdg in range(theta_divs):
+# 								xval = int((gret*100)+centers_x[col])
+# 								yval = int((gres*100)+centers_y[row])
+								gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
+								print gry
+								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
+								print countt
+								countt += 1
+
+				#### SHOW
+				cv.ShowImage('Image', cv.fromarray(frame))
+			
+			fp.flush()
 			self.frame_idx += 1
 			self.prev_gray = frame_gray
-			if ap['display'] is True: cv2.imshow('lk_track', vis)
 			
 			if ap['display'] is True: 
 				ch = 0xFF & cv2.waitKey(1)
 				if ch == 27:
 					break
 		
-		if ap['display'] is True: cv2.destroyAllWindows()
+		if ap['display'] is True:
+			cv2.destroyAllWindows()
+
+	# frame-by-frame display function - TO DO
+
+
+#   		while self.frame_idx <= end_frame:
+# 			ret, frame = self.capture.read()
+# 			if ap['display'] is True: vis = frame.copy()
+# 			self.frame_idx += 1
+# 			if ap['display'] is True: cv2.imshow('lk_track', vis)
+# 			
+# 			if ap['display'] is True: 
+# 				ch = 0xFF & cv2.waitKey(1)
+# 				if ch == 27:
+# 					break
+# 		
+# 		if ap['display'] is True: cv2.destroyAllWindows()	
+# 
