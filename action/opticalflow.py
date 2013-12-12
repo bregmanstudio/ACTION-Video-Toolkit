@@ -528,14 +528,16 @@ class OpticalFlow:
 					if len(tr) > ap['trackLength']:
 						del tr[0]
 					new_tracks.append(tr)
-					#if ap['display'] is True: cv2.circle(vis, (x, y), 2, (0, 255, 0), -1)
+					if ap['display']:
+						cv2.circle(vis, (x, y), 2, (0, 255, 0), -1)
 				self.tracks = new_tracks
 
 				if self.frame_idx % ap['stride'] == 0:
 					
 					tracks_now = [np.float32(tr) for tr in self.tracks]
 
-					#if ap['display'] is True: cv2.polylines(vis, tracks_now, False, (0, 255, 0))
+# 					if ap['display']:
+# 						cv2.polylines(vis, tracks_now, False, (0, 255, 0))
 										
 					try:
 						seq = tracks_now[0]
@@ -546,26 +548,55 @@ class OpticalFlow:
 
 						# track_vectors is variable-length, up to max-number-of-corners
 						track_vectors = np.reshape(np.array(track_vectors, dtype='float32'), (-1,4))
-						
+												
 						xdelta = track_vectors[:,2] - track_vectors[:,0]
 						ydelta = track_vectors[:,3] - track_vectors[:,1]
 						thetas = np.arctan2(ydelta, xdelta)
  						mags = np.sqrt(np.add(np.power(xdelta, 2.0), np.power(ydelta, 2.0)))
+# 						print '------------'
+# 						print xdelta.shape
+# 						print ydelta.shape
+# 						print thetas.shape
+# 						print mags.shape
 						
 						xbin = np.floor(track_vectors[:,0] / grid_width)
 						ybin = np.floor(track_vectors[:,1] / grid_height)
 												
 						# filter out vectors less than 1 pixel!
-						weighted = np.where(mags > 1, mags, 0.0)
+						weighted = np.where(mags > 5, mags, 0.0)
+# 						print weighted.shape
 						theta_vals = np.floor_divide(np.add(thetas, math.pi), QPI)
 												
-						combo_bins = ((np.add(np.multiply(ybin, grid_x_divs), xbin) * grid_y_divs) + theta_vals) #  8 = num. of bins for theta!!!
+# 						print '================='
+# 						print xbin
+# 						print '================='
+# 						print ybin
+# 						print '================='
+# 						print theta_vals
+# 						print '================='
+# 						print weighted
+# 						
+# 						print '******************************'
+# 						print (ybin * grid_x_divs)
+# 						print '******************************'
+# 						print (np.add((ybin * grid_x_divs), xbin) * theta_divs)
+# 						
+
+						combo_bins = ((np.add((ybin * grid_x_divs), xbin) * theta_divs) + theta_vals) #  8 = num. of bins for theta!!!
+						
+# 						print '******************************'
+# 						print combo_bins
 						
 						# in either case, update fd
 						## fd = self.frame_idx - offset_strides
 						# calc. histo or write all zeros
 						if combo_bins.shape[0] > 0:
-							bins_histo, bin_edges = np.histogram(combo_bins, (grid_x_divs * grid_y_divs * theta_divs), weights=weighted)	
+# 							print '?????????????????'
+# 							print combo_bins.min()
+# 							print combo_bins.max()
+							bins_histo, bin_edges = np.histogram(combo_bins, (grid_x_divs * grid_y_divs * theta_divs), (0., 512.), weights=weighted)	
+# 							print "bins_histo.shape: ", bins_histo.shape
+# 							print bins_histo
 							fp[fd] = bins_histo
 						else:
 	 						if verbose: print 'Zero! frame: ', fd
@@ -581,7 +612,8 @@ class OpticalFlow:
 				mask = np.zeros_like(frame_gray)
 				mask[:] = 255
 				for x, y in [np.float32(tr[-1]) for tr in self.tracks]:
-					if ap['display'] is True: cv2.circle(mask, (x, y), 5, 0, -1)
+					if ap['display']:
+						cv2.circle(mask, (x, y), 5, 0, -1)
 				p = cv2.goodFeaturesToTrack(frame_gray, mask = mask, **self.feature_params)
 				if p is not None:
 					for x, y in np.float32(p).reshape(-1, 2):
@@ -589,32 +621,29 @@ class OpticalFlow:
 			
 			if ap['display']:
 				# visualize frame's histograms
-				print "------------------------------------------------------"
-				#print "FP[FD]: ", fp[fd]
+# 				print "------------------------------------------------------"
+#### 			print "FP[FD]: ", fp[fd]
 				currframe = fp[self.frame_idx,:512]
 				framemin = currframe[:512].min()
 				framemax = currframe[:512].max()
 				framerange = framemax - framemin
-				print framemin
-				print framemax
-				print framerange
-				print currframe.shape
+# 				print framemin
+# 				print framemax
+# 				print framerange
+# 				print currframe.shape
 				if framerange > 0:
 					grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
 					grays_ma = np.ma.masked_invalid(grays)
 					grays = grays_ma.filled(0.0)
-					print grays
-					print '><><><><'
+# 					print grays
 					countt = 0
 					for row in range(grid_y_divs):
 						for col in range(grid_x_divs):
 							for wdg in range(theta_divs):
-# 								xval = int((gret*100)+centers_x[col])
-# 								yval = int((gres*100)+centers_y[row])
 								gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
-								print gry
-								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
-								print countt
+								if gry>0.0:
+									cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
+# 								print countt
 								countt += 1
 
 				#### SHOW
@@ -634,17 +663,3 @@ class OpticalFlow:
 
 	# frame-by-frame display function - TO DO
 
-
-#   		while self.frame_idx <= end_frame:
-# 			ret, frame = self.capture.read()
-# 			if ap['display'] is True: vis = frame.copy()
-# 			self.frame_idx += 1
-# 			if ap['display'] is True: cv2.imshow('lk_track', vis)
-# 			
-# 			if ap['display'] is True: 
-# 				ch = 0xFF & cv2.waitKey(1)
-# 				if ch == 27:
-# 					break
-# 		
-# 		if ap['display'] is True: cv2.destroyAllWindows()	
-# 
