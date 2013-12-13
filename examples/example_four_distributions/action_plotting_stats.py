@@ -1,7 +1,7 @@
 from action import *
 import action.segment as aseg
 import numpy as np
-from bregman.suite import *
+import matplotlib.pyplot as plt
 
 idx = np.arange(48)
 width = 0.5

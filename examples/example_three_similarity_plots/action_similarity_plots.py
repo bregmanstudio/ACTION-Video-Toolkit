@@ -11,16 +11,16 @@ import bregman.audiodb as adb
 
 # 3A: Similarity plots using cosine distance
 def ex_3A(title):
-	hist = histogram.Histogram(title)
+	cfl = color_features_lab.ColorFeaturesLAB(title)
 	oflow = opticalflow.OpticalFlow(title)
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
 	ten_minute_segment = aseg.Segment(0, duration=length)
-	histogram_ten_minute_segment = hist.center_quad_histogram_for_segment(ten_minute_segment)
+	cf_ten_minute_segment = cfl.center_quad_histogram_for_segment(ten_minute_segment)
 	oflow_ten_minute_segment = oflow.opticalflow_for_segment(ten_minute_segment)
 
 	ad = actiondata.ActionData()
-	h_decomposed = ad.calculate_pca_and_fit(histogram_ten_minute_segment, locut=0.0001)
+	h_decomposed = ad.calculate_pca_and_fit(cf_ten_minute_segment, locut=0.0001)
 	o_decomposed = ad.calculate_pca_and_fit(oflow_ten_minute_segment, locut=1)
 	
 	# av = actiondata.ActionView(None)
@@ -47,19 +47,19 @@ def ex_3B(title):
 # 3C: Two similarity plots of combined histogram, optical flow, and audio (mfccs) features
 def ex_3C(title):
 
-	hist = histogram.Histogram(title)
+	cfl = color_features_lab.ColorFeaturesLAB(title)
 	oflow = opticalflow.OpticalFlow(title)
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
 	ten_minute_segment = aseg.Segment(0, duration=length)
-	histogram_ten_minute_segment = hist.center_quad_histogram_for_segment(ten_minute_segment)
+	cf_ten_minute_segment = hist.center_quad_histogram_for_segment(ten_minute_segment)
 	oflow_ten_minute_segment = oflow.opticalflow_for_segment(ten_minute_segment)
 
 	mfccs_ten_minute_segment = adb.adb.read(os.path.expanduser('~/Movies/action/') + title + '/' + title + '.mfcc_13_M2_a0_C2_g0_i16000')[:2400,:]
 	audio = np.ma.masked_invalid(mfccs_ten_minute_segment)
 	audio = audio.filled(audio.mean())
 
-	full_feature = np.c_[histogram_ten_minute_segment, oflow_ten_minute_segment, audio]
+	full_feature = np.c_[cf_ten_minute_segment, oflow_ten_minute_segment, audio]
 	ad = actiondata.ActionData()
 	full_feature_decomposed = ad.calculate_pca_and_fit(full_feature, locut=0)
 

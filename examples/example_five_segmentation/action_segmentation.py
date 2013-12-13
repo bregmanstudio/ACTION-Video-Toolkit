@@ -1,14 +1,12 @@
 import glob, os, argparse
-import bregman.segment as bseg
 from action import *
 import numpy as np
-import bregman.features as features
-import bregman.segment as bseg
-from bregman.suite import *
+import action.segment as aseg
+# from bregman.suite import *
 from mvpa2.suite import *
 import pprint, pickle
 
-ACTION_DIR = '/Users/kfl/Movies/action/'
+ACTION_DIR = os.path.expanduser('~/Movies/action/')
 
 def actionSegmenterHC(title, onset=0.0, fract=0.1):
 	ds_segs = []
@@ -41,7 +39,7 @@ def actionSegmenterHC(title, onset=0.0, fract=0.1):
 	del segs[0]
 	
 	for seg in segs:
-		ds_segs += [bseg.Segment(
+		ds_segs += [aseg.Segment(
 			seg[0]*0.25, 
 	    	seg[1]*0.25, 
 			features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
@@ -55,7 +53,7 @@ def actionSegmenterKM(title, onset=0.0, fract=0.1):
 	length = cfl.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 
-	full_segment = bseg.Segment(int(onset*length), duration=int(fract*length))
+	full_segment = aseg.Segment(int(onset*length), duration=int(fract*length))
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
 
@@ -72,7 +70,7 @@ def actionSegmenterKM(title, onset=0.0, fract=0.1):
 	del segs[0]
 	
 	for seg in segs:
-		ds_segs += [bseg.Segment(
+		ds_segs += [aseg.Segment(
 			seg[0]*0.25, 
 			seg[1]*0.25, 
 			features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
@@ -87,7 +85,7 @@ def actionSegmenterKM2(title, onset=0.0, fract=0.1):
 
 	length = cfl.determine_movie_length() # in seconds
 	length_in_frames = length * 4
-	full_segment = bseg.Segment(int(onset*length), duration=int(fract*length))
+	full_segment = aseg.Segment(int(onset*length), duration=int(fract*length))
 	print full_segment.time_span.duration
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
@@ -109,7 +107,7 @@ def actionSegmenterKM2(title, onset=0.0, fract=0.1):
 	del segs[0]
 	
 	for seg in segs:
-		ds_segs += [bseg.Segment(
+		ds_segs += [aseg.Segment(
 			seg[0]*0.25, 
 			seg[1]*0.25, 
 			features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]

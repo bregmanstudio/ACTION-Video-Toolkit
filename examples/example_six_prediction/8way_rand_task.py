@@ -24,4 +24,4 @@ for cflag in params['cflags']:
 					cflag=2, # color flag 2 = convert any color films to black/white (Lab -> L)
 					samples_per=samples_per,
 					classifier_num=0, # 0 = Linear Discriminant Analysis; SVM is also available 
-					pklfile='/Users/kfl/actionresults/8way_rand/' + time.strftime('%Y%m%d%H%M%S') + '.pkl')
+					pklfile=os.path.expanduser('~/actionresults/8way_rand/') + time.strftime('%Y%m%d%H%M%S') + '.pkl')

@@ -2,8 +2,7 @@ import action.color_features_lab as cflab
 import action.actiondata as actiondata
 import action.segment as aseg
 import numpy as np
-from bregman.suite import *
-# import bregman.audiodb as adb
+# from bregman.suite import *
 from mvpa2.suite import *
 import pylab as P
 from matplotlib import offsetbox
@@ -91,7 +90,7 @@ X_stdzd = np.divide(Xconcat, np.max(Xconcat))
 X_stdzd_ma = np.ma.masked_invalid(X_stdzd)
 X_stdzd_ma = X_stdzd_ma.filled(np.mean(X_stdzd))
 
-X_reduced = X_stdzd_ma #ad.calculate_pca_and_fit(X_stdzd_ma, locut=0.0001)
+X_reduced = X_stdzd_ma # or ad.calculate_pca_and_fit(X_stdzd_ma, locut=0.0001)
 
 D = ad.calculate_self_similarity_matrix(X_reduced, X_reduced)
 D = np.ma.masked_invalid(D)

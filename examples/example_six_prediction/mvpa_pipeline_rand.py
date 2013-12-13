@@ -6,8 +6,7 @@ from action_imports import *
 import pickle
 
 ## .... SET MACHINE PATH
-ACTION_MOVIE_DIR = "/Users/kfl/Movies/action/"
-ACTION_RES_DIR = "/Users/kfl/actionresults/"
+ACTION_MOVIE_DIR = os.path.expanduser("~/Movies/action/")
 
 ## .... IMPORT DATABASE OF AUTEURS
 import action.action_filmdb as fdb
@@ -53,33 +52,9 @@ def assemble_sample_data_and_crossvalidate(
 	
 	chunks = [(i/samples_per) for i in range(total_num_samples)]
 	
-# 	print '-----------------------'
-# 	res = []
-# 	last = -1
-# 	for i, num in enumerate(targets):
-# 		if num != last:
-# 			res += [[num, i]]
-# 			last = num
-# 	print res
-# 	print sorted(list(set(targets)))
-# 	print '-----------------------'
-# 	res = []
-# 	last = -1
-# 	for i, num in enumerate(chunks):
-# 		if num != last:
-# 			res += [[num, i]]
-# 			last = num
-# 	print res
-# 	print sorted(list(set(chunks)))
-# 	print '-----------------------'
-# 	print res_md['titles']
-# 	print '-----------------------'
-# 	print res_md['directors']
-# 	print '-----------------------'
 
 	# 	... SET UP PICKLING
 	pklfile = open(pklfile, 'wb')
-# 	res_md = dict()
 	
 	res_md['dnum']					=	str(1)
 	res_md['pairing']				=	str(titles)
@@ -107,12 +82,10 @@ def assemble_sample_data_and_crossvalidate(
 	# hack out any rows with 0.0 mean (across the data from all the films)
 	X = np.reshape(X[1:,np.argwhere(np.mean(X, axis=0)>0)],(X.shape[0]-1,-1))
 	
-	#	...	PYMVPA
-	#		..- dataset_wizard
+	#	...	PYMVPA - dataset_wizard
 	ds = dataset_wizard(X, targets=targets, chunks=chunks)
 	
-	#		..-	classifier(s)
-	#		* 	take your pick:
+	#		..-	classifier(s), take your pick:
 	if classifier_num == 0:
 		clf = LDA()
 	elif classifier_num == 1:
@@ -131,12 +104,10 @@ def assemble_sample_data_and_crossvalidate(
 		print "You must specify a classifier (0-3)."
 		return None
 
-	# cvte = CrossValidation(clf, NFoldPartitioner(), enable_ca=['stats'])
 	cvte = CrossValidation(clf, NFoldPartitioner(), errorfx=lambda p, t: np.mean(p == t), enable_ca=['stats'])
 	cv_results = cvte(ds)
 
 	# 	...	SAVE RESULTS (PICKLING)
-	# pickle.dump(res_md, pklfile)
 	res_md['results'] = cvte.ca.stats
 	res_md['inverted_weights'] = invert_classifier_weights(ds, clf)
 	pickle.dump(res_md, pklfile)

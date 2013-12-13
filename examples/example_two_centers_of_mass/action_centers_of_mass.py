@@ -2,7 +2,6 @@
 # ACTION Example Two: Centers of Mass and Random Sampling
 # *******************************************************
 
-
 from action import *
 import action.segment as aseg
 import numpy as np
@@ -121,5 +120,3 @@ if __name__ == "__main__":
 		choice = str(input('Press enter to exit visualization...'))
 	except SyntaxError:
 		pass
-	
-
