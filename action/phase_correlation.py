@@ -616,5 +616,4 @@ class PhaseCorrelation:
 		if ap['display']:
 			cv2.destroyAllWindows()
 	
-	# regular playback function
-	# frame-by-frame display function
+	# frame-by-frame display function - TO DO
