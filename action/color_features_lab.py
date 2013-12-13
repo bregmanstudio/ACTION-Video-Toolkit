@@ -276,7 +276,7 @@ class ColorFeaturesLAB:
 			all_color_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)		
 
 		"""
-		self.X = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48) #((segment.time_span.duration*4), -1)
+		self.X = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48)
 		return self.X
 	
 	def gridded_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
@@ -701,7 +701,6 @@ class ColorFeaturesLAB:
 		ap = self._check_analysis_params(kwargs)
 		verbose = ap['verbose']
 		
-		# self.capture = cv.CaptureFromFile(self.movie_path)
  		self.capture = cv2.VideoCapture(self.movie_path)
 		
 		fps = ap['fps']
