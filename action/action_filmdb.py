@@ -195,7 +195,7 @@ class FilmDB:
 
 	def films_for_directors(self, director):
 		films = []
-		for ttl in self.self.actionDB.keys():
+		for ttl in self.actionDB.keys():
 			if (self.actionDB[ttl][1] == director):
 				films += [ttl]
 		return films
