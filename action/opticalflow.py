@@ -63,7 +63,8 @@ The full list of settable parameters, with default values and explanations:
 | grid_divs_y     | 8               | number of divisions along y axis                   |
 +-----------------+-----------------+----------------------------------------------------+
 | theta_divs      | 8               | number of divisions of angle data                  |
-+-----------------+-----------------+----------------------------------------------------+| verbose         | True            | useful for debugging                               |
++-----------------+-----------------+----------------------------------------------------+
+| verbose         | True            | useful for debugging                               |
 +-----------------+-----------------+----------------------------------------------------+
 | display         | True            | launch display screen during analysis              |
 +-----------------+-----------------+----------------------------------------------------+
