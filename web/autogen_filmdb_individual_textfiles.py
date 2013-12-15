@@ -1,8 +1,9 @@
 import action.action_filmdb as fdb
 import action.color_features_lab as color_features_lab
-import HTML, glob, os, md5, shutil
+import glob, os, md5, shutil
+import HTML
 
-ACTIONDIR = os.path.expanduser('~/Movies/action')
+ACTION_DIR = '/Volumes/ACTION/'
 WEBDIR = os.path.expanduser('~/Sites/actiondata')
 
 # FILM_DB controls what films are active 
@@ -13,12 +14,15 @@ titles = set(actionDB)
 
 print len(titles)
 
-html_filestring = os.path.expanduser('/Sites/action_db.html')
+html_filestring = os.path.expanduser('~/Sites/action_db.html')
 htmlfile = open(html_filestring, 'w')
 
 htitles, clinks, alinks, dirs, years, colors, lengths, hashes = [], [], [], [], [], [], [], []
 
-for file in glob.glob(os.path.expanduser('~/Movies/action/*/*.color_lab'):
+print os.path.join(ACTION_DIR, '*', '*.color_lab')
+
+for file in glob.glob(os.path.join(ACTION_DIR, '*/*.color_lab')):
+	# print os.path.basename( file )
 	ttl = os.path.splitext(os.path.basename( file ))[0]
 	print 'title: ', ttl
 	# check that the title is in our master list
@@ -33,11 +37,11 @@ for file in glob.glob(os.path.expanduser('~/Movies/action/*/*.color_lab'):
 			os.makedirs(os.path.join(WEBDIR,hashstr))
 
 		audioflag = 0
-		# Copy the TITLE.*_hc_*.pkl files from ACTIONDIR to WEBDIR/hash		
-		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
-		shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_cfl_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc_full.pkl"))))
+		# Copy the TITLE.*_hc_*.pkl files from ACTION_DIR to WEBDIR/hash		
+		shutil.copy2((os.path.join(ACTION_DIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
+		shutil.copy2((os.path.join(ACTION_DIR,str(ttl),(str(ttl)+"_cfl_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_cfl_hc.pkl"))))
 		try:
-			shutil.copy2((os.path.join(ACTIONDIR,str(ttl),(str(ttl)+"_mfccs_hc_full.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc_full.pkl"))))
+			shutil.copy2((os.path.join(ACTION_DIR,str(ttl),(str(ttl)+"_mfccs_hc.pkl"))), (os.path.join(WEBDIR,hashstr,(str(ttl)+"_mfccs_hc.pkl"))))
 			audioflag = 1
 		except IOError:
 			pass
@@ -63,7 +67,7 @@ for file in glob.glob(os.path.expanduser('~/Movies/action/*/*.color_lab'):
 		else:
 			cflag = "B/W"
 		f.write(str(cflag) + "\n")
-		cfl = color_features_lab.ColorFeaturesLAB(ttl)
+		cfl = color_features_lab.ColorFeaturesLAB(ttl, action_dir=ACTION_DIR)
 		length = cfl.determine_movie_length()
 		f.write(str(length) + "\n")
 		f.close()

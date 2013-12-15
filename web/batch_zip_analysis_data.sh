@@ -1,21 +1,24 @@
 #!/bin/bash
 
 ACTIONDIR=$1
+ZIPDIR=$2
 echo "using:"
 echo $ACTIONDIR
 echo ""
+echo $ZIPDIR
+echo ""
+mkdir $ZIPDIR
 cd $ACTIONDIR
-mkdir ../zips
 find . -mindepth 1 -maxdepth 1 -type d | while read f
 do
 	base=$(basename "$f")
 	echo "---"
-	echo "! -f ../zips/${base}.zip ??"
-if [ ! -f "../zips/${base}.zip" ];
+	echo "! -f ${ZIPDIR}${base}.zip ??"
+if [ ! -f "${ZIPDIR}${base}.zip" ];
 	then
-		echo "zip -r ${base}.zip ${base}"
-        `zip -r ${base}.zip ${base}`
-		echo "mv ${base}.zip ../zips/${base}.zip"
-        `mv ${base}.zip ../zips/${base}.zip`
+		echo "zip -rX ${base}.zip ${base} -x '*.mov' '.DS_Store' '*.wav'"
+        `zip -rX ${base}.zip ${base} -x '*.mov' '.DS_Store' '*.wav'`
+		echo "mv ${base}.zip ${ZIPDIR}${base}.zip"
+        `mv ${base}.zip ${ZIPDIR}${base}.zip`
 	fi
 done
