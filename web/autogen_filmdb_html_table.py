@@ -1,51 +1,57 @@
-import films_db as fdb
+import action.action_filmdb as fdb
 import HTML, glob, os
 
-# get your list of file names
-# os.chdir('/Users/kfl/Movies/action')
-# names = glob.glob('*')
-# names_with_proper_oflow_exts = [glob.glob(name + '.optical*')[0] for name in names]
+full_db = fdb.FilmDB()
+actionDB = full_db.actionDB
+actionDirectors = full_db.actionDirectors
+action_titles = set(actionDB)
 
-HTMLFILE = '/Users/kfl/actionresults/HTML_tutorial_output.html'
+# just save it to the desktop
+HTMLFILE = os.path.expanduser('~/Desktop/HTML_table.html')
 f = open(HTMLFILE, 'w')
 
-titles = ["Title"] + sorted(list(fdb.actionDB.keys()))
 
 
-histograms = ["Histograms"]
-mvecs = ["Motion Vectors"]
-oflows = ["Optical Flow"]
+titles = ["Title"] + sorted(list(action_titles))
+
+
+cflabs = ["Lab Colors"]
+pcorrs = ["Phase Correlation Vecs"]
+cflsegs = ["Color Seg"]
 chromas = ["Chroma"]
 cqfts = ["CQFT"]
 mfccs = ["MFCC"]
 powers = ["Power"]
+mfccsegs = ["MFCC Seg"]
 dirs = ["Director"]
 years = ["Year"]
 
 for t in titles[1:]:
-    histograms += [(t + '.hist')]
-    mvecs += [(t + '.opticalflow3')]
-    oflows += [(t + '.opticalflow24')]
+    cflabs += [(t + '.color_lab')]
+    pcorrs += [(t + '.phasecorr')]
+    cflsegs += [(t + '_cfl_hc.pkl')]
     chromas += [(t + '.chrom_12_a0_C2_g0_i16000')]
     cqfts += [(t + '.cqft_12_a0_C2_g0_i16000')]
     mfccs += [(t + '.mfcc_13_M2_a0_C2_g0_i16000')]
     powers += [(t + '.power_C2_i16000')]
-    dirs += [fdb.actionDB[t][1]]
-    years += [str(fdb.actionDB[t][3])]
+    mfccsegs += [(t + '_mfccs_hc.pkl')]
+    dirs += [actionDB[t][1]]
+    years += [str(actionDB[t][3])]
 
 
-full_table = [["Title", "Histograms", "Motion Vectors", "Chromas", "CQFTs", "MFCCs", "Powers", "Director", "Year"]]
+full_table = [["Title", "Lab Colors", "Phase Correlation", "Color Seg", "Chromas", "CQFTs", "MFCCs", "Powers", "MFCC Seg", "Director", "Year"]]
 
 for i, t in enumerate(titles[1:]):
 	full_table += [[
 		titles[i+1],
-		HTML.link('.hist', ('action/' + titles[i+1] + '/' + histograms[i+1])),
-		HTML.link('.opticalflow3', ('action/' + titles[i+1] + '/' + mvecs[i+1])),
-		HTML.link('.opticalflow24', ('action/' + titles[i+1] + '/' + oflows[i+1])),
-		HTML.link('.chrom', ('action/' + titles[i+1] + '/' + chromas[i+1])),
-		HTML.link('.cqft', ('action/' + titles[i+1] + '/' + cqfts[i+1])),
-		HTML.link('.mfcc', ('action/' + titles[i+1] + '/' + mfccs[i+1])),
-		HTML.link('.power', ('action/' + titles[i+1] + '/' + powers[i+1])),
+		HTML.link('.color_lab', ('actiondata/' + titles[i+1] + '/' + cflabs[i+1])),
+		HTML.link('.phasecorr', ('actiondata/' + titles[i+1] + '/' + pcorrs[i+1])),
+		HTML.link('_cfl_hc.pkl', ('actiondata/' + titles[i+1] + '/' + cflsegs[i+1])),
+		HTML.link('.chrom', ('actiondata/' + titles[i+1] + '/' + chromas[i+1])),
+		HTML.link('.cqft', ('actiondata/' + titles[i+1] + '/' + cqfts[i+1])),
+		HTML.link('.mfcc', ('actiondata/' + titles[i+1] + '/' + mfccs[i+1])),
+		HTML.link('.power', ('actiondata/' + titles[i+1] + '/' + powers[i+1])),
+		HTML.link('_mfccs_hc.pkl', ('actiondata/' + titles[i+1] + '/' + mfccsegs[i+1])),
 		dirs[i+1],
 		years[i+1]]]
 		
@@ -56,3 +62,5 @@ f.write(htmlcode)
 f.write('<p>')
 
 f.close()
+
+# Once saved to the Desktop, the file can be opened and the table copied to whatever html document will host the download links
