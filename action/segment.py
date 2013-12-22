@@ -1,11 +1,40 @@
+# segment.py - segmentation (extraction, viewing, segment container class)
+# Bregman:ACTION - Cinematic information retrieval toolkit
+
+__version__ = '1.0'
+__author__ = 'Thomas Stoll'
+__copyright__ = "Copyright (C) 2012  Michael Casey, Thomas Stoll, Dartmouth College, All Rights Reserved"
+__license__ = "gpl 2.0 or higher"
+__email__ = 'thomas.m.stoll@dartmouth.edu'
+
 import numpy as np
 import pylab as P
 import scipy.signal
 import actiondata
 
+
+"""
+Part of Bregman:ACTION - Cinematic information retrieval toolkit
+
+Overview
+========
+
+Segment: container class for onset time, duration, and features averaged across the segment
+
+TimeSpan: represents time in a segment: start, end, duration
+
+Segmentation: represents a collection of time_spans and corresponding segments
+
+VideoSegmentor: methods for performing segmentation, extracting and condensing features, plotting features. Also includes callback function for interactive segmentation.
+
+"""
+
 DEFAULT_IMAGESC_KWARGS={'origin':'upper', 'cmap':P.cm.hot, 'aspect':'auto', 'interpolation':'nearest'}
 
 class TimeSpan(object):
+    """
+    
+    """
     def __init__(self, start_time=None, end_time=None, duration=None):
         if start_time==None:
             raise ValueError("start_time must be provided")
@@ -283,40 +312,40 @@ class VideoSegmentor(Segmentor):
         self.F.playback_movie(onset_secs, dur_secs)
 
 
-class SegmentationFeatureExtractor(object):
-    def __init__(self):
-        """
-        Class to perform extraction operation on Segmentation objects
-        """
-        pass
-    def extract(self, segmentation, feature, **kwargs):
-        """
-        Given a segmentation and a feature class (plus **kwargs), extract feature for each segment in the segmentation.
-        """
-        if type(segmentation.media) is not str:
-            raise TypeError("Only file segmentation extraction is currently supported.")
-        x,SR,fmt = sound.wavread(segmentation.media, last=1)
-        for seg in segmentation: 
-            x, xsr, fmt = sound.wavread(segmentation.media, 
-                                       first=int(seg.time_span.start_time*SR), last=int(seg.time_span.duration*SR))
-            f = feature(x, **kwargs)
-            seg.features.append(f)
-
-class ChapterSegmentor(Segmentor):
-    pass
-
-class SceneBoundarySegmentor(Segmentor):
-    pass
-
-class ShotBoundarySegmentor(Segmentor):
-    pass
-
-class MusicStructureSegmentor(Segmentor):
-    pass
-
-class AudioOnsetSegmentor(Segmentor):
-    pass
-
+# class SegmentationFeatureExtractor(object):
+#     def __init__(self):
+#         """
+#         Class to perform extraction operation on Segmentation objects
+#         """
+#         pass
+#     def extract(self, segmentation, feature, **kwargs):
+#         """
+#         Given a segmentation and a feature class (plus **kwargs), extract feature for each segment in the segmentation.
+#         """
+#         if type(segmentation.media) is not str:
+#             raise TypeError("Only file segmentation extraction is currently supported.")
+#         x,SR,fmt = sound.wavread(segmentation.media, last=1)
+#         for seg in segmentation: 
+#             x, xsr, fmt = sound.wavread(segmentation.media, 
+#                                        first=int(seg.time_span.start_time*SR), last=int(seg.time_span.duration*SR))
+#             f = feature(x, **kwargs)
+#             seg.features.append(f)
+# 
+# class ChapterSegmentor(Segmentor):
+#     pass
+# 
+# class SceneBoundarySegmentor(Segmentor):
+#     pass
+# 
+# class ShotBoundarySegmentor(Segmentor):
+#     pass
+# 
+# class MusicStructureSegmentor(Segmentor):
+#     pass
+# 
+# class AudioOnsetSegmentor(Segmentor):
+#     pass
+# 
 
 
 def _normalize(x):
