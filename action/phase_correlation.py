@@ -457,11 +457,12 @@ class PhaseCorrelation:
 		self._process_movie(mode='analyze', display=True, offset=offset, duration=duration)
 	
 	def _process_movie(self, **kwargs):
+	
 		"""
-		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
+			Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
 		
 		"""
-		
+
 		if not HAVE_CV:
 			print "WARNING: You must install OpenCV in order to analyze or view!"
 			return
@@ -469,10 +470,11 @@ class PhaseCorrelation:
 		if (self.movie_path is None) or (self.data_path is None):
 			print "ERROR: Must supply both a movie and a data path!"
 			return
+		
 		ap = self._check_analysis_params(kwargs)
 		verbose = ap['verbose']
 		
- 		self.capture = cv2.VideoCapture(self.movie_path)
+		self.capture = cv2.VideoCapture(self.movie_path)
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
@@ -487,10 +489,11 @@ class PhaseCorrelation:
 		centers_x = range((frame_width/16),frame_width,(frame_width/8))
 		centers_y = range((frame_height/16),frame_height,(frame_height/8))
 		
-		if verbose: print fps, ' | ', frame_size, ' | ', grid_size
+		if verbose:
+			print fps, ' | ', frame_size, ' | ', grid_size
 		
 		# container for prev. frame's grayscale subframes
- 		prev_sub_grays = []				
+		prev_sub_grays = []				
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
@@ -570,6 +573,7 @@ class PhaseCorrelation:
 				print fret
 			else:
 				fret, fres = cv2.phaseCorrelateRes(prev_frame_gray, np.float32(frame_gray[:]), fhann)
+				print fret
 				if abs(fres) > 0.01:
 					fp[self.frame_idx][64] = [(fret[0]/frame_width),(fret[1]/frame_height)]
 				else:
@@ -580,7 +584,7 @@ class PhaseCorrelation:
 				for col in range(grid_x_divs):
 					if ap['mode'] == 'playback':
 						cell = ((row*8)+col)
-						gret, gres = fp[self.frame_idx][cell][0], fp[self.frame_idx][cell][1]
+						gret = fp[self.frame_idx][cell]
 					else:
 						sub_gray = np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)][:])
 						gret, gres = cv2.phaseCorrelateRes(prev_sub_grays[(row*grid_x_divs)+col], sub_gray, ghann)
@@ -588,15 +592,17 @@ class PhaseCorrelation:
 						prev_sub_grays[(row*grid_x_divs)+col] = sub_gray
 						# if verbose:
 						#	print (row, col, (gret, gres))
-						if abs(gres) > 0.01:
+						if abs(gres) > 0.7: # WAS 0.01!!!!
 							fp[self.frame_idx][(row*grid_x_divs)+col] = [(gret[0]/grid_width),(gret[1]/grid_height)]
  						else:
 							fp[self.frame_idx][(row*grid_x_divs)+col] = [0,0]
 					if ap['display'] == True:
-						xval = int((gret*100)+centers_x[col])
-						yval = int((gres*100)+centers_y[row])
-						# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
-						cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
+						print gret
+						if gret != (0,0) and gret != grid_size and (abs(gret[0]) < grid_size[0]) and (abs(gret[1]) < grid_size[1]):
+							xval = int((gret[0]*10)+centers_x[col])
+							yval = int((gret[1]*10)+centers_y[row])
+							# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
+							cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
 				
 				#### SHOW
 				if ap['display']:
