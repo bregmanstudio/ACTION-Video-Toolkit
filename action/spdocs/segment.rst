@@ -1,5 +1,5 @@
 segment module
-==================
+==============
 
 .. toctree::
    :maxdepth: 2
