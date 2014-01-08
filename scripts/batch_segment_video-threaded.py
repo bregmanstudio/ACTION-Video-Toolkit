@@ -3,12 +3,13 @@ import action.segment as aseg
 from action import *
 import numpy as np
 import bregman.features as features
+from bregman.suite import *
 from mvpa2.suite import *
 import pprint, pickle
 import multiprocessing
 
-ACTION_DIR = '/Volumes/ACTION/'
-# ACTION_DIR = '/Users/kfl/Movies/action/'
+# ACTION_DIR = '/Volumes/ACTION/'
+ACTION_DIR = '/Users/kfl/Movies/action/'
 
 def actionAnalyzeAll(inputlist, proc_limit):
 	print "Inputlist received..."
@@ -18,40 +19,69 @@ def actionAnalyzeAll(inputlist, proc_limit):
 	pool.map(actionWorker, inputlist)
 
 
-def actionWorker(title):
-	ds_segs = []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
-	outfile = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_cfl_hc.pkl'))), 'wb')
+def actionWorker(title):	
 	
+	ad = actiondata.ActionData()
+	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)	
+
+	outfile_mb = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_cfl_hc.pkl'))), 'wb')
+	outfile_mfccs = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_mfccs_hc.pkl'))), 'wb')
+	outfile_combo = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_combo_hc.pkl'))), 'wb')
+
 	length = cfl.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 
 	full_segment = aseg.Segment(0, duration=length)
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
+	Dmfccs = ad.normalize_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc_13_M2_a0_C2_g0_i16000')))[:Dmb.shape[0],:])
+	Dcombo = np.c_[Dmb, Dmfccs]
 
-	ad = actiondata.ActionData()
-	decomposed = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
-	print "<<<<  ", decomposed.shape
-# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
+	decomposed_mb = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
+	decomposed_mfccs = ad.calculate_pca_and_fit(Dmfccs, locut=0.0001)
+	decomposed_combo = ad.calculate_pca_and_fit(Dcombo, locut=0.0001)
+	print "<<<<  ", decomposed_mb.shape
+	print "<<<<  ", decomposed_mfccs.shape
+	print "<<<<  ", decomposed_combo.shape
+	# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
 
 	nc = length_in_frames / 10
-# 	hc_assigns = ad.cluster_hierarchically(sliding_averaged, nc, None)
-	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
-	segs = ad.convert_clustered_frames_to_segs(hc_assigns, nc)
-	segs.sort()
-	del segs[0]
+	# 	hc_assigns = ad.cluster_hierarchically(sliding_averaged, nc, None)
+	hc_assigns_mb = ad.cluster_hierarchically(decomposed_mb, nc, None)
+	hc_assigns_mfccs = ad.cluster_hierarchically(decomposed_mfccs, nc, None)
+	hc_assigns_combo = ad.cluster_hierarchically(decomposed_combo, nc, None)
 
-	for seg in segs:
-		if seg[0] > 0:
-			ds_segs += [aseg.Segment(
-				seg[0]*0.25,
-				duration=(seg[1]*0.25),
-				features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+	segs_mb = ad.convert_clustered_frames_to_segs(hc_assigns_mb, nc)
+	segs_mfccs = ad.convert_clustered_frames_to_segs(hc_assigns_mfccs, nc)
+	segs_combo = ad.convert_clustered_frames_to_segs(hc_assigns_combo, nc)
+	segs_mb.sort()
+	segs_mfccs.sort()
+	segs_combo.sort()
+
+	for seg in segs_mb:
+		ds_segs_mb += [aseg.Segment(
+			seg[0]*0.25,
+			duration=(seg[1]*0.25),
+			features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+	for seg in segs_mfccs:
+		ds_segs_mfccs += [aseg.Segment(
+			seg[0]*0.25,
+			duration=(seg[1]*0.25),
+			features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+	for seg in segs_combo:
+		ds_segs_combo += [aseg.Segment(
+			seg[0]*0.25,
+			duration=(seg[1]*0.25),
+			features=np.mean(Dcombo[seg[0]:(seg[0]+seg[1]),:],axis=0))]
 
 	print len(ds_segs)
-	pickle.dump(ds_segs, outfile, -1)
-	outfile.close()
+	pickle.dump(ds_segs_mb, outfile_mb, -1)
+	outfile_mb.close()
+	pickle.dump(ds_segs_mfccs, outfile_mfccs, -1)
+	outfile_mfccs.close()
+	pickle.dump(ds_segs_combo, outfile_combo, -1)
+	outfile_combo.close()
 	return 1
 
 if __name__ == '__main__':
