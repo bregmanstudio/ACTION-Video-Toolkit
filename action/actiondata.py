@@ -194,9 +194,9 @@ class ActionData:
 		eye = np.identity(size, dtype=np.int8)
 		nn1 = np.add( np.roll(eye, 1, axis=0), np.roll(eye, 1, axis=1))
 		
-		if loop_flag:
-			nn1[-1,0] = 1
-			nn1[0,-1] = 1
+		if not loop_flag:
+			nn1[-1,0] = 0
+			nn1[0,-1] = 0
 		#print nn1[:30,:30]
 		return sparse.csr_matrix(nn1)
 	
