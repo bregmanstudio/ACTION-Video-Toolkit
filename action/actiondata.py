@@ -253,7 +253,9 @@ class ActionData:
 		return sparse.linalg.svds(data, k)[0]
 	
 	def normalize_data(self, data):
-		return (data / np.max(data, axis=0))
+		the_max = np.max(data, axis=0)
+		the_min = np.min(data, axis=0)
+		return ((data - the_min) / (the_max - the_min))
 	
 	def standardize_data(self, data):
 		return (data - data.mean(axis=0)) / data.var(axis=0)
