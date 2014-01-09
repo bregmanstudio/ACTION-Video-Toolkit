@@ -8,8 +8,8 @@ from mvpa2.suite import *
 import pprint, pickle
 import multiprocessing
 
-# ACTION_DIR = '/Volumes/ACTION/'
-ACTION_DIR = '/Users/kfl/Movies/action/'
+ACTION_DIR = '/Volumes/ACTION/'
+# ACTION_DIR = '/Users/kfl/Movies/action/'
 
 def actionAnalyzeAll(inputlist, proc_limit):
 	print "Inputlist received..."
@@ -25,9 +25,9 @@ def actionWorker(title):
 	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
 	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)	
 
-	outfile_mb = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_cfl_hc.pkl'))), 'wb')
-	outfile_mfccs = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_mfccs_hc.pkl'))), 'wb')
-	outfile_combo = open(os.path.expanduser(os.path.join(cfl.analysis_params['action_dir'], title, (title+'_combo_hc.pkl'))), 'wb')
+	print ''
+	print title
+	print ''
 
 	length = cfl.determine_movie_length() # in seconds
 	length_in_frames = length * 4
@@ -35,53 +35,75 @@ def actionWorker(title):
 	full_segment = aseg.Segment(0, duration=length)
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
-	Dmfccs = ad.normalize_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc_13_M2_a0_C2_g0_i16000')))[:Dmb.shape[0],:])
-	Dcombo = np.c_[Dmb, Dmfccs]
+	Dmfccs = ad.normalize_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc_13_M2_a0_C2_g0_i16000'))))
+	
+	print Dmb.shape
+	print Dmfccs.shape
 
-	decomposed_mb = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
-	decomposed_mfccs = ad.calculate_pca_and_fit(Dmfccs, locut=0.0001)
-	decomposed_combo = ad.calculate_pca_and_fit(Dcombo, locut=0.0001)
-	print "<<<<  ", decomposed_mb.shape
-	print "<<<<  ", decomposed_mfccs.shape
-	print "<<<<  ", decomposed_combo.shape
-	# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
+	print np.isnan(Dmb).any()
+	print np.isnan(Dmfccs).any()
+	# print np.isnan(Dcombo).any()
+
+	min_length = min(Dmb.shape[0], Dmfccs.shape[0])
+
+	Dcombo = np.c_[Dmb[:min_length,:], Dmfccs[:min_length,:]]
 
 	nc = length_in_frames / 10
+	print nc
+	print "----------------------------"
+
+	if not np.isnan(Dmb).any():
+		outfile_mb = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_cfl_hc.pkl'))), 'wb')
+		decomposed_mb = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
+		print "<<<<  ", decomposed_mb.shape
+		hc_assigns_mb = ad.cluster_hierarchically(decomposed_mb, nc, None)
+		segs_mb = ad.convert_clustered_frames_to_segs(hc_assigns_mb, nc)
+		segs_mb.sort()
+		for seg in segs_mb:
+			ds_segs_mb += [aseg.Segment(
+				seg[0]*0.25,
+				duration=(seg[1]*0.25),
+				features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+		pickle.dump(ds_segs_mb, outfile_mb, -1)
+		outfile_mb.close()
+	
+	if not np.isnan(Dmfccs).any():
+		outfile_mfccs = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_mfccs_hc.pkl'))), 'wb')
+		decomposed_mfccs = ad.calculate_pca_and_fit(Dmfccs, locut=0.0001)
+		print "<<<<  ", decomposed_mfccs.shape
+		hc_assigns_mfccs = ad.cluster_hierarchically(decomposed_mfccs, nc, None)
+		segs_mfccs = ad.convert_clustered_frames_to_segs(hc_assigns_mfccs, nc)
+		segs_mfccs.sort()
+		for seg in segs_mfccs:
+			ds_segs_mfccs += [aseg.Segment(
+				seg[0]*0.25,
+				duration=(seg[1]*0.25),
+				features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+		pickle.dump(ds_segs_mfccs, outfile_mfccs, -1)
+		outfile_mfccs.close()
+
+	if not np.isnan(Dcombo).any():
+		outfile_combo = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_combo_hc.pkl'))), 'wb')
+		decomposed_combo = ad.calculate_pca_and_fit(Dcombo, locut=0.0001)	
+		print "<<<<  ", decomposed_combo.shape
+		hc_assigns_combo = ad.cluster_hierarchically(decomposed_combo, nc, None)
+		segs_combo = ad.convert_clustered_frames_to_segs(hc_assigns_combo, nc)
+		segs_combo.sort()
+		for seg in segs_combo:
+			ds_segs_combo += [aseg.Segment(
+				seg[0]*0.25,
+				duration=(seg[1]*0.25),
+				features=np.mean(Dcombo[seg[0]:(seg[0]+seg[1]),:],axis=0))]
+		pickle.dump(ds_segs_combo, outfile_combo, -1)
+		outfile_combo.close()
+
+	# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
 	# 	hc_assigns = ad.cluster_hierarchically(sliding_averaged, nc, None)
-	hc_assigns_mb = ad.cluster_hierarchically(decomposed_mb, nc, None)
-	hc_assigns_mfccs = ad.cluster_hierarchically(decomposed_mfccs, nc, None)
-	hc_assigns_combo = ad.cluster_hierarchically(decomposed_combo, nc, None)
-
-	segs_mb = ad.convert_clustered_frames_to_segs(hc_assigns_mb, nc)
-	segs_mfccs = ad.convert_clustered_frames_to_segs(hc_assigns_mfccs, nc)
-	segs_combo = ad.convert_clustered_frames_to_segs(hc_assigns_combo, nc)
-	segs_mb.sort()
-	segs_mfccs.sort()
-	segs_combo.sort()
-
-	for seg in segs_mb:
-		ds_segs_mb += [aseg.Segment(
-			seg[0]*0.25,
-			duration=(seg[1]*0.25),
-			features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
-	for seg in segs_mfccs:
-		ds_segs_mfccs += [aseg.Segment(
-			seg[0]*0.25,
-			duration=(seg[1]*0.25),
-			features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
-	for seg in segs_combo:
-		ds_segs_combo += [aseg.Segment(
-			seg[0]*0.25,
-			duration=(seg[1]*0.25),
-			features=np.mean(Dcombo[seg[0]:(seg[0]+seg[1]),:],axis=0))]
-
-	print len(ds_segs)
-	pickle.dump(ds_segs_mb, outfile_mb, -1)
-	outfile_mb.close()
-	pickle.dump(ds_segs_mfccs, outfile_mfccs, -1)
-	outfile_mfccs.close()
-	pickle.dump(ds_segs_combo, outfile_combo, -1)
-	outfile_combo.close()
+	
+	# clean up
+	del Dmb
+	del Dmfccs
+	del Dcombo
 	return 1
 
 if __name__ == '__main__':
@@ -98,10 +120,10 @@ if __name__ == '__main__':
 	# if we have some args, use them
 	os.chdir(ACTION_DIR)
 	
-	names = [os.path.dirname(file) for file in glob.glob('*/*.color_lab')]
-	names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_cfl_hc.pkl')]
+	names = [os.path.dirname(file) for file in glob.glob('*/*.mov')][:75]
+	#names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_cfl_hc.pkl')]
 	
-	to_be_pickled = [ttl for ttl in names if ttl not in set(names_with_proper_pkl_exts)]	
+	to_be_pickled = [ttl for ttl in names]	
 	print ''
 	print to_be_pickled
 	print "(", len(to_be_pickled), ")"
