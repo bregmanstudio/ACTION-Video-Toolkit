@@ -370,28 +370,28 @@ class ColorFeaturesLAB:
 		"""
 		return getattr(self,func)(segment)
 
-	def color_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
-
-		#ap = self._check_cflab_params()
-		ap = self.analysis_params
-		
-		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
-		print onset_frame
-		if segment.time_span.duration < 0:
-			dur_frames = self.determine_movie_length()
-		else:
-			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-		print self.s_movie_length()
-		print dur_frames
-		
-		if grid_flag == 0:
-			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-			# probably should have some error handling here if the reshape fails
-			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 48))
-		else:
-			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-			# probably should have some error handling here if the reshape fails
-			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
+# 	def color_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
+# 
+# 		#ap = self._check_cflab_params()
+# 		ap = self.analysis_params
+# 		
+# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
+# 		print onset_frame
+# 		if segment.time_span.duration < 0:
+# 			dur_frames = self.determine_movie_length()
+# 		else:
+# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
+# 		print self.s_movie_length()
+# 		print dur_frames
+# 		
+# 		if grid_flag == 0:
+# 			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
+# 			# probably should have some error handling here if the reshape fails
+# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 48))
+# 		else:
+# 			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
+# 			# probably should have some error handling here if the reshape fails
+# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
 
 	def _color_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
 		"""
