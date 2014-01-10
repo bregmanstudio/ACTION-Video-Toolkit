@@ -200,15 +200,15 @@ class OpticalFlow:
 	If you want to run in verbose mode (to see some debug information on calculated frame offsets, analysis ranges, etc.) pass the verbose=True flag here.
 	"""
 	def __init__(self, filename='Vertigo', arg=None, **analysis_params):
+		"""
+		"""
 		self._initialize(filename, analysis_params)
 	
 	def _initialize(self, filename, analysis_params=None):
 		"""
 		"""
-
-		self.analysis_params = self.default_opticalflow_params()
+		# self.analysis_params = self.default_opticalflow_params()
 		self._check_opticalflow_params(analysis_params)
-
 		ap = self.analysis_params
 		
 		if filename is None:
@@ -237,15 +237,15 @@ class OpticalFlow:
 		Simple mechanism to read in default parameters while substituting custom parameters.
 		"""
 		self.analysis_params = analysis_params if analysis_params is not None else self.analysis_params
-		ap = self.default_opticalflow_params()
-		for k in ap.keys():
-			self.analysis_params[k] = self.analysis_params.get(k, ap[k])
+		dofp = self.default_opticalflow_params()
+		for k in dofp.keys():
+			self.analysis_params[k] = self.analysis_params.get(k, dofp[k])
 		return self.analysis_params
 
 	@staticmethod
 	def default_opticalflow_params():
 		analysis_params = {
-			'action_dir' : '~/Movies/action/',	# set a default location for movie and data files
+			'action_dir' : os.path.expanduser('~/Movies/action/'),	# set a default location for movie and data files
 			'movie_extension' : '.mov',
 			'data_extension' : '.opticalflow24',
 			'mode' : 'analyze',					# 'playback' or 'analyze'
@@ -373,7 +373,7 @@ class OpticalFlow:
 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
 		
 		"""
-		ap = self._check_analysis_params(kwargs)
+		ap = self._check_oflow_params(kwargs)
 		offset_s = float(offset) / (ap['fps'] / ap['stride'])
 		dur_s = float(duration) / (ap['fps'] / ap['stride'])
 		
