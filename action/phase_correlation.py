@@ -176,12 +176,16 @@ class PhaseCorrelation:
 	If you want to run in verbose mode (to see some debug information on calculated frame offsets, analysis ranges, etc.) pass the verbose=True flag here.
 	"""
 	
-	def __init__(self, filename=None, arg=None, **analysis_params):
+	def __init__(self, filename='Vertigo', arg=None, **analysis_params):
+		"""
+		"""
 		self._initialize(filename, analysis_params)
 	
 	def _initialize(self, filename, analysis_params=None):
-		self.analysis_params = self.default_phasecorr_params()
-		self._check_analysis_params(analysis_params)
+		"""
+		"""
+		# self.analysis_params = self.default_phasecorr_params()
+		self._check_pcorr_params(analysis_params)
 		ap = self.analysis_params
 		
 		if filename is None:
@@ -191,20 +195,20 @@ class PhaseCorrelation:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
 	
-	def _check_analysis_params(self, analysis_params=None):
+	def _check_pcorr_params(self, analysis_params=None):
 		"""
 		Simple mechanism to read in default parameters while substituting custom parameters.
 		"""
 		self.analysis_params = analysis_params if analysis_params is not None else self.analysis_params
-		ap = self.default_phasecorr_params()
-		for k in ap.keys():
-			self.analysis_params[k] = self.analysis_params.get(k, ap[k])
+		dpcp = self.default_phasecorr_params()
+		for k in dpcp.keys():
+			self.analysis_params[k] = self.analysis_params.get(k, dpcp[k])
 		return self.analysis_params
 
 	@staticmethod
 	def default_phasecorr_params():
 		analysis_params = {
-			'action_dir' : '~/Movies/action/',	# default dir
+			'action_dir' : os.path.expanduser('~/Movies/action/'),	# default dir
 			'movie_extension' : '.mov',
 			'data_extension' : '.phasecorr',
 			'mode' : 'analyze',			# 'playback' or 'analyze'
@@ -353,7 +357,7 @@ class PhaseCorrelation:
 
 	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
 
-		ap = self._check_analysis_params()
+		ap = self._check_pcorr_params()
 		
 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
 		print onset_frame
@@ -413,7 +417,7 @@ class PhaseCorrelation:
 		"""
 		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Doesn't use general _process function; uses _display_movie_frame_by_frame()
 		"""
-		ap = self._check_analysis_params(kwargs)
+		ap = self._check_pcorr_params(kwargs)
 		offset_s = float(offset) / (ap['fps'] / ap['stride'])
 		dur_s = float(duration) / (ap['fps'] / ap['stride'])
 		
@@ -421,7 +425,7 @@ class PhaseCorrelation:
 	
 	def determine_movie_length(self, **kwargs):
 	
-		ap = self._check_analysis_params(kwargs)
+		ap = self._check_pcorr_params(kwargs)
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			# self.capture = cv.CaptureFromFile(self.movie_path)
@@ -471,7 +475,7 @@ class PhaseCorrelation:
 			print "ERROR: Must supply both a movie and a data path!"
 			return
 		
-		ap = self._check_analysis_params(kwargs)
+		ap = self._check_pcorr_params(kwargs)
 		verbose = ap['verbose']
 		
 		self.capture = cv2.VideoCapture(self.movie_path)
