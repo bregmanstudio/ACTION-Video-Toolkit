@@ -192,12 +192,16 @@ class ColorFeaturesLAB:
 	If you want to run in verbose mode (to see some debug information on calculated frame offsets, analysis ranges, etc.) pass the verbose=True flag here.
 	"""
 	
-	def __init__(self, filename=None, arg=None, **analysis_params):
+	def __init__(self, filename='Vertigo', arg=None, **analysis_params):
+		"""
+		"""
 		self._initialize(filename, analysis_params)
 	
 	def _initialize(self, filename, analysis_params=None):
-		self.analysis_params = self.default_cflab_params()
-		self._check_analysis_params(analysis_params)
+		"""
+		"""
+		# self.analysis_params = self.default_cflab_params()
+		self._check_cflab_params(analysis_params)
 		ap = self.analysis_params
 		
 		if filename is None:
@@ -207,22 +211,26 @@ class ColorFeaturesLAB:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
 		
-		self.default_color_features_for_segment()
+		self.determine_movie_length()
+		
+		# try to naively get some data and store in a class var
+		if os.path.exists(self.data_path):
+			self.default_color_features_for_segment()
 	
-	def _check_analysis_params(self, analysis_params=None):
+	def _check_cflab_params(self, analysis_params=None):
 		"""
 		Simple mechanism to read in default parameters while substituting custom parameters.
 		"""
 		self.analysis_params = analysis_params if analysis_params is not None else self.analysis_params
-		ap = self.default_cflab_params()
-		for k in ap.keys():
-			self.analysis_params[k] = self.analysis_params.get(k, ap[k])
+		dcfp = self.default_cflab_params()
+		for k in dcfp.keys():
+			self.analysis_params[k] = self.analysis_params.get(k, dcfp[k])
 		return self.analysis_params
 
 	@staticmethod
 	def default_cflab_params():
 		analysis_params = {
-			'action_dir' : '~/Movies/action/',	# default dir
+			'action_dir' : os.path.expanduser('~/Movies/action/'),	# default dir
 			'movie_extension' : '.mov',
 			'data_extension' : '.color_lab',
 			'mode' : 'analyze',			# 'playback' or 'analyze'
@@ -364,7 +372,8 @@ class ColorFeaturesLAB:
 
 	def color_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
 
-		ap = self._check_analysis_params()
+		#ap = self._check_cflab_params()
+		ap = self.analysis_params
 		
 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
 		print onset_frame
@@ -433,7 +442,8 @@ class ColorFeaturesLAB:
 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
 		
 		"""
-		ap = self._check_analysis_params(kwargs)
+		# ap = self._check_cflab_params(kwargs)
+		ap = self.analysis_params
 		offset_s = float(offset) / (ap['fps'] / ap['stride'])
 		dur_s = float(duration) / (ap['fps'] / ap['stride'])
 		
@@ -441,19 +451,22 @@ class ColorFeaturesLAB:
 	
 	def determine_movie_length(self, **kwargs):
 	
-		ap = self._check_analysis_params(kwargs)
+		# ap = self._check_cflab_params(kwargs)
+		ap = self.analysis_params
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
-# 			self.capture = cv.CaptureFromFile(self.movie_path)
 			self.capture = cv2.VideoCapture(self.movie_path)
 			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
-		else:
+		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
 			# since we are reading raw color analysis data that always has the same size on disc!
 			# the constant had better be correct!
 			dur_total_seconds = dsize / 13056 # 16 * 16 * 3 * 17  = 16 bits * 16 bins * 3 color channels * (16 + 1) regions
 			# print "total secs: ", dur_total_seconds
-
+		else:
+			dur_total_seconds = -1
+			print "Cannot determine movie duration. Both the movie and data files are missing!"
+		self.analysis_params['duration'] = dur_total_seconds
 		return dur_total_seconds
 	
 	def analyze_movie(self, offset=0, duration=-1, stride_frames=6):
@@ -461,19 +474,19 @@ class ColorFeaturesLAB:
 		Analyze the movie without displaying on screen. Equivalent to:
 		::
 		
-			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', offset=0, duration=-1, stride=6, display=False)
+			_process_movie(mode='analyze', display=False)
 		
 		"""
 		self._process_movie(mode='analyze', display=False, offset=offset, duration=duration)
 
-	def analyze_movie_with_display(self, offset=0, duration=-1, stride=6):
+	def analyze_movie_with_display(self, offset=0):
 		"""
 		Analyze the movie; display on screen. Equivalent to:
 		::
 		
-			_process_movie(offset=0, duration=-1, stride=6, display=True)
+			_process_movie(mode='analyze', display=True)
 		"""
-		self._process_movie(mode='analyze', display=True, offset=offset, duration=duration)
+		self._process_movie(mode='analyze', display=True)
 	
 	def _process_movie(self, **kwargs):
 		"""
@@ -487,7 +500,8 @@ class ColorFeaturesLAB:
 			print "Must supply both a movie and a data path!"
 			return
 		
-		ap = self._check_analysis_params(kwargs)
+		# ap = self._check_cflab_params(kwargs)
+		ap = self.analysis_params
 				
 		self.capture = cv2.VideoCapture(self.movie_path)
 		
@@ -541,16 +555,17 @@ class ColorFeaturesLAB:
 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
-		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		dur_total_secs = ap['duration']
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
-		if ap['duration'] < 0:
-			dur_secs = dur_total_secs
-		else:
-			dur_secs = ap['duration']
+# 		if ap['duration'] < 0:
+# 			dur_secs = dur_total_secs
+# 		else:
+# 			dur_secs = ap['duration']
 		
 		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-		dur_secs = min(max(dur_secs, 0), (dur_total_secs - offset_secs))
+		dur_secs = min(max(dur_total_secs, 0), (dur_total_secs - offset_secs))
 		offset_strides = int(offset_secs * (fps / stride_frames))
 		dur_strides = int(dur_secs * (fps / stride_frames))
 		offset_frames = offset_strides * stride_frames
@@ -698,7 +713,8 @@ class ColorFeaturesLAB:
 			print "Must supply both a movie and a data path!"
 			return
 		
-		ap = self._check_analysis_params(kwargs)
+		# ap = self._check_cflab_params(kwargs)
+		ap = self.analysis_params
 		verbose = ap['verbose']
 		
  		self.capture = cv2.VideoCapture(self.movie_path)
@@ -727,16 +743,17 @@ class ColorFeaturesLAB:
 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
 		# last but not least, get total_frame_count and set up the memmapped file
-		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		dur_total_secs = ap['duration']
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
-		if ap['duration'] < 0:
-			dur_secs = dur_total_secs
-		else:
-			dur_secs = ap['duration']
+#		if ap['duration'] < 0:
+# 			dur_secs = dur_total_secs
+# 		else:
+# 			dur_secs = ap['duration']
 		
 		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-		dur_secs = min(max(dur_secs, 0), (dur_total_secs - offset_secs))
+		dur_secs = min(max(dur_total_secs, 0), (dur_total_secs - offset_secs))
 		offset_strides = int(offset_secs * (fps / stride_frames))
 		dur_strides = int(dur_secs * (fps / stride_frames))
 		offset_frames = offset_strides * stride_frames
@@ -874,7 +891,8 @@ class ColorFeaturesLAB:
 		"""
 		Image analysis kernel function that is called to analyze each frame image. Look at the main process function to get an idea of how you would call this to return analysis data for a single image. Todo: wrap such a call into a simple one-off function call.
 		"""
-		ap = self._check_analysis_params(None)
+		# ap = self._check_cflab_params(None)
+		ap = self.analysis_params
 		grid_divs_x = ap['grid_divs_x']
 		lab = cv2.cvtColor(img, cv.CV_BGR2Lab)
 		
@@ -897,7 +915,8 @@ class ColorFeaturesLAB:
 		"""
 		Display helper function. Build list of points for the trios of histogram bars.
 		"""
-		ap = self._check_analysis_params(None)
+		# ap = self._check_cflab_params(None)
+		ap = self.analysis_params
 		six_points = np.ndarray((16,16,6,2), dtype=int)
 		for i in range(xdivs):
 			for j in range(ydivs):
@@ -915,7 +934,8 @@ class ColorFeaturesLAB:
 		"""
 		Display helper function. Make a bank of three bars for the histogram. (16 in total, via 16 calls of this function.)
 		"""
-		ap = self._check_analysis_params(None)
+		# ap = self._check_cflab_params(None)
+		ap = self.analysis_params
 		grid_divs_x = ap['grid_divs_x']
 		grid_divs_y = ap['grid_divs_y']
 		# the 0.95 scalar is there so that there are gaps between the histograms in the grid view!
