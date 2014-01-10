@@ -424,7 +424,7 @@ class ColorFeaturesLAB:
 
 
 		
-	def playback_movie(self, offset=0, duration=-1):
+	def playback_movie(self, offset=None, duration=None):
 		"""
 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
 		::
@@ -434,7 +434,7 @@ class ColorFeaturesLAB:
 		"""
 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
 	
-	def playback_movie_frame_by_frame(self, offset=0, duration=-1, **kwargs):
+	def playback_movie_frame_by_frame(self, offset=None, duration=None):
 		"""
 		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Equivalent to:
 		::
@@ -444,8 +444,14 @@ class ColorFeaturesLAB:
 		"""
 		# ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
-		offset_s = float(offset) / (ap['fps'] / ap['stride'])
-		dur_s = float(duration) / (ap['fps'] / ap['stride'])
+		if offset is None:
+			offset_s = float(ap['offset']) / (ap['fps'] / ap['stride'])
+		else:
+			offset_s = float(offset) / (ap['fps'] / ap['stride'])
+		if duration is None:
+			dur_s = float(ap['duration']) / (ap['fps'] / ap['stride'])
+		else:
+			dur_s = float(duration) / (ap['fps'] / ap['stride'])
 		
 		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
 	
@@ -469,7 +475,7 @@ class ColorFeaturesLAB:
 		self.analysis_params['duration'] = dur_total_seconds
 		return dur_total_seconds
 	
-	def analyze_movie(self, offset=0, duration=-1, stride_frames=6):
+	def analyze_movie(self):
 		"""
 		Analyze the movie without displaying on screen. Equivalent to:
 		::
@@ -477,9 +483,9 @@ class ColorFeaturesLAB:
 			_process_movie(mode='analyze', display=False)
 		
 		"""
-		self._process_movie(mode='analyze', display=False, offset=offset, duration=duration)
+		self._process_movie(mode='analyze', display=False)
 
-	def analyze_movie_with_display(self, offset=0):
+	def analyze_movie_with_display(self):
 		"""
 		Analyze the movie; display on screen. Equivalent to:
 		::
@@ -488,7 +494,7 @@ class ColorFeaturesLAB:
 		"""
 		self._process_movie(mode='analyze', display=True)
 	
-	def _process_movie(self, **kwargs):
+	def _process_movie(self, mode='analyze', display=True, offset=None, duration=None):
 		"""
 		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
 		
@@ -505,7 +511,9 @@ class ColorFeaturesLAB:
 				
 		self.capture = cv2.VideoCapture(self.movie_path)
 		
-		display = ap['display']
+		ap['mode'] = mode
+		ap['display'] = display
+		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
@@ -556,7 +564,15 @@ class ColorFeaturesLAB:
 		
 		# last but not least, get total_frame_count and set up the memmapped file
 		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
-		dur_total_secs = ap['duration']
+		if offset is None:
+			offset_secs = ap['offset']
+		else:
+			offset_secs = offset
+		if duration is None:
+			dur_secs = ap['duration']
+		else:
+			dur_secs = duration
+		
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
 # 		if ap['duration'] < 0:
@@ -564,8 +580,9 @@ class ColorFeaturesLAB:
 # 		else:
 # 			dur_secs = ap['duration']
 		
-		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-		dur_secs = min(max(dur_total_secs, 0), (dur_total_secs - offset_secs))
+		# check offset first, then compress duration, if needed
+		offset_secs = min(max(offset_secs, 0), ap['duration'])
+		dur_secs = min(max(dur_secs, 0), (ap['duration'] - offset_secs))
 		offset_strides = int(offset_secs * (fps / stride_frames))
 		dur_strides = int(dur_secs * (fps / stride_frames))
 		offset_frames = offset_strides * stride_frames
@@ -574,7 +591,7 @@ class ColorFeaturesLAB:
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
 			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
-			print 'DUR TOTAL: ', dur_total_secs
+			print 'DUR TOTAL: ', ap['duration']
 			print "OFFSET (SECONDS): ", offset_secs
 			print "OFFSET (STRIDES): ", offset_strides
 			print "OFFSET (FRAMES): ", offset_frames
@@ -616,7 +633,8 @@ class ColorFeaturesLAB:
 
 		while self.frame_idx < end_frame:
 			
-			if verbose: print 'fr. idx: ', self.frame_idx / float(end_frame), ' (/ ', end_frame, ')'
+			if verbose:
+				print('fr. idx: %6i || %.4f (/%i) [ %i | %i ]' % (self.frame_idx, ((self.frame_idx - offset_frames) / float(dur_frames)), dur_frames, offset_frames, end_frame))
 
 			if (self.frame_idx%stride_frames) == 0:
 
