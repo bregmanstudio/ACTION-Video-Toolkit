@@ -8,8 +8,8 @@ from mvpa2.suite import *
 import pprint, pickle
 import multiprocessing
 
-ACTION_DIR = '/Volumes/ACTION/'
-# ACTION_DIR = '/Users/kfl/Movies/action/'
+# ACTION_DIR = '/Volumes/ACTION/'
+ACTION_DIR = '/Users/kfl/Movies/action/canon'
 
 def actionAnalyzeAll(inputlist, proc_limit):
 	print "Inputlist received..."
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 	# if we have some args, use them
 	os.chdir(ACTION_DIR)
 	
-	names = [os.path.dirname(file) for file in glob.glob('*/*.mov')][:75]
+	names = [os.path.dirname(file) for file in glob.glob('*/*.mov')]
 	#names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_cfl_hc.pkl')]
 	
 	to_be_pickled = [ttl for ttl in names]	
