@@ -17,8 +17,8 @@ def actionAnalyzeAll(hlist, plist, olist):
 	print olist
 	# create the pool
 	pool = multiprocessing.Pool(PROC_LIMIT)
-	pool.map(actionHistWorker, hlist)
-	pool.map(actionPCorrWorker, plist)
+	#pool.map(actionHistWorker, hlist)
+	#pool.map(actionPCorrWorker, plist)
 	pool.map(actionOFlowWorker, olist)
 
 
