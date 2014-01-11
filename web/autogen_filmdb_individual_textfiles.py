@@ -87,13 +87,14 @@ for file in glob.glob(os.path.join(ACTION_DIR, '*/*.color_lab')):
 # 		print 'ttl: ', ttl
 		htitles += [str(actionDB[ttl][0]).replace("_"," ")]
 
-		clinks += [HTML.link("COLOR FEATURES", ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=30"))]
+		# clinks += [HTML.link("COLOR FEATURES", ("film_detail.php?hash=" + hashstr + "&t=30&mf=20&g=30"))]
+		clinks += [HTML.link("COLOR FEATURES", ("actiondata/"+hashstr+"/cfl.png"))]
 		if audioflag == 1:
-			alinks += [HTML.link("AUDIO FEATURES", ("film_detail_audio.php?hash=" + hashstr + "&t=30&mf=20&g=30"))]
+			alinks += [HTML.link("AUDIO FEATURES", ("actiondata/"+hashstr+"/mfccs.png"))]
 		else:
 			alinks += ["n/a"]
 		if comboflag == 1:
-			calinks += [HTML.link("COMBINED FEATURES", ("film_detail_comboo.php?hash=" + hashstr + "&t=30&mf=20&g=30"))]
+			calinks += [HTML.link("COMBINED FEATURES", ("actiondata/"+hashstr+"/combo.png"))]
 		else:
 			calinks += ["n/a"]
 		dirs += [actionDirectors[ str(actionDB[ttl][1]) ][0] ]
