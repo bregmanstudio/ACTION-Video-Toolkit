@@ -595,7 +595,7 @@ class OpticalFlow:
 # 							print '?????????????????'
 # 							print combo_bins.min()
 # 							print combo_bins.max()
-							bins_histo, bin_edges = np.histogram(combo_bins, (grid_x_divs * grid_y_divs * theta_divs), (0., 512.), weights=weighted)	
+							bins_histo, bin_edges = np.histogram(combo_bins, (grid_x_divs * grid_y_divs * theta_divs), (0., 512.), weights=weighted)
 # 							print "bins_histo.shape: ", bins_histo.shape
 # 							print bins_histo
 							fp[fd] = bins_histo
