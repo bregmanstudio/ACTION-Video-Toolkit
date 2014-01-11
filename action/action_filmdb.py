@@ -89,7 +89,7 @@ class FilmDB:
 			'Only_Angels_Have_Wings': ['Only_Angels_Have_Wings', 'HH', 0, 1939],
 			'Pi': ['Pi', 'DA', 0, 1998],
 			'Pierrot_le_Fou': ['Pierrot_le_Fou', 'JLG', 1, 1965],
-			'Powaqqatsi': ['Powaqqatsi', 'other', 1, 1988],
+			#'Powaqqatsi': ['Powaqqatsi', 'other', 1, 1988],
 			'Psycho': ['Psycho', 'AH', 0, 1960],
 			'Raiders_of_the_Lost_Ark': ['Raiders_of_the_Lost_Ark', 'SS', 1, 1981],
 			'Raising_Arizona': ['Raising_Arizona', 'CB', 1, 1987],
@@ -160,6 +160,7 @@ class FilmDB:
 			'Winning_Back_His_Love_1910': ['Winning_Back_His_Love_1910', 'other', 0, 1910],
 			'With_the_Enemys_Help_1912': ['With_the_Enemys_Help_1912', 'other', 0, 1912]}
 		
+		#self.actionDocumentariesDB...
 		
 		# mapping of directors from name to name/num. b+w/num. color
 		self.actionDirectors = {
