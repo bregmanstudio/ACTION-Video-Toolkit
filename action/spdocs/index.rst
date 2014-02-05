@@ -46,6 +46,12 @@ You can also view the data alongside the imagery of the film:
 
 ACTION also has functionality for analyzing and accessing optical flow (movement) information and audio analysis metadata.
 
+Can I See a Demo
+================
+
+	We have created a page linking to `segmentation and visualization of ACTION data for 132 films <segmenter/action_db.html>`_.
+
+
 Overview
 ========
 
@@ -89,8 +95,8 @@ ACTION Python Modules
 	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
 	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
 	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
-	actiondata - data analysis and view routines <actiondata>
 	segment - segmentation and container data structure <segment>
+	actiondata - data analysis and view routines <actiondata>
 
 Indices and tables
 ==================
