@@ -156,7 +156,7 @@ There is a default stride time of 1 frames (so, actually, no striding), unless o
 
 	oflow = OpticalFlow('Psycho', stride=6)
 	
-*Very important*: It does not make sense to skip frames when analyzing, only when accessing. Also, since optical flow is based on comparisons between consecutive frames (in our case we are limiting ourselves to first-order differences) we are comparing adjoining frames in the movie, even though we then 'stride' forward to the next analysis frame. For one second at 24 fps with a stride value of 6, we examine frames 0, 1, 6, 7, 12, 13, 18, and 19, giving us 4 frames of analysis data. Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
+*Very important*: It does not make sense to skip frames when analyzing, only when accessing. Also, since optical flow is based on comparisons between consecutive frames (in our case we are limiting ourselves to first-order differences) we are comparing *all* frames in the movie, even though we then 'stride' forward to the next analysis frame upon access.  Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
 
 """
 
