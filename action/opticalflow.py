@@ -177,8 +177,7 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_opticalflow_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	have_cv = False
 import numpy as np
-from numpy import *
-import bregman.segment as bseg
+import action.segment as aseg
 
 QPI = math.pi / 4.0
 COLS = 64
@@ -276,7 +275,7 @@ class OpticalFlow:
 		}
 		return analysis_params
 		
-	def opticalflow_for_segment(self, segment=bseg.Segment(0, 60)):
+	def opticalflow_for_segment(self, segment=aseg.Segment(0, 60)):
 		"""
 		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -316,7 +315,7 @@ class OpticalFlow:
 		# r, c, full_data_path = self._glean_dimensions_from_filename(data_path)
 		return np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
 
-	def opticalflow_for_segment_with_stride(self, segment=bseg.Segment(0, 60), access_stride=6):
+	def opticalflow_for_segment_with_stride(self, segment=aseg.Segment(0, 60), access_stride=6):
 		"""
 		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
