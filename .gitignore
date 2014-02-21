@@ -4,3 +4,4 @@ build/*
 *.pyc
 
 action/spdocs/_build/*
+*.wis*
