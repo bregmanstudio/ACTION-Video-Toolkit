@@ -10,7 +10,7 @@ __email__ = 'thomas.m.stoll@dartmouth.edu'
 
 import sys, time, os, glob, pickle, pdb
 import numpy as np
-from bregman.suite import *
+# from bregman.suite import *
 try:
 	from sklearn.decomposition import *
 	import sklearn.decomposition as decomp
@@ -26,9 +26,9 @@ import pylab as P
 import matplotlib.pyplot as plt
 
 import action.segment as aseg
-import color_features_lab
-import opticalflow
-import phase_correlation
+import action.color_features_lab as color_features_lab
+import action.opticalflow as opticalflow
+import action.phase_correlation as phase_correlation
 
 DEFAULT_IMAGESC_KWARGS={'origin':'upper', 'cmap':P.cm.hot, 'aspect':'auto', 'interpolation':'nearest'}
 
@@ -430,3 +430,63 @@ class ActionView:
 			self.mod.playback_movie_frames(offset_f, dur_f)
 			time.sleep(interpause)
 
+
+
+#####
+# UTILITIES - borrowed from Bregman Toolkit
+
+def _normalize(x):
+    """
+    ::
+
+        static method to copy array x to new array with min 0.0 and max 1.0
+    """
+    y=x.copy()
+    y=y-P.np.min(y)
+    y=y/P.np.max(y)
+    return y
+
+def feature_plot(M, normalize=False, dbscale=False, norm=False, title_string=None, interp='nearest', bels=False, nofig=False,**kwargs):
+    """
+    ::
+
+        static method for plotting a matrix as a time-frequency distribution (audio features)
+    """
+    X = feature_scale(M, normalize, dbscale, norm, bels)
+    if not nofig: P.figure()
+    clip=-100.
+    if dbscale or bels:
+        if bels: clip/=10.
+        P.imshow(P.clip(X,clip,0),origin='lower',aspect='auto', interpolation=interp, **kwargs)
+    else:
+        P.imshow(X,origin='lower',aspect='auto', interpolation=interp, **kwargs)
+    if title_string:
+        P.title(title_string)
+    P.colorbar()
+
+def feature_scale(M, normalize=False, dbscale=False, norm=False, bels=False):
+    """
+    ::
+
+        Perform mutually-orthogonal scaling operations, otherwise return identity:
+          normalize [False]
+          dbscale  [False]
+          norm      [False]        
+    """
+    if not (normalize or dbscale or norm or bels):
+        return M
+    else:
+        X = M.copy() # don't alter the original
+        if norm:
+            X = X / P.tile(P.sqrt((X*X).sum(0)),(X.shape[0],1))
+        if normalize:
+            X = _normalize(X)
+        if dbscale or bels:
+            X = P.log10(P.clip(X,0.0001,X.max()))
+            if dbscale:                
+                X = 20*X
+    return X
+
+# convenience handles
+imagesc = feature_plot
+P.ion() # activiate interactive plotting
