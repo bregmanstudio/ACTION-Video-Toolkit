@@ -24,20 +24,20 @@ do
 	echo ""
 	if [ ! -f "${filename}/${filename}.cqf" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]; then
 		WAVFLAG=1
-		#echo '***********WAV ANALYSIS NEEDED*************'
-		#echo ''
-		#rm "${filename}/${filename}.wav"
-		#tmpfile=`mktemp ${filename}/${filename}.wav`
-		tmpfile="${filename}/${filename}.wav"
+		echo '***********WAV ANALYSIS NEEDED*************'
+		echo ''
+		rm "${filename}/${filename}.wav"
+		tmpfile=`mktemp ${filename}/${filename}.wav`
+		#tmpfile="${filename}/${filename}.wav"	
 		echo ">>> $tmpfile"
 	fi
 	echo "flag: $WAVFLAG"
 # 	if [ $WAVFLAG == 1 ]; then
-		#echo '===========================MPLAYER=========================='
-		#echo ''
-		#rm $tmpfile
-		#mplayer -ao pcm:file=$tmpfile "${filename}/${filename}.mov" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
-		#echo ">>> mplayer pcm:file=${tmpfile} ${filename}/${filename}.mov -benchmark -vc dummy -vo null & "
+		echo '===========================MPLAYER=========================='
+		echo ''
+		rm $tmpfile
+		mplayer -ao pcm:file=$tmpfile "${filename}/${filename}.mov" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
+		echo ">>> mplayer pcm:file=${tmpfile} ${filename}/${filename}.mov -benchmark -vc dummy -vo null & "
 		
 		#echo '===========================WAIT=========================='
 		#echo ''
