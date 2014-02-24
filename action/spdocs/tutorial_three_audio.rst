@@ -36,14 +36,13 @@ Access to audio is handled with audiodb, which is part of Bregman. We are assumi
 
 .. code-block:: python
 
-	from bregman.suite import *
-	import bregman.audiodb as adb
-	from pylab import *
+	
+	import pylab as P
 
-	power = adb.adb.read('~/Movies/action/Psycho/Psycho.power_C2_i16000')
-	cqft = adb.adb.read('~/Movies/action/Psycho/Psycho.cqft12_a0_C2_g0_i16000')
-	mfcc = adb.adb.read('~/Movies/action/Psycho/Psycho.mfcc_m13_M2_a0_C2_g0_i16000')
-	chroma = adb.adb.read('~/Movies/action/Psycho/Psycho.chrom12_a0_C2_g0_i16000')
+	powers = actiondata.adb.read('/Users/kfl/Movies/action/Vertigo/Vertigo.power')
+	cqfts = actiondata.adb.read('/Users/kfl/Movies/action/Vertigo/Vertigo.cqft')
+	mfccs = actiondata.adb.read('/Users/kfl/Movies/action/Vertigo/Vertigo.mfcc')
+	chromas = actiondata.adb.read('/Users/kfl/Movies/action/Vertigo/Vertigo.chrom')
 
 These four calls will load in power, constant-Q Fourier transform, Mel-frequency cepstral coefficients, and Chromagram data, respectively.
 
@@ -56,15 +55,16 @@ Plot the power data with the plot function from Pylab:
 
 	plt.plot(power)
 
-.. image:: /images/power_plot.png
+.. image:: /images/action_tut3_powers.png
 
 
-Plot the other data using imagesc (wrapper in Bregman for 2D data), e.g.:
+Plot the other data using imagesc (wrapper borrowed from Bregman for 2D data), e.g.:
 
 .. code-block:: python
 
 	imagesc(mfcc)
 	
-.. image:: /images/mfcc_imagesc.png
+.. image:: /images/action_tut3_mfccs.png
+
 
 `Next <example_one_clustering.html>`_: Example of basic video data clustering.

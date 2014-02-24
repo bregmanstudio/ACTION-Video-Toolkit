@@ -5,7 +5,7 @@ Tutorial One: Setup and Analysis
 Abstract
 ========
 
-This tutorial will show how one performs analysis of both the audio and video in a feature-length film. It is assumed that the reader has at least some familiarity with Python or a similar coding language, i.e. Ruby, Javascript, etc. and is comfortable using the command line. The current version of the tutorial is tested with Mac OS 10.8.
+This tutorial will show how one performs analysis of both the audio and video in a feature-length film. It is assumed that the reader has at least some familiarity with Python or a similar coding language, i.e. Ruby, Javascript, etc. and is comfortable using the command line. These tutorials have been tested with Mac OS 10.8 and, more recently, 10.9.
 
 Prerequisites
 =============
@@ -41,7 +41,9 @@ Set Up Python Environment
 -------------------------
 On Mac OS 10.6.8, it is highly recommended that you use `Enthought Python <https://www.enthought.com/products/epd/>`_, which includes Numpy/Scipy/IPython/MPL. Download OpenCV from `opencv.org <http://opencv.org/>`_ and install using CMake according to their instructions.
 
-For Mac OS 10.7 and later, we use the Python version supplied by Apple: 2.7.3 (as of summer 2013). Download OpenCV from `opencv.org <http://opencv.org/>`_ and install using CMake according to their instructions.
+For Mac OS 10.7.* and 10.8.*, we have tested the Python version supplied by Apple: 2.7.3 (as of summer 2013). Download the Python `Scipy SuperPack <http://fonnesbeck.github.io/ScipySuperpack/>`_ for your OS version. Download OpenCV from `opencv.org <http://opencv.org/>`_ and install using CMake according to their instructions.
+
+On Mac OS 10.8.* and 10.9.*, we have tested `MacPorts <http://macports.org>`_ Python as well as Apple's version. 
 
 You should be able to ``import`` all the aforementioned modules successfully; if you can, you have successfully set up Python for use with ACTION.
 
@@ -55,19 +57,19 @@ MacTheRipper or some other ripper is used to create an uncompressed version of t
 
 Get mplayer
 -----------
-`Mplayer <http://www.mplayerhq.hu/design7/dload.html>`_ is an app for playing video/movie files from the command line or a bash script. We use mplayer to automate the audio extraction part. Install it according to the directions in the README file.
+`Mplayer <http://www.mplayerhq.hu/design7/dload.html>`_ is an app for playing video/movie files from the command line or a bash script. We use mplayer to automate audio extraction. Install it according to the directions in its README file.
 
 Get fftExtract
 --------------
-Finally, download `fftExtract <http://omras2.doc.gold.ac.uk/software/fftextract/>`_. fftExtract is a C program that is called from the command line or bash script. The features that it extracts are identical to those extracted by the feature extraction class in the Bregman Toolkit, but runs faster.
+Finally, download `fftExtract <http://omras2.doc.gold.ac.uk/software/fftextract/>`_. fftExtract is a C program that is called from the command line or bash script. The features that it extracts are *similar* to those extracted by the feature extraction classes in the Bregman Toolkit, but runs faster.
 
 Locate Analysis Scripts
 -----------------------
-There are some analysis helper scripts in the "helpers" directory of ACTION. These are scripts, one written in bash and one in Python, for batching analyses. You can, of course, perform each command separately.
+There are some analysis helper scripts in the ``scripts`` directory of ACTION. These are scripts, one written in bash and one in Python, for batching analyses. You can, of course, perform each command separately.
 
 Make an Action Directory
 ------------------------
-This is not a requirement, but simply a default. I use ~/Movies/action to organize my ACTION files. If you have a way that you would rather use, you may pass your own path to the various Python functions.
+This is not technically a requirement, but simply a default. I use ~/Movies/action to organize my ACTION files. If you have a folder that you would rather use, you may pass your own path to the various Python functions.
 
 Rip Your DVD
 ------------
@@ -75,40 +77,43 @@ This `document <http://bregman.dartmouth.edu/action/resourses/DVD_to_JPEG_Motion
 
 Extract Video
 -------------
-This is really the heart of ACTION. We have two analysis routines that take frames of video and analyze their color content (plus implicit spatial information) and optical flow.
+This is really the heart of ACTION. We have several types of analysis routines that take frames of video and analyze their color content (plus implicit spatial information) and optical flow.
 
 Using the Python classes directly:
 
-#. Move your .mov file(s) to ~/Movies/action/DVD_TITLE, or to your preferred location. For each movie, the folder with the standardized title should contain the .mov file (copy it to there) and will be where ACTION writes all data files.
-#. Fire up the Python interpreter by launching ipython.
+#. Move your .mov file(s) to ~/Movies/action/DVD_TITLE, or to your preferred location. For each movie, the folder with the standardized title should contain the .mov file (copy it to there) and will be where ACTION writes all data files. Either in IPython or in a Python script, these are the basic steps:
+
 #. ``from action import *`` 
 #. Create a ColorFeaturesLAB object: ``cflab = color_features_lab.ColorFeaturesLAB(TITLE)`` where ``TITLE`` is the standardized title string for the film (without any extension).
 #. Call ``cflab.analyze_histogram_for_movie()``. You can also try ``cflab.analyze_color_features_for_movie_with_display()`` to see a visualization of the analysis data as the process runs.
-#. Wait for analysis to complete. You will have the ColorFeatures analysis file in your action movies folder alongside MOVIE.mov.
-#. Create an optical flow object: ``oflow = opticalflow24.OpticalFlow24(TITLE)`` where ``TITLE`` is the standardized title string for the film (without any extension).
+#. Wait for analysis to complete. You will have the L*a*b* color features analysis file in your action movies folder alongside MOVIE.mov.
+#. Create an optical flow object: ``oflow = opticalflow.OpticalFlow(TITLE)`` where ``TITLE`` is the standardized title string for the film (without any extension).
 #. Call ``oflow.analyze_opticalflow_for_movie()``.
 #. Once this analysis is done, you will have raw optical flow data for the entire film in your action movies folder.
+#. Carry out the same steps for additional analysis classes. Each class implements one type of feature extraction.
 
 Using our batch Python script:
 
-#. Move your .mov file(s) to ~/Movies/action, or to your preferred location. For each movie, there should be a folder with the standardized title that contains the .mov file and will be where ACTION writes all data files.
+#. Move your .mov file(s) to ~/Movies/action, or to your preferred location. For each movie, there should be a single folder with the standardized title that contains the .mov file and will be where ACTION writes all data files.
 #. Launch Terminal and ``cd`` to the directory with your analysis scripts.
-#. Call ``python  batch_analyze_video-threaded ACTION_DIR NUM_PROCESSES``. This will run your video analysis in a batch mode. You should set ``ACTION_DIR`` to ~/Movies/action/ or whatever you used (see above). Set ``NUM_PROCS`` to the number of simultaneous processes to use.
-#. Sit back and let bash do all the work. Your video analysis data will reside in two files alongside your .mov file in the movies' directories.
+#. Call ``python  batch_analyze_video-threaded ACTION_DIR NUM_PROCS``. This will run your video analysis in a batch mode. You should set ``ACTION_DIR`` to ~/Movies/action/ or whatever you used (see above). Set ``NUM_PROCS`` to the number of simultaneous processes to use.
+#. Sit back and let bash do all the work. Your video analysis data will reside in files alongside your .mov file in the movies' directories.
+
+Please see ``scripts/batch_analyze_audio_48000.sh``
 
 Extract Audio
 -------------
 
-We use mplayer to extract the raw audio data from the movie file, and then use fftExtract to extract spectral data: Short Term Fourier Transform (STFT), Constant-Q Fourier Transform (CQFT), Mel Frequency Cepstrum Coefficients (MFCC), Chroma, and Power. fftExtract, a command-line program, is simply a version of the same analysis tools found in the Bregman Toolkit, but coded in C.
+We use mplayer to extract the raw audio data from the movie file, and then use fftExtract to extract spectral data: Short Term Fourier Transform (STFT), Constant-Q Fourier Transform (CQFT), Mel Frequency Cepstrum Coefficients (MFCC), Chroma, and Power. fftExtract, a command-line program, is simply a similar version of the same analysis tools found in the Bregman Toolkit, but coded in C, and able to handle a whole WAVE file from a feature-length film.
 
-Using Bregman for audio analysis : you can find a general tutorial `here <http://bregman.dartmouth.edu/~bregman/bregman/bregman_r12-09.15/bregman/examples/1_features.txt>`_ for using Bregman.
+Using Bregman for audio analysis : you can find a `general tutorial <http://bregman.dartmouth.edu/bregman/bregman/bregman_r12-09.15/bregman/examples/1_features.txt>`_ for using Bregman's features, as well as `general information about Bregman <http://bregman.dartmouth.edu/bregman>`_
 
 Using fftExtract:
 
 #. Move your .mov file(s) to ~/Movies/action, or to your preferred location. For each movie, there should be a folder with the standardized title that contains the .mov file and will be where ACTION writes all data files.
 #. Launch Terminal and ``cd`` to the directory with your analysis scripts. If you just performed video analysis, you should already be in that directory.
-#. Call ``python  batch_analyze_audio_48000.sh``.
-#. Sit back and let bash do some more work. Your audio analysis data will reside in four files alongside your .mov file in the movies directory. There will also be a .wav file created. You are free to throw it away.
+#. Call ``sh ./batch_analyze_audio_48000.sh``.
+#. Sit back and let bash do the work. Your audio analysis data will reside in four files alongside your .mov file in the movies directory. There will also be a .wav file created. You are free to throw it away.
 
 
 Using the Data
