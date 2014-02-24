@@ -430,7 +430,36 @@ class ActionView:
 			self.mod.playback_movie_frames(offset_f, dur_f)
 			time.sleep(interpause)
 
+import pylab as P
 
+class adb:
+    """
+    ::
+    
+        A helper class for handling audiodb databases
+    """
+    @staticmethod
+    def read(fname, dtype='<f8'):
+        """
+        ::
+
+            read a binary little-endien row-major adb array from a file.
+            Uses open, seek, fread
+        """
+        fd = None
+        data = None
+        try:
+            fd = open(fname, 'rb')
+            dim = pylab.np.fromfile(fd, dtype='<i4', count=1)
+            data = pylab.np.fromfile(fd, dtype=dtype)
+            data = data.reshape(-1,dim)
+            return data
+        except IOError:
+            print "IOError: Cannot open %s for reading." %(fname)
+            raise IOError
+        finally:
+            if fd:
+                fd.close()
 
 #####
 # UTILITIES - borrowed from Bregman Toolkit
