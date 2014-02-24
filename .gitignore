@@ -2,6 +2,7 @@
 build/*
 
 *.pyc
+*.sh~
 
 action/spdocs/_build/*
 *.wis*
