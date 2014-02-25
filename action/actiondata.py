@@ -12,18 +12,19 @@ import sys, time, os, glob, pickle, pdb
 import numpy as np
 # from bregman.suite import *
 try:
-	from sklearn.decomposition import *
-	import sklearn.decomposition as decomp
+# 	from sklearn.decomposition import *
+	from sklearn.decomposition import PCA
+	from sklearn.cluster import KMeans
 	from sklearn.cluster import Ward
 	have_sklearn = True
 except ImportError:
-	print 'WARNING: sklearn not found. Ward (hierarchical) clustering disabled.'
+	print 'WARNING: sklearn not found. PCA, KMeans + Ward (hierarchical) clustering disabled.'
 	have_sklearn = False
 from scipy import sparse
 from scipy import ndimage
 import mpl_toolkits.mplot3d.axes3d as p3
-import pylab as P
 import matplotlib.pyplot as plt
+import pylab as P
 
 import action.segment as aseg
 import action.color_features_lab as color_features_lab
@@ -80,7 +81,7 @@ class ActionData:
 		"""
 		"""
 		try:
-			pca = decomp.PCA()
+			pca = PCA()
 		except NameError:
 			print 'WARNING: sklearn decomposition function disabled.'
 			return None
@@ -102,7 +103,7 @@ class ActionData:
 		chunked_data[:] = raw_data
 		print "chunked: ", chunked_data.shape
 		print "rds: ", raw_data.shape
-		scipy.ndimage.uniform_filter(raw_data, (width, channels), output=chunked_data)
+		ndimage.uniform_filter(raw_data, (width, channels), output=chunked_data)
 		
 		print "WH: ", win_hops[-1]
 		print "hop: ", hop
@@ -226,8 +227,9 @@ class ActionData:
 		args: raw data in ML orientation, K number of desired clusters
 		returns: array with cluster index assignments, max assignment index
 		"""
-		km = KMeans(k)
-		assigns = km.train(raw_data)
+		km = KMeans(k, n_jobs=1)
+		km = km.fit(raw_data)
+		assigns = km.labels_
 		max_assign = np.max(assigns)
 		return assigns, max_assign
 	
