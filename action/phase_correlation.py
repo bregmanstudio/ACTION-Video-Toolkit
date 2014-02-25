@@ -230,7 +230,7 @@ class PhaseCorrelation:
 		}
 		return analysis_params
 	
-	def all_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def all_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from ACTION!
 		Takes a movie/file name and a Segment object that describes the desired timespan.
@@ -246,10 +246,10 @@ class PhaseCorrelation:
 			>>> (1440, 768)
 		
 		"""
-		res = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+		res = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0:-1:access_stride]
 		return (res[0].reshape(-1, 2), res[1].reshape(-1, 128))
 	
-	def full_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def full_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		Equivalent to:
 		::
@@ -257,10 +257,10 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)[0:-1:access_stride]
 		return self.X
 	
-	def gridded_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def gridded_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms (all 64 bins) in the following order:
 		::
@@ -280,10 +280,10 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[0:-1:access_stride]
 		return self.X
 	
-	def center_quad_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def center_quad_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -302,10 +302,10 @@ class PhaseCorrelation:
 		
 		"""
 		cq_array = range(18,22)+range(26,30)+range(34,38)+range(42,46)
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[0:-1:access_stride]
 		return self.X
 
-	def middle_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def middle_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -323,10 +323,10 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1][:,16:47,...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:47,...].reshape(-1, 64)
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[0:-1:access_stride]
 		return self.X
 	
-	def plus_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def plus_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -346,14 +346,14 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1][:,[2..5,10..13,16..47,50..53,58..61],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		plus_array = range(2,6)+range(10,14)+range(16,47)+range(50,53)+range(58,61)
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)
+		plus_array = range(2,6)+range(10,14)+range(16,48)+range(50,54)+range(58,62)
+		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)[0:-1:access_stride]
 
-	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=aseg.Segment(0, -1)):
+	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
-		return getattr(self,func)(segment)
+		return getattr(self,func)(segment, access_stride)
 
 	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
 
@@ -396,7 +396,7 @@ class PhaseCorrelation:
 		if duration_frames < 0:
 			dur_frames = int(self.determine_movie_length() * (ap['fps'] / ap['stride']))
 		else:
-			dur_frames = int(duration_frames)
+			dur_frames = int(duration_frames * (ap['fps'] / ap['stride']))
 		
 		print 'dur: ', dur_frames
 		# print "data path: ", self.data_path
