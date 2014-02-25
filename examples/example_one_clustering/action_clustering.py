@@ -7,19 +7,21 @@ from action import *
 import action.segment as aseg
 import numpy as np
 
-# 4A: K-means Clustering of first 2400 frames (10 minutes)
-def ex_4A(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title)
+ACTION_DIR = '/Users/kfl/Movies/action'
+
+# 1A: K-means Clustering of first 2400 frames (10 minutes)
+def ex_1A(title):
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
 	ten_minute_segment = aseg.Segment(0, duration=length)
-	cf_ten_minute_segment = hist.center_quad_histogram_for_segment(ten_minute_segment)
+	cf_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
 
 	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_ten_minute_segment, locut=0.0001)
 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4)
 
-	nc = 300
+	nc = 30 # sample 300 frames from total pool of 600 or 5%.
 	km_assigns, km_max_assign = ad.cluster_k_means(sliding_averaged, nc)
 
 	av = actiondata.ActionView(None)
@@ -27,14 +29,13 @@ def ex_4A(title):
 	av.plot_hcluster_segments(km_assigns, km_max_assign) #, 'K Means - segmentation view')
 
 
-# 4B: Hierarchical Clustering of full movie
-
-def ex_4B(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title)
+# 1B: Hierarchical Clustering of full movie
+def ex_1B(title):
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = cfl.determine_movie_length() # in seconds
 	full_segment = aseg.Segment(0, duration=length)
-	#cf_full_film = cfl.center_quad_histogram_for_segment(full_segment)
-	cf_full_film = cfl.middle_band_histogram_for_segment(full_segment)
+	#cf_full_film = cfl.center_quad_color_features_for_segment(full_segment)
+	cf_full_film = cfl.middle_band_color_features_for_segment(full_segment)
 
 	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
@@ -50,12 +51,12 @@ def ex_4B(title):
 
 
 
-def ex_4C(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title)
+def ex_1C(title):
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = cfl.determine_movie_length() # in seconds
 	full_segment = aseg.Segment(0, duration=length)
-	#cf_full_film = cfl.center_quad_histogram_for_segment(full_segment)
-	cf_full_film = cfl.middle_band_histogram_for_segment(full_segment)
+	#cf_full_film = cfl.center_quad_color_features_for_segment(full_segment)
+	cf_full_film = cfl.middle_band_color_features_for_segment(full_segment)
 
 	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
@@ -85,7 +86,7 @@ def ex_4C(title):
 	av.plot_clusters(comd, labeling, 'HC centers of mass, decomposed - first three dimensions (0-2)')
 
 if __name__ == "__main__":
-	title = 'North_by_Northwest'
+	title = 'Vertigo'
 	
 	F1A = ex_1A(title)
 	F1B = ex_1B(title)
