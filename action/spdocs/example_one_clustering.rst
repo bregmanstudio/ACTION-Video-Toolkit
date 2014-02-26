@@ -34,7 +34,7 @@ Create a histogram object, instantiating it with the standardized title (no exte
 
 .. code-block:: python
 
-	cfl = color_features_lab.ColorFeaturesLAB('North_by_Northwest')
+	cfl = color_features_lab.ColorFeaturesLAB(TITLE, action_dir=ACTION_DIR)
 
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
@@ -62,11 +62,11 @@ We have provided some convenient helper functions in the ``ActionData`` and ``Ac
 Perform the actual clustering
 -----------------------------
 
-Now we do some actual clustering. Each frame is assigned to a K means cluster.
+Now we do some actual clustering. There are 600 * 4 / 4 = 600 frames in our segment that we extracted above, so let's assign 60 clusters or 10% of the total. Each frame is assigned to a K means cluster.
 
 .. code-block:: python
 
-	nc = 300
+	nc = 60
 	km_assigns, km_max_assign = ad.cluster_k_means(sliding_averaged, nc)
 
 Plot the clusters
@@ -80,8 +80,8 @@ Finally, we plot the clusters two ways. First as points in 3-dimensional space (
 	av.plot_clusters(sliding_averaged, km_assigns)
 	av.plot_hcluster_segments(km_assigns, km_max_assign)
 
-.. image:: /images/action_ex1_kmeans.png
-.. image:: /images/action_ex1_kmeans_segments.png
+.. image:: /images/action_ex1A_kmeans.png
+.. image:: /images/action_ex1A_kmeans_segments.png
 
 Hierarchical Clustering
 -----------------------
@@ -90,15 +90,15 @@ Instead of k-means clustering, here is an example of hierarchical clustering of 
 
 .. code-block:: python
 
-nc = 200
-hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
+	nc = 1000
+	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
-av = actiondata.ActionView()
-av.plot_clusters(decomposed, hc_assigns)
-av.plot_hcluster_segments(hc_assigns, nc)
+	av = actiondata.ActionView()
+	av.plot_clusters(decomposed, hc_assigns)
+	av.plot_hcluster_segments(hc_assigns, nc)
 
-.. image:: /images/action_ex1_lowest_dims.png
-.. image:: /images/action_ex1_segs.png
+.. image:: /images/action_ex1B_dims_0_2.png
+.. image:: /images/action_ex1B_segs_zoomed.png
 
 Let's try looking at dimensions 1-3 of the decomposed result (leaving out the dimension with the most variance). Since we can only visualize up to three dimensions of data at one time, this will give us a new way of seeing how the points cluster (or fail to do so). The view is different, and it's been rotated to show an interesting view. Here's the code for this second view:
 
@@ -106,12 +106,12 @@ Let's try looking at dimensions 1-3 of the decomposed result (leaving out the di
 
 	av.plot_clusters(decomposed[:,1:], hc_assigns)
 
-.. image:: /images/action_ex1_hierarchical_dims_1-3.png
+.. image:: /images/action_ex1B_dims_1_3.png
 
 Kmeans is not deterministic; Hierarchical is
 --------------------------------------------
 
-Since K means clustering is not deterministic, the resulting clusterings will be different each time. To cope with this, you can rerun the above several times and find an average. Hierarchical clustering of the same data performs the same each time, so we can do this simple clustering in one pass.
+Since K means clustering is not deterministic, the resulting clusterings will be different each time. To cope with this, you can rerun the above several times and collect the best results. Hierarchical clustering of the same data performs the same each time, so we can do this simple clustering in one pass and always know that it will be the same.
 
 Using clustering to view lots of films
 --------------------------------------
