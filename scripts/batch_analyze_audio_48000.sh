@@ -1,64 +1,73 @@
 #!/bin/bash
-# invoke: ./batch_analyze_audio_48000 path/to/folder/of/movs/to/extract path/from/there/to/folder/for/analysis/data
-# *OR*
-#         ./batch_analyze_audio_48000 path/to/folder/of/movs/to/extract path/to/folder/for/analysis/data
+# invoke: ./batch_analyze_audio_48000 path/to/folder/of/movs/to/extract
+#
+# ANALYSIS METADATA written to same folder as MOV and WAV files!
 
-OUTDIR=$2
 DIR=$( cd "$( dirname "$0" )" && pwd )
 echo $DIR
 echo 'starting...'
 MOVDIR=$1
 cd $MOVDIR
-ls */*.mov | while read m
+ls No_Blood_Relation/No_Blood_Relation.mov | while read m
 do
-	cd $DIR
-	filename=$(basename "$m")
-	filename="${filename%.*}"
-	echo " >>> $MOVDIR/$m"
-	echo " >>> $filename"
-	WAVFLAG=0
-	echo "=== checking for analysis files..."
-	echo " (if all the audio analysis files exist, no WAV file is generated...) "
-	echo ""
-	if [ ! -f "$OUTDIR/${filename}/${filename}.cqft" ] || [ ! -f "$OUTDIR/${filename}/${filename}.chrom" ] || [ ! -f "$OUTDIR/${filename}/${filename}.mfcc" ] || [ ! -f "$OUTDIR/${filename}/${filename}.power" ]; then
-		WAVFLAG=1
-		echo '***********WAV ANALYSIS NEEDED*************'
-		echo ''
-		tmpfile=`mktemp $OUTDIR/${filename}/${filename}.wav`
-		echo ">>> $tmpfile"
-	fi
-	echo "flag: $WAVFLAG"
-	if [ $WAVFLAG == 1 ]; then
-		echo '===========================MPLAYER=========================='
-		echo ''
-		mplayer -ao pcm:file=$tmpfile "${MOVDIR}/${m}" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
-		echo ">>> mplayer -ao pcm:waveheader pcm:file=$tmpfile $MOVDIR/$m -benchmark -vc dummy -vo null & "
-		
-		echo '===========================WAIT=========================='
-		echo ''
-		wait
-	fi
-	# echo '===========================@FFT_EXTRACT@=========================='
-	# echo ''
-	if [ ! -f "$OUTDIR/${filename}/${filename}.power" ] && [ $WAVFLAG == 1 ]; then
+    filename=$(basename "$m")
+    filename="${filename%.*}"
+    echo " >>> $filename"
+
+    #echo "=== convert MP4 -> MOV MJPEG..."
+    #echo "rm ${filename}/${filename}.mov"
+    #echo "ffmpeg -i ${filename}/${filename}.mp4 -vcodec mjpeg -y -r 24 -acodec pcm_s16le ${filename}/${filename}.mov &"
+    #rm "${filename}/${filename}.mov"
+    #ffmpeg -i "${filename}/${filename}.mp4" -vcodec mjpeg -y -r 24 -acodec pcm_s16le "${filename}/${filename}.mov" &
+    #wait
+
+    WAVFLAG=0
+    echo "=== checking for analysis files..."
+    echo " (if all the audio analysis files exist, no WAV file is generated...) "
+    echo ""
+    if [ ! -f "${filename}/${filename}.cqft" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]; then
+    WAVFLAG=1
+    echo '***********WAV ANALYSIS NEEDED*************'
+    echo ''
+    rm "${filename}/${filename}.wav"
+    tmpfile=`mktemp ${filename}/${filename}.wav`
+    #tmpfile="${filename}/${filename}.wav"
+    echo ">>> $tmpfile"
+    fi
+    echo "flag: $WAVFLAG"
+    # 	if [ $WAVFLAG == 1 ]; then
+    echo '===========================MPLAYER=========================='
+    echo ''
+    mplayer -ao pcm:waveheader -ao pcm:file=$tmpfile "${filename}/${filename}.mov" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
+    echo ">>> mplayer -ao pcm:waveheader -ao pcm:file=${tmpfile} ${filename}/${filename}.mov -benchmark -vc dummy -vo null & "
+
+    echo '===========================WAIT=========================='
+    echo ''
+    wait
+    # 	fi
+    # echo '===========================@FFT_EXTRACT@=========================='
+    # echo ''
+
+
+    if [ ! -f "${filename}/${filename}.power" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin Power extraction...'
-		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -P -l 62.5 -i 16000 -C 2 $tmpfile $OUTDIR/${filename}/${filename}.power"
-		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -P -l 62.5 -i 16000 -C 2 $tmpfile "$OUTDIR/${filename}/${filename}.power"
+		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -P -l 62.5 -i 16000 -C 2 $tmpfile ${filename}/${filename}.power"
+		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -P -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.power"
 	fi
-	if [ ! -f "$OUTDIR/${filename}/${filename}.cqft" ] && [ $WAVFLAG == 1 ] ; then
+	if [ ! -f "${filename}/${filename}.cqft" ] && [ $WAVFLAG == 1 ] ; then
 		echo '=== begin CQFT extraction...'
-		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile $OUTDIR/${filename}/${filename}.cqft"
-		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile "$OUTDIR/${filename}/${filename}.cqft"
+		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile ${filename}/${filename}.cqft"
+		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.cqft"
 	fi
-	if [ ! -f "$OUTDIR/${filename}/${filename}.mfcc" ] && [ $WAVFLAG == 1 ]; then
+	if [ ! -f "${filename}/${filename}.mfcc" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin MFCC extraction...'
-		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile $OUTDIR/${filename}/${filename}.mfcc"
-		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile "$OUTDIR/${filename}/${filename}.mfcc"
+		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile ${filename}/${filename}.mfcc"
+		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.mfcc"
 	fi
-	if [ ! -f "$OUTDIR/${filename}/${filename}.chrom" ] && [ $WAVFLAG == 1 ]; then
+	if [ ! -f "${filename}/${filename}.chrom" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin Chroma extraction...'
-		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile $OUTDIR/${filename}/${filename}.chrom"
-		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile "$OUTDIR/${filename}/${filename}.chrom"
+		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile ${filename}/${filename}.chrom"
+		fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.chrom"
 	fi
 # comment  rm wav file
 #	if [ $WAVFLAG == 1 ]; then
