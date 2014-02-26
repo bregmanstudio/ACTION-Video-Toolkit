@@ -1,9 +1,9 @@
-import glob, os, argparse
+import glob, os, argparse, math
 from action import *
 import numpy as np
 import action.segment as aseg
 from bregman.suite import *
-from mvpa2.suite import *
+# from mvpa2.suite import *
 import pprint, pickle
 
 ACTION_DIR = os.path.expanduser('~/Movies/action/')
@@ -31,7 +31,7 @@ def actionSegmenterHC(title, onset_ratio=0.0, dur_ratio=1.0, frame_density=0.1):
 	decomposed = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
 	print "<<<<  ", decomposed.shape
 
-	nc = int(floor(length_in_frames * frame_density)) - 1
+	nc = int(math.floor(length_in_frames * frame_density)) - 1
 	print ' NC:>> ', nc
 
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
@@ -173,7 +173,7 @@ imagesc(resegmented_data.T, title_string='Segmented features, no temporal struct
 counter = 0
 final_segs_stack = final_segs[:]
 final_resegmented = np.zeros(384, dtype=np.float32)
-cfl = color_features_lab.ColorFeaturesLAB('A_Serious_Man', action_dir=ACTION_DIR)
+cfl = color_features_lab.ColorFeaturesLAB('Vertigo', action_dir=ACTION_DIR)
 
 for i in range(0, int(cfl.determine_movie_length()), 60):
         # always concat
@@ -194,12 +194,13 @@ imagesc(final_resegmented.T, title_string='Segmented features (1 min. granularit
 
 
 # Finally, let's see a segmented within-film similarity map
-imagesc(distance.euc2(final_resegmented, final_resegmented))
+imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Similarity map based on segments')
 
-# There's a bit of a problem with white cells (nans), so we zero-mask nans
-distances = distance.euc2(final_resegmented, final_resegmented)
-distances = ad.zeromask_data(distances)
-imagesc(distances)
+
+# There can be a bit of a problem with white cells (nans); if so, we zero-mask nans
+# distances = distance.euc2(final_resegmented, final_resegmented)
+# distances = ad.zeromask_data(distances)
+# imagesc(distances)
 
 
 """

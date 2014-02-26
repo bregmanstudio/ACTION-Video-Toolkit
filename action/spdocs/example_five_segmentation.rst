@@ -10,7 +10,7 @@ This example shows a two-pass segmentation algorithm. The first pass uses hierar
 First Pass: Hierarchical Segmenter
 ==================================
 
-First some preliminaries, then the function ``actionSegmenterHC`` performs clustering on color features. It then converts those clusters to segments, using the Bregman Segment class. It returns the segments (including feature data) plus the segmenter's assignments of frames to segments.
+First some preliminaries, then the function ``actionSegmenterHC`` performs clustering on color features. It then converts those clusters to segments, using the ACTION/Bregman Segment class. It returns the segments (including feature data) plus the segmenter's assignments of frames to segments.
 
 .. code-block:: python
 
@@ -165,4 +165,12 @@ A Better View
 
 .. image:: images/action_ex5_segmented_temporal.png
 
-We have presented one way to automatically segment and then view the subsequent data for a feature film using ACTION.
+Finally, let's see the similarity matrix for our segmented data:
+ 
+.. code-block:: python
+
+	imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Similarity map based on segments')
+
+.. image:: images/action_ex5_sim_matrix.png
+
+We have presented one way to automatically segment and then view the subsequent data for a feature film using ACTION. In the `next <example_six_director_prediction.html>`_ section, we will use the some of this data to predict directors.
