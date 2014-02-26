@@ -574,7 +574,7 @@ class PhaseCorrelation:
 			
 			if ap['mode'] == 'playback' and ap['display'] == True:
 				fret = fp[self.frame_idx][64]
-				print fret
+				# print fret
 			else:
 				fret, fres = cv2.phaseCorrelateRes(prev_frame_gray, np.float32(frame_gray[:]), fhann)
 				print fret
@@ -601,10 +601,16 @@ class PhaseCorrelation:
  						else:
 							fp[self.frame_idx][(row*grid_x_divs)+col] = [0,0]
 					if ap['display'] == True:
-						print gret
-						if gret != (0,0) and gret != grid_size and (abs(gret[0]) < grid_size[0]) and (abs(gret[1]) < grid_size[1]):
-							xval = int((gret[0]*10)+centers_x[col])
-							yval = int((gret[1]*10)+centers_y[row])
+# 						print gret
+# 						print grid_size
+# 						print abs(gret[0]*10.0)
+# 						print grid_size[0]
+# 						print abs(gret[1]*10.0)
+# 						print grid_size[1]
+						
+						if (gret[0] != 0 and gret[1] != 0):
+							xval = int(min((gret[0]*100), grid_size[0])+centers_x[col])
+							yval = int(min((gret[1]*100), grid_size[1])+centers_y[row])
 							# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
 							cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
 				
