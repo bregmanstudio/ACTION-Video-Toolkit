@@ -280,7 +280,7 @@ class ActionData:
 		return ((data - the_min) / (the_max - the_min))
 	
 	def standardize_data(self, data):
-		return (data - data.mean(axis=0)) / data.var(axis=0)
+		return (data - data.mean(axis=0)) / data.std(axis=0)
 	
 	def meanmask_data(self, data):
 		D = np.ma.masked_invalid(data)
@@ -328,7 +328,7 @@ class ActionView:
 		for k in range (nc):
 			z[k, np.where(hclusters==k)[0]]=k+1
 		imagesc(z)
-		return z
+		P.show()
 	
 	def plot_segment_length_distribution(self, segs):
 		"""
@@ -351,6 +351,7 @@ class ActionView:
 		for l in np.unique(labeling):
 			ax.plot3D(X[labeling == l, 0], X[labeling == l, 1], X[labeling == l, 2],'o', color=P.cm.jet(np.float(l) / np.max(labeling + 1)))
 		P.title(ttl)
+		P.show()
 	
 # 	def plot_similarity_matrix(self, X, ttl='Similarity/distance matrix'):
 
@@ -432,7 +433,6 @@ class ActionView:
 			self.mod.playback_movie_frames(offset_f, dur_f)
 			time.sleep(interpause)
 
-import pylab as P
 
 class adb:
     """
@@ -452,8 +452,8 @@ class adb:
         data = None
         try:
             fd = open(fname, 'rb')
-            dim = pylab.np.fromfile(fd, dtype='<i4', count=1)
-            data = pylab.np.fromfile(fd, dtype=dtype)
+            dim = P.np.fromfile(fd, dtype='<i4', count=1)
+            data = P.np.fromfile(fd, dtype=dtype)
             data = data.reshape(-1,dim)
             return data
         except IOError:
