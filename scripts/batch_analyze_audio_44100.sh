@@ -22,7 +22,7 @@ do
 	echo "=== checking for analysis files..."
 	echo " (if all the audio analysis files exist, no WAV file is generated...) "
 	echo ""
-	if [ ! -f "${filename}/${filename}.cqf" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]; then
+	if [ ! -f "${filename}/${filename}.cqft" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]; then
 		WAVFLAG=1
 		echo '***********WAV ANALYSIS NEEDED*************'
 		echo ''
@@ -47,27 +47,27 @@ do
 	# echo ''
 	if [ ! -f "${filename}.powe" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin Power extraction...'
-		rm "/Users/kfl/Movies/YouTube/${filename}/${filename}.power"
-		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -P -l 62.5 -i 16000 -C 2 ${tmpfile} /Users/kfl/Movies/YouTube/${filename}/${filename}.power"
-		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -P -l 62.5 -i 16000 -C 2 $tmpfile "/Users/kfl/Movies/YouTube/${filename}/${filename}.power"
+		rm "${filename}/${filename}.power"
+		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -P -l 62.5 -i 16000 -C 2 ${tmpfile} ${filename}/${filename}.power"
+		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -P -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.power"
 	fi
 	if [ ! -f "${filename}.cqf" ] && [ $WAVFLAG == 1 ] ; then
 		echo '=== begin CQFT extraction...'
-		rm "/Users/kfl/Movies/YouTube/${filename}/${filename}.cqft"
-		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -q 12 -l 62.5 -i 16000 -C 2 ${tmpfile} /Users/kfl/Movies/YouTube/${filename}/${filename}.cqft"
-		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile "/Users/kfl/Movies/YouTube/${filename}/${filename}.cqft"
+		rm "${filename}/${filename}.cqft"
+		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -q 12 -l 62.5 -i 16000 -C 2 ${tmpfile} ${filename}/${filename}.cqft"
+		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -q 12 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.cqft"
 	fi
 	if [ ! -f "${filename}.mfc" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin MFCC extraction...'
-		rm "/Users/kfl/Movies/YouTube/${filename}/${filename}.mfcc"
-		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -m 13 -l 62.5 -i 16000 -C 2 ${tmpfile} /Users/kfl/Movies/YouTube/${filename}/${filename}.mfcc"
-		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile "/Users/kfl/Movies/YouTube/${filename}/${filename}.mfcc"
+		rm "${filename}/${filename}.mfcc"
+		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -m 13 -l 62.5 -i 16000 -C 2 ${tmpfile} ${filename}/${filename}.mfcc"
+		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -m 13 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.mfcc"
 	fi
 	if [ ! -f "${filename}.chro" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin Chroma extraction...'
-		rm "/Users/kfl/Movies/YouTube/${filename}/${filename}.chrom"
-		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -c 12 -l 62.5 -i 16000 -C 2 ${tmpfile} /Users/kfl/Movies/YouTube/${filename}/${filename}.chrom"
-		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile "/Users/kfl/Movies/YouTube/${filename}/${filename}.chrom"
+		rm "${filename}/${filename}.chrom"
+		echo ">>> fftExtract -p action.wis -n 44100 -w 44100 -h 1837.5 -c 12 -l 62.5 -i 16000 -C 2 ${tmpfile} ${filename}/${filename}.chrom"
+		fftExtract -p action.wis -n 44100 -w 44100 -h 8192 -c 12 -l 62.5 -i 16000 -C 2 $tmpfile "${filename}/${filename}.chrom"
 	fi
 # comment  rm wav file
 #	if [ $WAVFLAG == 1 ]; then
