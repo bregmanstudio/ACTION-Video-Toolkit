@@ -21,7 +21,7 @@ def ex_1A(title):
 	decomposed = ad.calculate_pca_and_fit(cf_ten_minute_segment, locut=0.0001)
 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4)
 
-	nc = 30 # sample 300 frames from total pool of 600 or 5%.
+	nc = 60 # sample 300 frames from total pool of 600 or 10%.
 	km_assigns, km_max_assign = ad.cluster_k_means(sliding_averaged, nc)
 
 	av = actiondata.ActionView(None)
@@ -40,7 +40,7 @@ def ex_1B(title):
 	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
 
-	nc = 200
+	nc = 1000 # Rouchly 5/minute for a feature-length film.
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
 	av = actiondata.ActionView(None)
@@ -61,7 +61,7 @@ def ex_1C(title):
 	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
 
-	nc = length/5
+	nc = int(length * 0.2) # Setting the density of clusters with a ratio. - don't forget the int cast!
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
 	com = np.array([],dtype='float32')
