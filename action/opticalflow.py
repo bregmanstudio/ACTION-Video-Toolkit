@@ -180,11 +180,7 @@ import numpy as np
 import action.segment as aseg
 
 QPI = math.pi / 4.0
-COLS = 64
 
-# GRID_X_DIVISIONS = 8
-# GRID_Y_DIVISIONS = 8
-# THETA_DIVISIONS = 8
 
 class OpticalFlow:
 	"""
@@ -275,7 +271,7 @@ class OpticalFlow:
 		}
 		return analysis_params
 		
-	def opticalflow_for_segment(self, segment=aseg.Segment(0, 60)):
+	def opticalflow_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -315,7 +311,7 @@ class OpticalFlow:
 		# r, c, full_data_path = self._glean_dimensions_from_filename(data_path)
 		return np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
 
-	def opticalflow_for_segment_with_stride(self, segment=aseg.Segment(0, 60), access_stride=6):
+	def opticalflow_for_segment_with_stride(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
@@ -350,7 +346,9 @@ class OpticalFlow:
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
 			print "dsize: ", dsize
-			dur_total_seconds = dsize / (4 * 512 * 24) # 4 bytes * 512 bins * 24 afps
+			dur_total_aframes = dsize / float(ap['grid_divs_x'] * ap['grid_divs_y'] * ap['theta_divs'] * 4) # BINS * BYTES
+			print 'dtaf: ', dur_total_aframes
+			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
@@ -487,10 +485,10 @@ class OpticalFlow:
 		# set up memmap		
 		if ap['mode'] == 'playback' and ap['display'] == True:
 			print 'PLAYBACK!'
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides+dur_strides),512))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides+dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
 		else:
 			print 'ANALYZE!'
-			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,512))
+			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,(grid_x_divs * grid_y_divs * theta_divs)))
 		
 		print 'dur. strides: ', dur_strides
 		
