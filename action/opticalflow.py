@@ -481,7 +481,7 @@ class OpticalFlow:
 		# set up memmap		
 		if ap['mode'] == 'playback' and ap['display'] == True:
 			print 'PLAYBACK!'
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),512))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=(dur_strides,512))
 		else:
 			print 'ANALYZE!'
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,512))
