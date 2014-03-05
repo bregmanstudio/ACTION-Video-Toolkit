@@ -384,7 +384,7 @@ class PhaseCorrelation:
 		Returns a tuple of memory-mapped arrays corresponding to the full-frame histogram followed by the 4 by 4 grid of histograms: ([NUMBER OF FRAMES, 1, NUMBER OF COLUMNS (3), NUMBER OF BINS (16)], [NUMBER OF FRAMES, 16, NUMBER OF COLUMNS (3), NUMBER OF BINS (16)])
 		::
 		
-			raw_hist_data = pcorr_for_segment('Psycho.hist', onset_time=360, duration=360)
+			raw_hist_data = pcorr_for_segment('Psycho', onset_time=360, duration=360)
 		
 		"""
 		ap = self.analysis_params
@@ -408,7 +408,7 @@ class PhaseCorrelation:
 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
 		::
 		
-			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', mode='playback', offset=0, duration=-1, stride=6, display=True)
 		
 		"""
 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
@@ -425,20 +425,27 @@ class PhaseCorrelation:
 	
 	def determine_movie_length(self, **kwargs):
 	
-		ap = self._check_pcorr_params(kwargs)
+		ap = self.analysis_params
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			# self.capture = cv.CaptureFromFile(self.movie_path)
 	 		self.capture = cv2.VideoCapture(self.movie_path)
 
 			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
-		else:
+			print "mov total secs: ", dur_total_seconds
+		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
 			# since we are reading raw color analysis data that always has the same size on disc!
 			# the constant had better be correct!
-			dur_total_seconds = dsize / 4352 # 16 * 16 * 1 * 17  = 16 bits * 16 bins * 1 color channel * (16 + 1) regions
-			# print "total secs: ", dur_total_seconds
-
+			print "dsize: ", dsize
+			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 2 * 4) # REGIONS * CHANNELS * BINS * BYTES
+			print 'dtaf: ', dur_total_aframes
+			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
+			print "total secs: ", dur_total_seconds
+		else:
+			dur_total_seconds = -1
+			print "Cannot determine movie duration. Both the movie and data files are missing!"
+		self.analysis_params['duration'] = dur_total_seconds			
 		return dur_total_seconds
 	
 	def analyze_movie(self, offset=0, duration=-1, stride_frames=6):
@@ -446,7 +453,7 @@ class PhaseCorrelation:
 		Analyze the movie without displaying on screen. Equivalent to:
 		::
 		
-			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', offset=0, duration=-1, stride=6, display=False)
+			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', offset=0, duration=-1, stride=6, display=False)
 		
 		"""
 		self._process_movie(mode='analyze', display=False, offset=offset, duration=duration)

@@ -463,12 +463,16 @@ class ColorFeaturesLAB:
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			self.capture = cv2.VideoCapture(self.movie_path)
 			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
+			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
+			print "dsize: ", dsize
 			# since we are reading raw color analysis data that always has the same size on disc!
 			# the constant had better be correct!
-			dur_total_seconds = dsize / 13056 # 16 * 16 * 3 * 17  = 16 bits * 16 bins * 3 color channels * (16 + 1) regions
-			# print "total secs: ", dur_total_seconds
+			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 3 * ap['ldims'] * 4) # REGIONS * CHANNELS * BINS * BYTES
+			print 'dtaf: ', dur_total_aframes
+			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
+			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
 			print "Cannot determine movie duration. Both the movie and data files are missing!"
@@ -575,10 +579,6 @@ class ColorFeaturesLAB:
 		
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
-# 		if ap['duration'] < 0:
-# 			dur_secs = dur_total_secs
-# 		else:
-# 			dur_secs = ap['duration']
 		
 		# check offset first, then compress duration, if needed
 		offset_secs = min(max(offset_secs, 0), ap['duration'])
@@ -603,9 +603,9 @@ class ColorFeaturesLAB:
 		
 		# set up memmap
 		if ap['mode'] == 'playback' and display == True:
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),17,3,16))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
 		else:
-			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,17,3,16))
+			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides, (ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
 		
 		# set some drawing constants
 		vert_offset = int(frame_height*ap['hist_vert_offset_ratio'])
@@ -904,7 +904,6 @@ class ColorFeaturesLAB:
 				cv.DestroyWindow('Image')
 				cv.DestroyWindow('Histogram')	
 
-	# Frame analysis function
 	def _analyze_image(self, img, mfp, fpindex, lab, lab_min, lab_max, l_star, a_star, b_star, mask, l_histo, a_histo, b_histo, i, j, grid_flag, grid_height=1, thresh=0.):
 		"""
 		Image analysis kernel function that is called to analyze each frame image. Look at the main process function to get an idea of how you would call this to return analysis data for a single image. Todo: wrap such a call into a simple one-off function call.

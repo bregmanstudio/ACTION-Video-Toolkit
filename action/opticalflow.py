@@ -172,10 +172,10 @@ import sys, time, os, math, glob
 try:
 	import cv2
 	import cv2.cv as cv
-	have_cv = True
+	HAVE_CV = True
 except ImportError:
 	print 'WARNING: Access only, use of methods other than *_opticalflow_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
-	have_cv = False
+	HAVE_CV = False
 import numpy as np
 import action.segment as aseg
 
@@ -341,15 +341,21 @@ class OpticalFlow:
 		"""
 		Helper function for determining the length of a movie using OpenCV to capture from a file and query the length of the film.
 		"""	
-		ap = self._check_opticalflow_params(kwargs)
+		ap = self.analysis_params
 	
-		if os.path.exists(self.movie_path) and have_cv:
+		if os.path.exists(self.movie_path) and HAVE_CV:
 			capture = cv.CaptureFromFile(self.movie_path)
 			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
-		else:
+			print "mov total secs: ", dur_total_seconds
+		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
-			dur_total_seconds = dsize / (2048 * 24)
+			print "dsize: ", dsize
+			dur_total_seconds = dsize / (4 * 512 * 24) # 4 bytes * 512 bins * 24 afps
 			print "total secs: ", dur_total_seconds
+		else:
+			dur_total_seconds = -1
+			print "Cannot determine movie duration. Both the movie and data files are missing!"
+		self.analysis_params['duration'] = dur_total_seconds
 		return dur_total_seconds
 
 
@@ -481,7 +487,7 @@ class OpticalFlow:
 		# set up memmap		
 		if ap['mode'] == 'playback' and ap['display'] == True:
 			print 'PLAYBACK!'
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=(dur_strides,512))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides+dur_strides),512))
 		else:
 			print 'ANALYZE!'
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,512))
