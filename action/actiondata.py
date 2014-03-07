@@ -22,14 +22,16 @@ except ImportError:
 	have_sklearn = False
 from scipy import sparse
 from scipy import ndimage
+import scipy.interpolate as interpolate
+
 import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.pyplot as plt
 import pylab as P
 
 import action.segment as aseg
-import action.color_features_lab as color_features_lab
-import action.opticalflow as opticalflow
-import action.phase_correlation as phase_correlation
+# import action.color_features_lab as color_features_lab
+# import action.opticalflow as opticalflow
+# import action.phase_correlation as phase_correlation
 
 DEFAULT_IMAGESC_KWARGS={'origin':'upper', 'cmap':P.cm.hot, 'aspect':'auto', 'interpolation':'nearest'}
 
@@ -124,7 +126,7 @@ class ActionData:
 		return np.reshape(revectored_data, (len(win_hops), raw_data.shape[1]*width))
 	
 
-	def gather_color_histogram_data(self, titles, movie_dir, grid='midband', cflag=False):
+	def gather_color_feature_data(self, titles, movie_dir, grid='midband', cflag=False):
 		"""
 		full 		= full frame
 		allgrid		= 4*4 grid
@@ -160,7 +162,7 @@ class ActionData:
 			if (cflag>0): res[title] = cfl.convert_lab_to_l(res[title])
 		return res
 	
-	def gather_opticalflow_histogram_data(self, titles, movie_dir, stride=6, cflag=False):
+	def gather_opticalflow_feature_data(self, titles, movie_dir, stride=6, cflag=False):
 		"""
 		"""
 		res = {}
@@ -177,7 +179,7 @@ class ActionData:
 		
 		return res
 
-	def gather_phasecorr_histogram_data(self, titles, movie_dir, stride=6, cflag=False):
+	def gather_phasecorr_feature_data(self, titles, movie_dir, stride=6, cflag=False):
 		"""
 		"""
 		res = {}
@@ -194,6 +196,18 @@ class ActionData:
 		
 		return res
 
+	def gather_audio_feature_data(self, titles, movie_dir, type='mfcc', stride=6, cflag=False):
+		"""
+		Assuming stride will always be 6!!!! for now...
+		"""
+		res = {}
+
+		for title in titles:
+			# set up an instance of the PhaseCorrelation class
+			X = adb.read(os.path.join(movie_dir, title, (str(title)+type)))
+			res[title] =  X
+		
+		return res
 	
 	def cluster_hierarchically(self, raw_data, num_clusters, cmtrx=None):
 		"""
@@ -273,6 +287,25 @@ class ActionData:
 	
 	def calculate_sparse_svd(self, data, k=9):
 		return sparse.linalg.svds(data, k)[0]
+	
+	def interpolate_time(self, data, actual_fps):
+	# resample
+		print '================='
+		print data.shape
+		x = range(data.shape[0])
+		y = data
+		tratio = (24.0 / actual_fps)
+		print tratio
+		xx = np.linspace(
+			x[0],
+			int(x[-1] * tratio), 
+			int(data.shape[0] * tratio)
+		)
+		f = interpolate.interp1d(x,y,axis=0)
+		data = f(xx)
+		del x, y, xx
+		print data.shape
+		return data
 	
 	def normalize_data(self, data):
 		the_max = np.max(data)
