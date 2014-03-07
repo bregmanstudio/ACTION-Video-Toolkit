@@ -179,7 +179,8 @@ except ImportError:
 	HAVE_CV = False
 import numpy as np
 import action.segment as aseg
-
+import action.actiondata as actiondata
+import json
 
 class ColorFeaturesLAB:
 	"""
@@ -210,6 +211,9 @@ class ColorFeaturesLAB:
 		else:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
+			self.json_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + '.json'))
+			print self.json_path
+			self.filename = filename
 		
 		self.determine_movie_length()
 		
@@ -257,6 +261,23 @@ class ColorFeaturesLAB:
 			'hist_vert_offset_ratio' : 0.0		# (adjustable) vertical distance of histogram window upper left corner offset from video window
 		}
 		return analysis_params
+	
+	def _write_metadata_to_json(self):
+		"""
+		"""
+		title = self.filename
+		fps = self.capture.get(cv.CV_CAP_PROP_FPS)
+		aspect = self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
+		frames = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
+		length = frames / fps
+		
+		# capture = cv2.VideoCapture(self.movie_path)
+		
+		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
+		fp = file(self.json_path, 'w')
+		fp.write(json.dumps(movdict))
+		fp.close()
+		return 1
 	
 	def all_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
@@ -374,13 +395,14 @@ class ColorFeaturesLAB:
 # 
 # 		#ap = self._check_cflab_params()
 # 		ap = self.analysis_params
-# 		
-# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
+# 		frames_per_stride = (ap['fps'] / ap['stride'])
+#		
+# 		onset_frame = int(segment.time_span.start_time * frames_per_stride)
 # 		print onset_frame
 # 		if segment.time_span.duration < 0:
 # 			dur_frames = self.determine_movie_length()
 # 		else:
-# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
+# 			dur_frames = int(segment.time_span.duration * frames_per_stride)
 # 		print self.s_movie_length()
 # 		print dur_frames
 # 		
@@ -404,24 +426,29 @@ class ColorFeaturesLAB:
 		
 		"""
 		ap = self.analysis_params
+		frames_per_stride = (ap['fps'] / ap['stride'])
 
-		onset_frame = int(onset_time * (ap['fps'] / ap['stride']))
+		onset_frame = int(onset_time * frames_per_stride)
 		if duration < 0:
-			dur_frames = self.determine_movie_length() * (ap['fps'] / ap['stride'])
+			dur_frames = self.determine_movie_length() * frames_per_stride
 		else:
-			dur_frames = int(duration * (ap['fps'] / ap['stride']))
+			dur_frames = int(duration * frames_per_stride)
 		
-		# print "data path: ", self.data_path
+		# memmap
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
+		ad = actiondata.ActionData()
+		mapped = ad.interpolate_time(mapped, ap['fps'])
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
 
 	def convert_lab_to_l(self, data):
+		"""
+		Zero out the a* and b* columns.
+		"""
 		data_L = np.empty_like(data)
 		data_L[:] = data
 		data_L = np.reshape(data_L, (data.shape[0], -1, 3))
 		data_L[:,:,1:] = 0.0
 		return np.reshape(data_L, (data.shape[0], -1))
-
 
 		
 	def playback_movie(self, offset=None, duration=None):
@@ -434,6 +461,7 @@ class ColorFeaturesLAB:
 		"""
 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
 	
+	
 	def playback_movie_frame_by_frame(self, offset=None, duration=None):
 		"""
 		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Equivalent to:
@@ -444,14 +472,16 @@ class ColorFeaturesLAB:
 		"""
 		# ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
+		frames_per_stride = (ap['fps'] / ap['stride'])
+		
 		if offset is None:
-			offset_s = float(ap['offset']) / (ap['fps'] / ap['stride'])
+			offset_s = float(ap['offset']) / frames_per_stride
 		else:
-			offset_s = float(offset) / (ap['fps'] / ap['stride'])
+			offset_s = float(offset) / frames_per_stride
 		if duration is None:
-			dur_s = float(ap['duration']) / (ap['fps'] / ap['stride'])
+			dur_s = float(ap['duration']) / frames_per_stride
 		else:
-			dur_s = float(duration) / (ap['fps'] / ap['stride'])
+			dur_s = float(duration) / frames_per_stride
 		
 		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
 	
@@ -459,6 +489,7 @@ class ColorFeaturesLAB:
 	
 		# ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
+		frames_per_stride = (ap['fps'] / ap['stride'])
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			self.capture = cv2.VideoCapture(self.movie_path)
@@ -471,7 +502,7 @@ class ColorFeaturesLAB:
 			# the constant had better be correct!
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 3 * ap['ldims'] * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
+			dur_total_seconds = int(dur_total_aframes / frames_per_stride)
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
@@ -514,6 +545,9 @@ class ColorFeaturesLAB:
 		ap = self.analysis_params
 				
 		self.capture = cv2.VideoCapture(self.movie_path)
+		
+		self._write_metadata_to_json()
+		# probably should generate and check for errors
 		
 		ap['mode'] = mode
 		ap['display'] = display
