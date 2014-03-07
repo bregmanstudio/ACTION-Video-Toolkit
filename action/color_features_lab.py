@@ -279,6 +279,12 @@ class ColorFeaturesLAB:
 		fp.close()
 		return 1
 	
+	def _read_json_value(self, key='fps'):
+# 		fp = file(self.json_path, 'r')
+		jsonfile = open(self.json_path)
+		jsondata = json.load(jsonfile)
+		return jsondata[key]
+	
 	def all_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
