@@ -266,17 +266,18 @@ class ColorFeaturesLAB:
 		"""
 		"""
 		title = self.filename
-		fps = self.capture.get(cv.CV_CAP_PROP_FPS)
-		aspect = self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
-		frames = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
+		capture = cv2.VideoCapture(self.movie_path)
+		fps = capture.get(cv.CV_CAP_PROP_FPS)
+		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
+		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
 		length = frames / fps
 		
-		# capture = cv2.VideoCapture(self.movie_path)
 		
 		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
 		fp = file(self.json_path, 'w')
 		fp.write(json.dumps(movdict))
 		fp.close()
+		del capture
 		return 1
 	
 	def _read_json_value(self, key='fps'):

@@ -1,12 +1,14 @@
 import glob, os, argparse
-import action.segment as aseg
-from action import *
+import pickle, multiprocessing
+
 import numpy as np
-import bregman.features as features
-from bregman.suite import *
-from mvpa2.suite import *
-import pprint, pickle
-import multiprocessing
+
+from action import *
+import action.segment as aseg
+from action.actiondata import *
+
+
+#from bregman.suite import *
 
 ACTION_DIR = '/Volumes/ACTION/'
 # ACTION_DIR = '/Users/kfl/Movies/action'

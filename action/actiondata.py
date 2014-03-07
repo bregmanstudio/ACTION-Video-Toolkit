@@ -301,7 +301,7 @@ class ActionData:
 			int(x[-1] * tratio), 
 			int(data.shape[0] * tratio)
 		)
-		f = interpolate.interp1d(x,y,axis=0)
+		f = interpolate.interp1d(x,y,axis=0, bounds_error=False)
 		data = f(xx)
 		del x, y, xx
 		print data.shape
