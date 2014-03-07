@@ -8,8 +8,8 @@ from mvpa2.suite import *
 import pprint, pickle
 import multiprocessing
 
-# ACTION_DIR = '/Volumes/ACTION/'
-ACTION_DIR = '/Users/kfl/Movies/action/canon'
+ACTION_DIR = '/Volumes/ACTION/'
+# ACTION_DIR = '/Users/kfl/Movies/action'
 
 def actionAnalyzeAll(inputlist, proc_limit):
 	print "Inputlist received..."
@@ -23,9 +23,12 @@ def actionWorker(title):
 	
 	ad = actiondata.ActionData()
 	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)	
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+	actual_fps = cfl._read_json_value('fps')
+	# reinstantiate cfl with the proper fps for access
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR, fps=actual_fps)
 
-	print ''
+	print '----------------------------------'
 	print title
 	print ''
 
@@ -35,12 +38,17 @@ def actionWorker(title):
 	full_segment = aseg.Segment(0, duration=length)
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
-	Dmfccs = ad.normalize_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc_13_M2_a0_C2_g0_i16000'))))
 	
-	print Dmb.shape
+	Dmfccs = ad.meanmask_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc'))))
+	Dmfccs = ad.normalize_data(Dmfccs)
+	Dmfccs = ad.meanmask_data(Dmfccs)
+	
+	# print Dmb.shape
 	print Dmfccs.shape
+	print Dmfccs.min()
+	print Dmfccs.max()
 
-	print np.isnan(Dmb).any()
+	# print np.isnan(Dmb).any()
 	print np.isnan(Dmfccs).any()
 	# print np.isnan(Dcombo).any()
 
@@ -69,7 +77,7 @@ def actionWorker(title):
 	
 	if not np.isnan(Dmfccs).any():
 		outfile_mfccs = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_mfccs_hc.pkl'))), 'wb')
-		decomposed_mfccs = ad.calculate_pca_and_fit(Dmfccs, locut=0.0001)
+		decomposed_mfccs = ad.calculate_pca_and_fit(Dmfccs, locut=0.001)
 		print "<<<<  ", decomposed_mfccs.shape
 		hc_assigns_mfccs = ad.cluster_hierarchically(decomposed_mfccs, nc, None)
 		segs_mfccs = ad.convert_clustered_frames_to_segs(hc_assigns_mfccs, nc)
@@ -120,7 +128,7 @@ if __name__ == '__main__':
 	# if we have some args, use them
 	os.chdir(ACTION_DIR)
 	
-	names = [os.path.dirname(file) for file in glob.glob('*/*.mov')]
+	names = [os.path.dirname(file) for file in glob.glob('*/*.mfcc')]
 	#names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_cfl_hc.pkl')]
 	
 	to_be_pickled = [ttl for ttl in names]	
