@@ -215,11 +215,11 @@ class ColorFeaturesLAB:
 			print self.json_path
 			self.filename = filename
 		
-		self.determine_movie_length()
+		# self.determine_movie_length()
 		
 		# try to naively get some data and store in a class var
-		if os.path.exists(self.data_path):
-			self.default_color_features_for_segment()
+		#if os.path.exists(self.data_path):
+		#	self.default_color_features_for_segment()
 	
 	def _check_cflab_params(self, analysis_params=None):
 		"""
@@ -433,7 +433,7 @@ class ColorFeaturesLAB:
 		
 		"""
 		ap = self.analysis_params
-		frames_per_stride = (ap['fps'] / ap['stride'])
+		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
 
 		onset_frame = int(onset_time * frames_per_stride)
 		if duration < 0:
