@@ -218,8 +218,8 @@ class ColorFeaturesLAB:
 		# self.determine_movie_length()
 		
 		# try to naively get some data and store in a class var
-		#if os.path.exists(self.data_path):
-		#	self.default_color_features_for_segment()
+		if os.path.exists(self.data_path):
+			self.default_color_features_for_segment()
 	
 	def _check_cflab_params(self, analysis_params=None):
 		"""
