@@ -163,6 +163,8 @@ except ImportError:
 	HAVE_CV = False
 import numpy as np
 import action.segment as aseg
+import action.actiondata as actiondata
+import json
 
 
 class PhaseCorrelation:
@@ -194,6 +196,16 @@ class PhaseCorrelation:
 		else:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
+			self.json_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + '.json'))
+			print self.json_path
+			self.filename = filename
+
+		# self.determine_movie_length() no need
+# 		if ! exists(self.json_path):
+# 			self._write_metadata_to_json()
+		ap['afps'] = self._read_json_value('fps')
+
+		#TO DO: try to naively get some data and store in a class var
 	
 	def _check_pcorr_params(self, analysis_params=None):
 		"""
@@ -215,6 +227,7 @@ class PhaseCorrelation:
 			'grid_divs_x' : 8,
 			'grid_divs_y' : 8,
 			'fps' : 24,					# fps: frames per second
+			'afps' : 24,				# afps: frames per second for access or alignment
 			'offset' : 0,				# time offset in seconds
 			'duration' : -1,			# time duration in seconds, -1 (default) maps to full duration of media
 			'stride' : 1,				# number of frames to that comprise one analysis point, skips stride - 1 frames
@@ -229,7 +242,32 @@ class PhaseCorrelation:
 			'viz_vert_offset_ratio' : 0.0			# (adjustable) vertical distance of histogram window upper left corner offset from video window
 		}
 		return analysis_params
+
+	def _write_metadata_to_json(self):
+		"""
+		"""
+		title = self.filename
+		capture = cv2.VideoCapture(self.movie_path)
+		fps = capture.get(cv.CV_CAP_PROP_FPS)
+		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
+		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
+		length = frames / fps
+		
+		
+		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
+		fp = file(self.json_path, 'w')
+		fp.write(json.dumps(movdict))
+		fp.close()
+		del capture
+		return 1
 	
+	def _read_json_value(self, key='fps'):
+# 		fp = file(self.json_path, 'r')
+		jsonfile = open(self.json_path)
+		jsondata = json.load(jsonfile)
+		return jsondata[key]
+
+
 	def all_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from ACTION!
@@ -388,19 +426,22 @@ class PhaseCorrelation:
 		
 		"""
 		ap = self.analysis_params
+		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
 
 		print ap['fps']
 		print ap['stride']
 
 		onset_frame = int(onset_frame)
 		if duration_frames < 0:
-			dur_frames = int(self.determine_movie_length() * (ap['fps'] / ap['stride']))
+			dur_frames = int(self.determine_movie_length() * frames_per_stride)
 		else:
-			dur_frames = int(duration_frames * (ap['fps'] / ap['stride']))
+			dur_frames = int(duration_frames * frames_per_stride)
 		
 		print 'dur: ', dur_frames
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,65,2))
+		ad = actiondata.ActionData()
+		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,64,:], mapped[:,:64,:])
 		
 	def playback_movie(self, offset=0, duration=-1):
