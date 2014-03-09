@@ -215,7 +215,10 @@ class ColorFeaturesLAB:
 			print self.json_path
 			self.filename = filename
 		
-		# self.determine_movie_length()
+		# self.determine_movie_length() no need
+# 		if ! exists(self.json_path):
+# 			self._write_metadata_to_json()
+		ap['afps'] = self._read_json_value('fps')
 		
 		# try to naively get some data and store in a class var
 		if os.path.exists(self.data_path):
@@ -248,6 +251,7 @@ class ColorFeaturesLAB:
 			'arange' : [0, 256],		# range to map to/from a
 			'brange' : [0, 256],		# range to map to/from b
 			'fps' : 24,					# fps: frames per second
+			'afps' : 24,				# afps: frames per second for access or alignment
 			'offset' : 0,				# time offset in seconds
 			'duration' : -1,			# time duration in seconds, -1 (default) maps to full duration of media
 			'stride' : 6,				# number of frames to that comprise one analysis point, skips stride - 1 frames
@@ -444,7 +448,7 @@ class ColorFeaturesLAB:
 		# memmap
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
 		ad = actiondata.ActionData()
-		mapped = ad.interpolate_time(mapped, ap['fps'])
+		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
 
 	def convert_lab_to_l(self, data):
