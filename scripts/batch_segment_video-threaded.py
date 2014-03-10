@@ -21,12 +21,12 @@ def actionAnalyzeAll(inputlist, proc_limit):
 	pool.map(actionWorker, inputlist)
 
 
-def actionWorker(title):	
+def actionWorker(title):
 	
 	ad = actiondata.ActionData()
 	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
-	actual_fps = cfl._read_json_value('fps')
+	actual_fps = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)._read_json_value('fps')
+	print ':: ', actual_fps
 	# reinstantiate cfl with the proper fps for access
 	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR, fps=actual_fps)
 
@@ -49,15 +49,15 @@ def actionWorker(title):
 	print Dmfccs.shape
 	print Dmfccs.min()
 	print Dmfccs.max()
-
+	
 	# print np.isnan(Dmb).any()
 	print np.isnan(Dmfccs).any()
 	# print np.isnan(Dcombo).any()
-
+	
 	min_length = min(Dmb.shape[0], Dmfccs.shape[0])
-
+	
 	Dcombo = np.c_[Dmb[:min_length,:], Dmfccs[:min_length,:]]
-
+	
 	nc = length_in_frames / 10
 	print nc
 	print "----------------------------"
@@ -91,7 +91,7 @@ def actionWorker(title):
 				features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
 		pickle.dump(ds_segs_mfccs, outfile_mfccs, -1)
 		outfile_mfccs.close()
-
+	
 	if not np.isnan(Dcombo).any():
 		outfile_combo = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_combo_hc.pkl'))), 'wb')
 		decomposed_combo = ad.calculate_pca_and_fit(Dcombo, locut=0.0001)	
@@ -106,7 +106,7 @@ def actionWorker(title):
 				features=np.mean(Dcombo[seg[0]:(seg[0]+seg[1]),:],axis=0))]
 		pickle.dump(ds_segs_combo, outfile_combo, -1)
 		outfile_combo.close()
-
+	
 	# 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
 	# 	hc_assigns = ad.cluster_hierarchically(sliding_averaged, nc, None)
 	
@@ -121,12 +121,12 @@ if __name__ == '__main__':
 	parser.add_argument("actiondir")
 	parser.add_argument("proclimit")
 	args = parser.parse_args()
-
+	
 	print args
 	print args.actiondir
 	ACTION_DIR = args.actiondir
 	print args.proclimit
-
+	
 	# if we have some args, use them
 	os.chdir(ACTION_DIR)
 	
