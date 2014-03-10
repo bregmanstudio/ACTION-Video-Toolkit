@@ -8,7 +8,7 @@ echo $DIR
 echo 'starting...'
 MOVDIR=$1
 cd $MOVDIR
-ls No_Blood_Relation/No_Blood_Relation.mov | while read m
+ls */*.mov | while read m
 do
     filename=$(basename "$m")
     filename="${filename%.*}"
@@ -25,30 +25,31 @@ do
     echo "=== checking for analysis files..."
     echo " (if all the audio analysis files exist, no WAV file is generated...) "
     echo ""
-    if [ ! -f "${filename}/${filename}.cqft" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]; then
-    WAVFLAG=1
-    echo '***********WAV ANALYSIS NEEDED*************'
-    echo ''
-    rm "${filename}/${filename}.wav"
-    tmpfile=`mktemp ${filename}/${filename}.wav`
-    #tmpfile="${filename}/${filename}.wav"
-    echo ">>> $tmpfile"
+    if ([ ! -f "${filename}/${filename}.cqft" ] || [ ! -f "${filename}/${filename}.chrom" ] || [ ! -f "${filename}/${filename}.mfcc" ] || [ ! -f "${filename}/${filename}.power" ]) && [ ! -f "${filename}/${filename}.wav" ]; then
+		WAVFLAG=1
+		echo '***********WAV ANALYSIS NEEDED*************'
+		echo ''
+		rm "${filename}/${filename}.wav"
+		tmpfile=`mktemp ${filename}/${filename}.wav`
     fi
     echo "flag: $WAVFLAG"
-    # 	if [ $WAVFLAG == 1 ]; then
-    echo '===========================MPLAYER=========================='
+    if [ $WAVFLAG == 1 ]; then
+		echo '===========================MPLAYER=========================='
+		echo ''
+		mplayer -ao pcm:waveheader -ao pcm:file=$tmpfile "${filename}/${filename}.mov" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
+		echo ">>> mplayer -ao pcm:waveheader -ao pcm:file=${tmpfile} ${filename}/${filename}.mov -benchmark -vc dummy -vo null & "
+
+		echo '===========================WAIT=========================='
+		echo ''
+		wait
+	else
+		tmpfile="${filename}/${filename}.wav"
+		WAVFLAG=0
+    fi
+    echo '===========================@FFT_EXTRACT@=========================='
     echo ''
-    mplayer -ao pcm:waveheader -ao pcm:file=$tmpfile "${filename}/${filename}.mov" -benchmark -vc dummy -vo null & # -ss -endpos SECONDS
-    echo ">>> mplayer -ao pcm:waveheader -ao pcm:file=${tmpfile} ${filename}/${filename}.mov -benchmark -vc dummy -vo null & "
-
-    echo '===========================WAIT=========================='
-    echo ''
-    wait
-    # 	fi
-    # echo '===========================@FFT_EXTRACT@=========================='
-    # echo ''
-
-
+    echo ">>> $tmpfile"
+	
     if [ ! -f "${filename}/${filename}.power" ] && [ $WAVFLAG == 1 ]; then
 		echo '=== begin Power extraction...'
 		echo ">>> fftExtract -p action.wis -n 48000 -w 48000 -h 12000 -P -l 62.5 -i 16000 -C 2 $tmpfile ${filename}/${filename}.power"
