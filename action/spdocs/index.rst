@@ -94,6 +94,7 @@ ACTION Python Modules
    
 	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
 	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
+	opticalflow_tvl1 - TVL optical flow frame-to-frame analysis and visulaization <opticalflow_tvl1>
 	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
 	segment - segmentation and container data structure <segment>
 	actiondata - data analysis and view routines <actiondata>
