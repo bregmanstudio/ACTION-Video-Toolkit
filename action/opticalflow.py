@@ -178,6 +178,7 @@ except ImportError:
 	HAVE_CV = False
 import numpy as np
 import action.segment as aseg
+import action.actiondata as actiondata
 
 QPI = math.pi / 4.0
 

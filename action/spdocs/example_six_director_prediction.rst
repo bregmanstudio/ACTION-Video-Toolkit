@@ -5,7 +5,7 @@ Example Six: Predicting Directors Based on Features
 Abstract
 ========
 
-This example provides an example framework for a simple machine learning prediction task. Low-level visual features (Lab color histograms) sampled from a pool of films are used to see whether they can significantly predict the films' directors. This example is also a demonstration of the film_db python file.
+This example provides an example framework for a simple machine learning prediction task. Low-level visual features (Lab color histograms) sampled from a pool of films are used to see whether they can significantly predict the films' directors. This example is also demonstrates the film_db python file for organizing films according to their directors.
 
 This example outlines the basic steps of our implementation of director prediction. See *example_six_director_prediction.py* in the examples folder for the complete code.
 

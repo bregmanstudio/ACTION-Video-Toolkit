@@ -19,7 +19,7 @@ We extract histograms of color features for every sixth frame (4 times per secon
 
 In addition to collecting histograms for the entire image frame, we also divide the image into a 4-by-4 grid in order to capture some sense of the spatial distribution of color values. Thus, there are 17 histograms for each frame, the overall histogram and 16 "gridded" histograms.
 
-We have experimented with several different schemes for collecting motion vector and optical flow data. We have extracted and make available full-frame-rate optical flow data. Unfortunately, full resolution analysis is quite space- and time-consuming.
+We have experimented with several different schemes for collecting motion vector and optical flow data. We have extracted and make available full-frame-rate optical flow data using two algorithms, as well as phase correlation data.
 
 Explanation of File Extensions
 ==============================
@@ -31,30 +31,25 @@ Explanation of File Extensions
 | .color_lab     | Lab-colorspace    | Series of full-frame histograms followed by        |
 |                | histogram         | series of gridded histograms, as a Python tuple    |
 +----------------+-------------------+----------------------------------------------------+
+| .phasecorr     | PhaseCorrelation  | Series of full-frame histograms followed by        |
+|                | vectors           | series of gridded histograms, as a Python tuple    |
++----------------+-------------------+----------------------------------------------------+
 | .opticalflow24 | Optical flow      | Histograms summarize the distribution of motion    |
 |                | estimate          | vector angles                                      |
 +----------------+-------------------+----------------------------------------------------+
-| .chrom_12      | 12-bin Chromagram |                                                    |
+| .tvl1          | TVL1 Optical flow | Series of full-frame histograms followed by        |
+|                | estimate          | series of gridded histograms, as a Python tuple    |
 +----------------+-------------------+----------------------------------------------------+
-| .cqft_12       | Constant-Q        | 12 bins per octave                                 |
+| .chrom         | 12-bin Chromagram |                                                    |
++----------------+-------------------+----------------------------------------------------+
+| .cqft          | Constant-Q        | 12 bins per octave                                 |
 |                | Fourier Transform |                                                    |
 +----------------+-------------------+----------------------------------------------------+
-| .mfcc_13       | 13 Mel-frequency  |                                                    |
+| .mfcc          | 13 Mel-frequency  |                                                    |
 |                | Cepstral Coeffs.  |                                                    |
 +----------------+-------------------+----------------------------------------------------+
 | .power         | Log power         |                                                    |
 +----------------+-------------------+----------------------------------------------------+
 | .stft          | Short-Term        |                                                    |
-|                | Fourier Transform | Not included, as it is quite a bit of data         |
-+----------------+-------------------+----------------------------------------------------+
-| _a0            | Linear power      |                                                    |
-+----------------+-------------------+----------------------------------------------------+
-| _C2            | Mix both channels |                                                    |
-+----------------+-------------------+----------------------------------------------------+
-| _g0            | Linear values     | Do not output powers as log10 power bands          |
-+----------------+-------------------+----------------------------------------------------+
-| _i16000        | Frequency         | High edge of constant-Q transform                  |
-+----------------+-------------------+----------------------------------------------------+
-| _M2            | Low coefficient   |                                                    |
-|                | for MFCCs         |                                                    |
+|                | Fourier Transform | Not included in our sets of data files...          |
 +----------------+-------------------+----------------------------------------------------+
