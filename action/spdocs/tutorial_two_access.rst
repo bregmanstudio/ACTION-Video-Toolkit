@@ -22,7 +22,7 @@ The raw analysis is stored in binary files. To summarize, these files, identifie
 #. MOVIE_TITLE.opticalflow24 - Optical flow data: motion vectors based on an intermediate corner-detection step.
 #. MOVIE_TITLE.phase_corr - Phase correlation data: 8 by 8 gridded division of screen.
 
-For a detailed list of the meanings of the various extensions, please see our `Overview <http://bregman.dartmouth.edu/~action/overview.html>`_. 
+For a detailed list of the meanings of the various extensions, please see our `Overview <http://bregman.dartmouth.edu/action/action_overview.html>`_. 
 
 Access
 ======
