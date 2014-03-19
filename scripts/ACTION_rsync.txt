@@ -19,4 +19,4 @@ rsync -rv --progress \
 
 
 
-rsync -v --progress /afs/northstar.dartmouth.edu/users/m/mcasey/BMARS.ACTION/Rope/Rope.mov /Users/kfl/Movies/action/Rope/
+rsync -v --progress /afs/northstar.dartmouth.edu/users/m/mcasey.BMARS/ACTION/Rope/Rope.mov /Users/kfl/Movies/action/Rope/
