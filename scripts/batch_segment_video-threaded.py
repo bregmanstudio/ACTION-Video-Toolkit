@@ -25,10 +25,10 @@ def actionWorker(title):
 	
 	ad = actiondata.ActionData()
 	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
-	actual_fps = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)._read_json_value('fps')
-	print ':: ', actual_fps
+#	actual_fps = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)._read_json_value('fps')
+#	print ':: ', actual_fps
 	# reinstantiate cfl with the proper fps for access
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR, fps=actual_fps)
+	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR) #, fps=actual_fps)
 
 	print '----------------------------------'
 	print title
@@ -131,9 +131,11 @@ if __name__ == '__main__':
 	os.chdir(ACTION_DIR)
 	
 	names = [os.path.dirname(file) for file in glob.glob('*/*.mfcc')]
+	names_done = [os.path.dirname(file) for file in glob.glob('*/*_combo_hc.pkl')]
+	names = set(names).difference(set(names_done))
 	#names_with_proper_pkl_exts = [os.path.dirname(file) for file in glob.glob('*/*_cfl_hc.pkl')]
 	
-	to_be_pickled = [ttl for ttl in names]	
+	to_be_pickled = [ttl for ttl in names if ttl not in names_done]	
 	print ''
 	print to_be_pickled
 	print "(", len(to_be_pickled), ")"
