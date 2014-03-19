@@ -1,5 +1,5 @@
 # import itertools
-import time, os
+import time
 import mvpa_pipeline_rand as meta_random_sampling_analysis
 
 # 8-directors task (plus variations)
@@ -24,4 +24,4 @@ for cflag in params['cflags']:
 					cflag=2, # color flag 2 = convert any color films to black/white (Lab -> L)
 					samples_per=samples_per,
 					classifier_num=0, # 0 = Linear Discriminant Analysis; SVM is also available 
-					pklfile=os.path.expanduser('~/actionresults/8way_rand/') + time.strftime('%Y%m%d%H%M%S') + '.pkl')
+					pklfile=os.path.expanduser('~/actionresults/8way_rand_joint/') + time.strftime('%Y%m%d%H%M%S') + '.pkl')

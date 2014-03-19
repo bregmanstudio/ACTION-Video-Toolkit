@@ -80,7 +80,7 @@ Examples
 
 	Example One - simple clustering <example_one_clustering>
 	Example Two - centers of mass and random sampling <example_two_centers_of_mass>
-	Example Three - similarity plots <example_three_similarity_plots>
+	Example Three - dissimilarity plots <example_three_dissimilarity_plots>
 	Example Four - viewing distributions of color data <example_four_distributions>
 	Example Five - in-depth example of segmentation <example_five_segmentation>
 	Example Six - in-depth example of a simple director prediction ML task <example_six_director_prediction>

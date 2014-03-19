@@ -153,4 +153,4 @@ In a similar manner, the centers of mass of each movie's points can be graphed i
 
 As the number of films grows in a visualization, the need for simpler representation is more apparent.
 
-`Next <example_three_similarity_plots.html>`_: Visualizing similarity.
+`Next <example_three_dissimilarity_plots.html>`_: Visualizing (dis)similarity.

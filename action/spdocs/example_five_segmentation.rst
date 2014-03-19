@@ -62,7 +62,7 @@ Next, do some thresholding based on the differences between data frames. The ``T
 	THRESH = 2.5
 	MIN_FRAMES = 10
 
-First, view the similarity matrix between the segment data (one set of data per frame from segmenter):
+First, view the dissimilarity matrix between the segment data (one set of data per frame from segmenter):
 
 	data = np.array([seg.features for seg in dssegs])
 	imagesc(distance.euc2(data, data))
@@ -165,11 +165,11 @@ A Better View
 
 .. image:: images/action_ex5_segmented_temporal.png
 
-Finally, let's see the similarity matrix for our segmented data:
+Finally, let's see the dissimilarity matrix for our segmented data:
  
 .. code-block:: python
 
-	imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Similarity map based on segments')
+	imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Dissimilarity map based on segments')
 
 .. image:: images/action_ex5_sim_matrix.png
 

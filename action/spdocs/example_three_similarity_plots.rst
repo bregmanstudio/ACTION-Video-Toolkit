@@ -1,11 +1,11 @@
 **************************************************
-Example Three: Similarity plots
+Example Three: Dissimilarity plots
 **************************************************
 
 Abstract
 ========
 
-This example demonstrates how distance measurements can be used to plot similarity between sets of data or within a set of data, using both Euclidean distance and cosine similarity.
+This example demonstrates how distance measurements can be used to plot dissimilarity between sets of data or within a set of data, using both Euclidean distance and cosine (dis)similarity.
 
 Prerequisites
 =============
@@ -13,7 +13,7 @@ Prerequisites
 * Data analyzed through ACTION.
 * See previous tutorials for more information.
 
-Example 3A: Similarity plots of visual features
+Example 3A: Dissimilarity plots of visual features
 ====================================================
 
 Get the data
@@ -34,10 +34,10 @@ These are the usual includes for working with ACTION data. We will use color and
 	pcorr_ten_minute_segment = pcorr.center_quad_phasecorr_features_for_segment(ten_minute_segment, access_stride=6) # 6 is the default
 
 
-View the similarity matrices
+View the dissimilarity matrices
 ----------------------------
 
-We now plot similarity matrices using cosine distance. They both show about the same thing, but with some subtle variations.
+We now plot dissimilarity matrices using cosine distance. They both show about the same thing, but with some subtle variations.
 
 .. code-block:: python
 
@@ -70,7 +70,7 @@ We now plot similarity matrices using cosine distance. They both show about the 
 .. image:: /images/action_ex3A_cosine_combo_pca.png
 
 
-Example 3B: Similarity plots of audio features
+Example 3B: Dissimilarity plots of audio features
 ====================================================
 
 In order to work with audio features, we use the Bregman toolkit, specifically the AudioDB class. The audio MFCC data has some Nan values, so we use a masked array to eliminate these. The visualizations show Euclidean and cosine distances with and without PCA. As you can see, there is some difference depending on the distance function used.
@@ -96,10 +96,10 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 .. image:: /images/action_ex3B_cosine_mfcc.png
 .. image:: /images/action_ex3B_cosine_mfcc_pca.png
 
-Example 3C: Similarity plots of combined video + audio features
+Example 3C: Dissimilarity plots of combined video + audio features
 ===============================================================
 
-Using the same visual and audio features as above, we **normalize** them and then combine them (before reducing dimensionality) into a single feature. We show two similarity matrices.
+Using the same visual and audio features as above, we **normalize** them and then combine them (before reducing dimensionality) into a single feature. We show two dissimilarity matrices.
 
 .. code-block:: python
 

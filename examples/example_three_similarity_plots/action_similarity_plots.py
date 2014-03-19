@@ -1,5 +1,5 @@
 # *******************************
-# Example Three: Similarity Plots
+# Example Three: Dissimilarity Plots
 # *******************************
 
 
@@ -11,7 +11,7 @@ from action.actiondata import adb
 
 ACTION_DIR = '~/Movies/action/'
 
-# 3A: Similarity plots using cosine distance
+# 3A: Dissimilarity plots using cosine distance
 def ex_3A(title):
 	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	pcorr = phase_correlation.PhaseCorrelation(title, action_dir=ACTION_DIR)
@@ -37,7 +37,7 @@ def ex_3A(title):
 	imagesc(distance.cosine(combo_decomposed, combo_decomposed), title_string='Cosine: Combo-PCA - first 10 minutes')
 
 
-# 3B: Four similarity plots of audio features (mfccs)
+# 3B: Four dissimilarity plots of audio features (mfccs)
 def ex_3B(title):
 
 	mfccs_ten_minute_segment = adb.read(os.path.expanduser(ACTION_DIR) + title + '/' + title + '.mfcc')[:2400,:]
@@ -53,7 +53,7 @@ def ex_3B(title):
 	imagesc(distance.cosine(decomposed, decomposed), title_string='Cosine: MFCC-PCA - first 10 minutes')
 	
 
-# 3C: Two similarity plots of combined histogram, phase correlation, and audio (mfccs) features
+# 3C: Two dissimilarity plots of combined histogram, phase correlation, and audio (mfccs) features
 def ex_3C(title):
 
 	cfl = color_features_lab.ColorFeaturesLAB(title)

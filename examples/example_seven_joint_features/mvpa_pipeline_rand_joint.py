@@ -66,20 +66,24 @@ def assemble_sample_data_and_crossvalidate(
 	#	..- gathering	
 	# 	..* get the midband color hist data for all titles, converting Lab to LXX
 	ad = actiondata.ActionData()
-	datadict = ad.gather_color_feature_data(titles, ACTION_MOVIE_DIR, grid='midband', cflag=True)
-	
+	cfl_datadict = ad.gather_color_feature_data(titles, ACTION_MOVIE_DIR, grid='midband', cflag=True)
+	mfcc_datadict = ad.gather_audio_feature_data(titles, ACTION_MOVIE_DIR, type='mfcc')
 	#		..- random frame sampling
-	for title in datadict.keys():
+	for title in cfl_datadict.keys():
 		print datadict[title].shape
-		datadict[title] = ad.sample_n_frames(datadict[title], n=samples_per)
+		cfl_datadict[title] = ad.sample_n_frames(cfl_datadict[title], n=samples_per)
+		mfcc_datadict[title] = ad.sample_n_frames(mfcc_datadict[title], n=samples_per)
+
+	#	... NORMALIZE !!! ???
 
 	#		..- gather data into Numpy array
 	# still in ORDER!!! NO NEED to sort them by title-string!
 	X = np.zeros(titles[0].shape[1], dtype=np.float32)
+	X = np.zeros((np.c_[cfl_datadict[title][0], mfcc_datadict[title][0]]).shape[1], dtype=np.float32)
 	for title in titles:
 		print '-----------------------'
 		print datadict[title][0].shape
-		X = np.append(np.atleast_2d(X), datadict[title][0], axis=0)
+		X = np.append(np.atleast_2d(X), np.c_[cfl_datadict[title][0], mfcc_datadict[title][0]], axis=0)
 
 	# hack out any rows with 0.0 mean (across the data from all the films)
 	X = np.reshape(X[1:,np.argwhere(np.mean(X, axis=0)>0)],(X.shape[0]-1,-1))

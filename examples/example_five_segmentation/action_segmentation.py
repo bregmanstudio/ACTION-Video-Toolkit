@@ -193,8 +193,8 @@ for i in range(0, int(cfl.determine_movie_length()), 60):
 imagesc(final_resegmented.T, title_string='Segmented features (1 min. granularity)')
 
 
-# Finally, let's see a segmented within-film similarity map
-imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Similarity map based on segments')
+# Finally, let's see a segmented within-film dissimilarity map
+imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Dissimilarity map based on segments')
 
 
 # There can be a bit of a problem with white cells (nans); if so, we zero-mask nans
@@ -222,13 +222,13 @@ diffs = np.where(np.r_[1,np.diff(hc_assigns),1])[0]
 linkage_plot(hc_assigns, hc_max, diffs)
 
 
-## plot segments from HC as similarity matrix
+## plot segments from HC as dissimilarity matrix
 segmented_ds = []
 for seg in dssegs:
 	segmented_ds += [seg.features]
 segmented_ds = np.array(segmented_ds)
 ad.calculate_self_similarity_matrix(segmented_ds)
-imagesc(ad.calculate_self_similarity_matrix(segmented_ds), title_string='Similarity of HC segments')
+imagesc(ad.calculate_self_similarity_matrix(segmented_ds), title_string='Dissimilarity of HC segments')
 
 
 ## plotting the segments
