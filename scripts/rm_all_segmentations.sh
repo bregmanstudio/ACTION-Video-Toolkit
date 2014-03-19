@@ -13,6 +13,7 @@ do
     filename=$(basename "$m")
     filename="${filename%.*}"
     echo " >>> $filename"
+#        echo ${filename}/${filename}*.pkl
 	echo `rm ${filename}/${filename}*.pkl`
     done
 echo 'done!'
