@@ -29,10 +29,10 @@ import matplotlib.pyplot as plt
 import pylab as P
 
 import action.segment as aseg
-import color_features_lab
-import opticalflow
-import opticalflow_tvl1
-import phase_correlation
+#import color_features_lab
+#import opticalflow
+#import opticalflow_tvl1
+#import phase_correlation
 
 
 DEFAULT_IMAGESC_KWARGS={'origin':'upper', 'cmap':P.cm.hot, 'aspect':'auto', 'interpolation':'nearest'}

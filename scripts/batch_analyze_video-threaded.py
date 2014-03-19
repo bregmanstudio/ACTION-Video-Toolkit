@@ -12,20 +12,24 @@ def actionAnalyzeAll(clist, plist, olist):
 	print clist
 	print plist
 	print olist
+	print NUM_PROCS
 	# create the pool
 	pool = multiprocessing.Pool(NUM_PROCS)
 	
-	# COMMENT OUT LINES HERE TO SKIP ANALYSIS TYPES
-	pool.map(actionHistWorker, clist)
-	pool.map(actionPCorrWorker, plist)
-	pool.map(actionOFlowWorker, olist)
+#	# COMMENT OUT LINES HERE TO SKIP ANALYSIS TYPES
+#	if len(clist) > 0:
+#		pool.map(actionCFLabWorker, clist)
+#	if len(plist) > 0:
+#		pool.map(actionPCorrWorker, plist)
+#	if len(olist) > 0:
+#		pool.map(actionOFlowWorker, olist)
 
 
-def actionHistWorker(cfile):
-	hist = action.color_features_lab.ColorFeaturesLAB(cfile, action_dir=ACTIONDIR)
+def actionCFLabWorker(cfile):
+	cflab = action.color_features_lab.ColorFeaturesLAB(cfile, action_dir=ACTIONDIR)
 	print 'analyzing colors: ', (hfile + '.mov'), ' ', (cfile + '.color_lab')
 	print 'action_dir=/Volumes/ACTION'
-	hist.analyze_movie()
+	cflab.analyze_movie()
 	print 'DONE analyzing color features: ', (cfile + '.mov'), ' ', (cfile + '.color_lab')
 	return 1
 
@@ -39,7 +43,7 @@ def actionPCorrWorker(pfile):
 
 def actionOFlowWorker(ofile):
 	oflow = action.opticalflow.OpticalFlow(ofile, action_dir=ACTIONDIR)
-	print 'analyzing histogram: ', (ofile + '.mov'), ' ', (ofile + '.opticalflow24')
+	print 'analyzing CFLab: ', (ofile + '.mov'), ' ', (ofile + '.opticalflow24')
 	print 'action_dir=/Volumes/ACTION'
 	oflow.analyze_movie()
 	print 'DONE analyzing optical flow: ', (ofile + '.mov'), ' ', (ofile + '.opticalflow24')
@@ -48,6 +52,7 @@ def actionOFlowWorker(ofile):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument("actiondir")
+	parser.add_argument("numprocs")
 	args = parser.parse_args()
 
 	print args
@@ -60,9 +65,9 @@ if __name__ == '__main__':
 
 	# if we have some args, use them
 
-	os.chdir(actiondir)
+	os.chdir(ACTIONDIR)
 	names = [os.path.dirname(file) for file in glob.glob('*/*.mov')]
-	names_with_proper_hist_exts = glob.glob('*/*.color_lab')
+	names_with_proper_cflab_exts = glob.glob('*/*.color_lab')
 	just_names_of_cflabs = [os.path.dirname(file) for file in names_with_proper_cflab_exts]
 	names_with_proper_pcorr_exts = glob.glob('*/*.phasecorr')
 	just_names_of_pcorrs = [os.path.dirname(file) for file in names_with_proper_pcorr_exts]
