@@ -201,11 +201,11 @@ class PhaseCorrelation:
 			self.filename = filename
 
 		# self.determine_movie_length() no need
-# 		if ! exists(self.json_path):
-# 			self._write_metadata_to_json()
+ 		if (os.path.exists(self.json_path) != True):
+ 			self._write_metadata_to_json()
 		ap['afps'] = self._read_json_value('fps')
 
-		#TO DO: try to naively get some data and store in a class var
+		#TO DO: try to naively get some data and store in a class var, as in color_lab...
 	
 	def _check_pcorr_params(self, analysis_params=None):
 		"""
