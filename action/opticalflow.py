@@ -179,6 +179,7 @@ except ImportError:
 import numpy as np
 import action.segment as aseg
 import action.actiondata as actiondata
+import json
 
 QPI = math.pi / 4.0
 
@@ -213,6 +214,9 @@ class OpticalFlow:
 		else:
 			self.movie_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['movie_extension']))
 			self.data_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + ap['data_extension']))
+			self.json_path = os.path.join(os.path.expanduser(ap['action_dir']), filename, (filename + '.json'))
+			print self.json_path
+			self.filename = filename
 		
 		# additional OpticalFlow-specific parameters and data structures...
 		self.tracks = []
@@ -226,7 +230,15 @@ class OpticalFlow:
 								qualityLevel = ap['qualityLevel'],
 								minDistance = ap['minDistance'],
 								blockSize = ap['blockSize'])
-	
+		
+		# self.determine_movie_length() no need
+ 		if (os.path.exists(self.json_path) != True):
+ 			self._write_metadata_to_json()
+		ap['afps'] = self._read_json_value('fps')
+		
+		# try to naively get some data and store in a class var
+		if os.path.exists(self.data_path):
+			self.default_color_features_for_segment()	
 	
 	def _check_opticalflow_params(self, analysis_params=None):
 		"""
@@ -271,7 +283,124 @@ class OpticalFlow:
 			
 		}
 		return analysis_params
+	
+	def _write_metadata_to_json(self):
+		"""
+		"""
+		title = self.filename
+		capture = cv2.VideoCapture(self.movie_path)
+		fps = capture.get(cv.CV_CAP_PROP_FPS)
+		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
+		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
+		length = frames / fps
 		
+		
+		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
+		fp = file(self.json_path, 'w')
+		fp.write(json.dumps(movdict))
+		fp.close()
+		del capture
+		return 1
+	
+	def _read_json_value(self, key='fps'):
+		"""
+		"""
+		jsonfile = open(self.json_path)
+		jsondata = json.load(jsonfile)
+		return jsondata[key]
+	
+# NOTE THAT THERE IS NO <<FULL>> ACCESS FUNCTION.
+
+	def gridded_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+		"""
+		Return the gridded histograms (all 64 bins) in the following order:
+		::
+		
+			 0  1  2  3  4  5  6  7
+			 8  9 10 11 12 13 14 15
+			 16 .  .  .  .  .  . 23
+			 24 .
+			 .  .
+			 .  .
+			 .  .
+			 56 .  .  .  .  .  . 63
+		
+		Equivalent to:
+		::
+		
+			opticalflow_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
+		
+		"""
+		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration).reshape(-1, 512)[0:-1:access_stride]
+		return self.X
+	
+	def center_quad_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+		"""
+		Return the gridded histograms after applying the following filter:
+		::
+		
+			 X  X ..  X  X
+			 X 18 .. 21  X
+			 X  . ..  .  X
+			 X  . ..  .  X
+			 X 42 .. 45  X
+			 X  X ..  X  X
+		
+		Equivalent to:
+		::
+		
+			opticalflow_features_for_segment(...)[1][:,[18..21,26..29,34..37,42..45,..],...].reshape((segment.time_span.duration*4), -1)
+		
+		"""
+		cq_array = range((18*8),(22*8))+range((26*8),(30*8))+range((34*8),(38*8))+range((42*8),(46*8))
+		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[:,cq_array,...].reshape(-1, 128)[0:-1:access_stride]
+		return self.X
+
+	def middle_band_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+		"""
+		Return the gridded histograms after applying the following filter:
+		::
+		
+			 X  X ..  X  X
+			16  . ..  . 23
+			 .  . ..  .  .
+			 .  . ..  .  .
+			40  . ..  . 47
+			 X  X ..  X  X
+		
+		Equivalent to:
+		::
+		
+			opticalflow_features_for_segment(...)[1][:,16:47,...].reshape((segment.time_span.duration*4), -1)
+		
+		"""
+		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[:,(16*8):(48*8),...].reshape(-1, 256)[0:-1:access_stride]
+		return self.X
+	
+	def plus_band_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+		"""
+		Return the gridded histograms after applying the following filter:
+		::
+		
+			 X  X  2 ..  5  X  X
+			 X  X 10 .. 13  X  X
+			16  . ..        . 23
+			 .  . ..        .  .
+			 .  . ..        .  .
+			40  . ..        . 47
+			X  X  50 .. 53  X  X
+			X  X  58 .. 61  X  X
+		
+		Equivalent to:
+		::
+		
+			opticalflow_features_for_segment(...)[1][:,[2..5,10..13,16..47,50..53,58..61],...].reshape((segment.time_span.duration*4), -1)
+		
+		"""
+		plus_array = range((2*8),(6*8))+range((10*8),(14*8))+range((16*8),(48*8))+range((50*8),(54*8))+range((58*8),(62*8))
+		return self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[:,plus_array,...].reshape(-1, 384)[0:-1:access_stride]
+
+	
 	def opticalflow_for_segment(self, segment=aseg.Segment(0, -1)):
 		"""
 		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
@@ -288,9 +417,16 @@ class OpticalFlow:
 		
 		PLEASE NOTE: Onset is relative to the onset of the analyzed file on disc. If you analyze starting at a 60 second offset, then your analysis file's 0 offset is actually the data starting 1 minute into the film!
 		"""
-		return self._opticalflow_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+		return X
+
+	def default_color_features_for_segment(self, func='opticalflow_for_segment_with_stride', segment=aseg.Segment(0, -1)):
+		"""
+		DYNAMIC ACCESS FUNCTION
+		"""
+		return getattr(self,func)(segment)
 	
-	def _opticalflow_for_segment_from_onset_with_duration(self, onset_time=0, duration=-1):
+	def _opticalflow_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=-1):
 		"""
 		This is the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
@@ -331,8 +467,9 @@ class OpticalFlow:
 		else:
 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
 		print dur_frames
-		data24 = self._opticalflow_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-		return data24[onset_frame:dur_frames:access_stride,:]
+		data24 = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+		self.X = data24[onset_frame:dur_frames:access_stride,:]
+		return self.X
 
 	def determine_movie_length(self, **kwargs):
 		"""
@@ -356,8 +493,6 @@ class OpticalFlow:
 			print "Cannot determine movie duration. Both the movie and data files are missing!"
 		self.analysis_params['duration'] = dur_total_seconds
 		return dur_total_seconds
-
-
 
 	def playback_movie(self, offset=0, duration=-1):
 		"""
