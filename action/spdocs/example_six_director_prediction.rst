@@ -180,4 +180,4 @@ We have included the ``batch_summarize_results.py`` file to allow visualization 
 .. image:: /images/action_ex6_8way_rand16_pools_means.png
 .. image:: /images/action_ex6_8way_rand16_pools_errors.png
 
-
+`Next <example_seven_mds.html>`_: Visualizing relationships between many films.

@@ -1,6 +1,6 @@
-**************************************************
+***********************************
 Example Three: Dissimilarity plots
-**************************************************
+***********************************
 
 Abstract
 ========
@@ -81,7 +81,7 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 
 	title = TITLE
 
-	mfccs_ten_minute_segment = adb.read(os.path.expanduser(ACTION_DIR) + title + '/' + title + '.mfcc')[:2400,:]
+	mfccs_ten_minute_segment = ad.read_audio_metadata(os.path.expanduser(ACTION_DIR) + title + '/' + title + '.mfcc')[:2400,:]
 	mfccs_ten_minute_segment = ad.meanmask_data(mfccs_ten_minute_segment)
 
 	ad = actiondata.ActionData()

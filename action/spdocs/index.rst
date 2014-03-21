@@ -56,7 +56,7 @@ Overview
 ========
 
 .. toctree::
-	:maxdepth: 2
+	:maxdepth: 1
 	
 	ACTION - data overview <action_overview>
 	ACTION - source code and links <action_code_links>
@@ -66,7 +66,7 @@ Tutorials
 =========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
 	Tutorial One - setup and analysis <tutorial_one_analysis>
 	Tutorial Two - access to video data <tutorial_two_access>
@@ -76,7 +76,7 @@ Examples
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
 	Example One - simple clustering <example_one_clustering>
 	Example Two - centers of mass and random sampling <example_two_centers_of_mass>
@@ -84,8 +84,7 @@ Examples
 	Example Four - viewing distributions of color data <example_four_distributions>
 	Example Five - in-depth example of segmentation <example_five_segmentation>
 	Example Six - in-depth example of a simple director prediction ML task <example_six_director_prediction>
-	Example Seven - example of a simple director prediction ML task with joint features *TODO*<example_seven_prediction_joint>
-	Example Eight - example of viewing relationships amonng films with multidimensional scaling (MDS) - <example_eight_mds>
+	Example Seven - example of viewing relationships amonng films with multidimensional scaling (MDS) - <example_seven_mds>
 
 ACTION Python Modules
 =====================

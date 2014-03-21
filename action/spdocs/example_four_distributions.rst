@@ -1,6 +1,6 @@
-**************************************************
+************************************
 Example Four: Distributions of Data
-**************************************************
+************************************
 
 Abstract
 ========
@@ -109,9 +109,9 @@ In the above example, you should be able to see that one is color and one is bla
 
 	title = 'Vertigo'
 
-	mfccs = adb.read(os.path.join(ACTION_DIR,title,(title+'.mfcc')))
-	chromas = adb.read(os.path.join(ACTION_DIR,title,(title+'.chrom')))
-	powers = adb.read(os.path.join(ACTION_DIR,title,(title+'.power')))
+	mfccs = ad.read_audio_metadata(os.path.join(ACTION_DIR,title,(title+'.mfcc')))
+	chromas = ad.read_audio_metadata(os.path.join(ACTION_DIR,title,(title+'.chrom')))
+	powers = ad.read_audio_metadata(os.path.join(ACTION_DIR,title,(title+'.power')))
 
 	mfccs = ad.meanmask_data(mfccs)
 	mfccs = ad.standardize_data(mfccs)
@@ -157,3 +157,5 @@ In the above example, you should be able to see that one is color and one is bla
 	imagesc(all_vert_X.T, title_string='Video/Audio Features - normalized - '+str(title))
 	
 .. image:: /images/action_ex4_all_features_vert.png
+
+`Next <example_five_segmentation.html>`_, we look at segmentations of movie data.

@@ -13,7 +13,7 @@ Please see the overview page for an explanation of the data structures and algor
 
 .. raw:: html
 
-	<TABLE cellpadding="4" style="border: 1px solid #000000; border-collapse: collapse;" border="1">
+	<TABLE cellpadding="9" style="border: 1px solid #000000; border-collapse: collapse;" border="1">
 	 <TR>
 	  <TD>Title</TD>
 	  <TD>Director</TD>
@@ -144,12 +144,6 @@ Please see the overview page for an explanation of the data structures and algor
 	  <TD>LB</TD>
 	  <TD>1951</TD>
 	  <TD>0</TD>
-	 </TR>
-	 <TR>
-	  <TD><a href="actiondata/Discreet_Charm.zip">Discreet_Charm</a></TD>
-	  <TD>LB</TD>
-	  <TD>1972</TD>
-	  <TD>1</TD>
 	 </TR>
 	 <TR>
 	  <TD><a href="actiondata/Dreams.zip">Dreams</a></TD>
@@ -372,12 +366,6 @@ Please see the overview page for an explanation of the data structures and algor
 	  <TD>JLG</TD>
 	  <TD>1963</TD>
 	  <TD>0</TD>
-	 </TR>
-	 <TR>
-	  <TD><a href="actiondata/Le_Quattro_Volte.zip">Le_Quattro_Volte</a></TD>
-	  <TD>JLG</TD>
-	  <TD>2010</TD>
-	  <TD>1</TD>
 	 </TR>
 	 <TR>
 	  <TD><a href="actiondata/Les_Dames_du_Bois_de_Boulogne.zip">Les_Dames_du_Bois_de_Boulogne</a></TD>
@@ -726,12 +714,6 @@ Please see the overview page for an explanation of the data structures and algor
 	  <TD>AT</TD>
 	  <TD>1975</TD>
 	  <TD>0</TD>
-	 </TR>
-	 <TR>
-	  <TD><a href="actiondata/The_Phantom_of_Liberty.zip">The_Phantom_of_Liberty</a></TD>
-	  <TD>JLG</TD>
-	  <TD>1974</TD>
-	  <TD>1</TD>
 	 </TR>
 	 <TR>
 	  <TD><a href="actiondata/The_Pleasure_Garden.zip">The_Pleasure_Garden</a></TD>
