@@ -438,15 +438,24 @@ class OpticalFlow:
 		
 		"""
 		ap = self._check_opticalflow_params()
-
+		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
+		
 		onset_frame = int(onset_time * (ap['fps'] / ap['stride']))
 		if duration < 0:
 			dur_frames = self.determine_movie_length()
 		else:
 			dur_frames = int(duration * (ap['fps'] / ap['stride']))
 		
-		# r, c, full_data_path = self._glean_dimensions_from_filename(data_path)
-		return np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
+#		return np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
+		
+		
+		# memmap
+		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
+		ad = actiondata.ActionData()
+		return ad.interpolate_time(mapped, ap['afps'])
+		
+		
+		
 
 	def opticalflow_for_segment_with_stride(self, segment=aseg.Segment(0, -1), access_stride=6):
 		"""
