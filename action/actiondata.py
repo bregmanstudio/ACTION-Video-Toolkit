@@ -67,6 +67,26 @@ class ActionData:
 		}
 		return params
 	
+	def read_audio_metadata(self, fname, dtype='<f8'):
+		"""
+		Read a binary little-endien row-major adb array from a file.
+		(Uses open, seek, fread.)
+		"""
+		fd = None
+		data = None
+		try:
+			fd = open(fname, 'rb')
+			dim = P.np.fromfile(fd, dtype='<i4', count=1)
+			data = P.np.fromfile(fd, dtype=dtype)
+			data = data.reshape(-1,dim)
+			return data
+		except IOError:
+			print "IOError: Cannot open %s for reading." %(fname)
+			raise IOError
+		finally:
+			if fd:
+				fd.close()
+
 	def n_order_difference(self, raw_data, order=1, absflag=False):
 		"""
 		Assumes that time/ordering is along the 0th axis (ML representation).
@@ -476,31 +496,6 @@ class ActionView:
 			self.mod.playback_movie_frames(offset_f, dur_f)
 			time.sleep(interpause)
 
-
-class adb:
-	"""
-	A helper class for handling audiodb databases.
-
-	"""
-	def read(fname, dtype='<f8'):
-		"""
-		Read a binary little-endien row-major adb array from a file.
-		(Uses open, seek, fread.)
-		"""
-		fd = None
-		data = None
-		try:
-			fd = open(fname, 'rb')
-			dim = P.np.fromfile(fd, dtype='<i4', count=1)
-			data = P.np.fromfile(fd, dtype=dtype)
-			data = data.reshape(-1,dim)
-			return data
-		except IOError:
-			print "IOError: Cannot open %s for reading." %(fname)
-			raise IOError
-		finally:
-			if fd:
-				fd.close()
 
 #####
 # UTILITIES - borrowed from Bregman Toolkit
