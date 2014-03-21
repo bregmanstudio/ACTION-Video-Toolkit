@@ -7,9 +7,9 @@ Part of Bregman:ACTION - Cinematic information retrieval toolkit
 Overview
 ========
 
-Use the phase correlation extractor class to analyze streams of images or video files. The phase correlation features class steps through movie frames and extracts two types of information. The first are features for the entire image. The second are set of 64 histograms, each describing a region of the image. The regions are arranged in an even 8-by-8 non-overlapping grid, with the first region at the upper left and the last at the lower right. These values, in sequence, are stored in a binary file.
+Use the phase correlation extractor class to analyze streams of images or video files. The phase correlation features class steps through movie frames and extracts two types of information. The first are features for the entire image. The second are set of 64 histograms, each describing a region of the image. The regions are arranged in an even 8-by-8 non-overlapping grid, with the first region at the upper left and the last at the lower right. These values are stored in a binary file using Numpy memory-mapped arrays.
 
-In order to reduce the amount of data involved (and the processing time involved), a stride parameter may be used during access. This number is the number of movie frames to account for in one analysis frame. The default is 6. There is no averaging or interpolation, the "skipped" frames are simply dropped.
+In order to reduce the amount of data involved (and the processing time involved), a stride parameter is used by default during access. This parameter is the number of movie frames to account for in one analysis frame. The default is 6. There is no averaging or interpolation, the "skipped" frames are simply dropped.
 
 Creation and Parameters
 =======================
@@ -18,7 +18,7 @@ Instantiate the PhaseCorrelation class, optionally with additional keyword argum
 
 .. code-block:: python
 
-	myPCorr = PhaseCorrelation (fileName, param1=value1, param2=value2, ...)
+	pcorr = PhaseCorrelation (fileName, param1=value1, param2=value2, ...)
 
 The global default phasecorr_features-extractor parameters are defined in a parameter dictionary: 
 
@@ -76,8 +76,8 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
 
 .. code-block:: python
 
-   myPCorr = PhaseCorrelation(fileName, vrange=[32, 256], verbose=True )
-   myPcorr = PhaseCorrelation(fileName, **{'vrange':[32, 256], 'verbose':True} )
+   pcorr = PhaseCorrelation(fileName, vrange=[32, 256], verbose=True )
+   pcorr = PhaseCorrelation(fileName, **{'vrange':[32, 256], 'verbose':True} )
 
 Using PhaseCorrelation
 ======================
@@ -115,19 +115,30 @@ To directly access your analysis data as a memory-mapped array:
 
 .. code-block:: python
 
+	import action.segment as aseg
 	pcorr = PhaseCorrelation('Psycho')
-	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
-	data = pcorr.pcorr_features_for_segment(segment_in_seconds)
+	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
+	data = pcorr._phasecorr_features_for_segment_from_onset_with_duration(segment_in_seconds)
+
+More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
+
+.. code-block:: python
+
+	pcorr = PhaseCorrelation('Psycho')
+	fullseg = aseg.Segment(0, pcorr.determine_movie_length()) # requesting entire film
+	data = pcorr.middle_band_phasecorr_features_for_segment(fullseg)
+
 
 A Note on Paths
 ===============
 
-This class is set up for the following directory structure. You might want to modify this to suit your needs.
+This class (as well as all feature classes in ACTION) is set up for the following directory structure. You may place your action data directories anywhere, and there can be multiple directories/databases.
 
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.mov
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.wav
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.phasecorr
 ...etc...
+
 
 Advanced Use
 ============
