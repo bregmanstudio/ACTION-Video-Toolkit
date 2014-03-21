@@ -261,6 +261,7 @@ class OpticalFlow:
 			'grid_divs_y' : 8,
 			'theta_divs' : 8,
 			'fps' : 24,							# fps: frames per second
+			'afps' : 24,							# afps: 'access' frames per second
 			'offset' : 0,						# time offset (in seconds) into film
 			'duration' : -1,					# duration (in seconds) of segment, -1 maps to full duration of media
 			'stride' : 1,						# stride is set to 1
