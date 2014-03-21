@@ -1,6 +1,8 @@
 # actiondata.py - data processing and viewing
 # Bregman:ACTION - Cinematic information retrieval toolkit
 """
+	Utility functions and other helpers for ACTION.
+
 """
 __version__ = '1.0'
 __author__ = 'Thomas Stoll'
@@ -130,13 +132,17 @@ class ActionData:
 
 	def gather_color_feature_data(self, titles, movie_dir, grid='midband', cflag=False):
 		"""
-		full 		= full frame
-		allgrid		= 4*4 grid
-		midband		= middle rows
-		plusband	= plus bands (excludes corners)
-		centerquad	= center square
+		::
 
-		limitations: can only use full film's data
+			*============================================*
+			| full       | full frame                    |
+			| allgrid    | 4*4 grid                      |
+			| midband    | middle rows                   |
+			| plusband   | plus bands (excludes corners) |
+			| centerquad | center square                 |
+			*============================================*
+
+		Limitations: can only use full film's data for now.
 		"""
 		res = {}
 
@@ -333,12 +339,14 @@ class ActionView:
 	Example of use:
 	
 	::
+		
 		av = actionview.ActionView()
 		av.plot_clusters(full_histogram_data, labeling, 'Clustering for my movie's histogram data')
 
 	To create an ActionView instance, you only need to pass a variable if you are intending to use the segment-viewer. In that case, simply create an ActionView like so:
 	
 	::
+		
 		oflow = opticalflow.OpticalFlow('Psycho')
 		av = actionview.ActionView(oflow)
 		av.view_sequences(...)
@@ -470,42 +478,36 @@ class ActionView:
 
 
 class adb:
-    """
-    ::
-    
-        A helper class for handling audiodb databases
-    """
-    @staticmethod
-    def read(fname, dtype='<f8'):
-        """
-        ::
+	"""
+	A helper class for handling audiodb databases.
 
-            read a binary little-endien row-major adb array from a file.
-            Uses open, seek, fread
-        """
-        fd = None
-        data = None
-        try:
-            fd = open(fname, 'rb')
-            dim = P.np.fromfile(fd, dtype='<i4', count=1)
-            data = P.np.fromfile(fd, dtype=dtype)
-            data = data.reshape(-1,dim)
-            return data
-        except IOError:
-            print "IOError: Cannot open %s for reading." %(fname)
-            raise IOError
-        finally:
-            if fd:
-                fd.close()
+	"""
+	def read(fname, dtype='<f8'):
+		"""
+		Read a binary little-endien row-major adb array from a file.
+		(Uses open, seek, fread.)
+		"""
+		fd = None
+		data = None
+		try:
+			fd = open(fname, 'rb')
+			dim = P.np.fromfile(fd, dtype='<i4', count=1)
+			data = P.np.fromfile(fd, dtype=dtype)
+			data = data.reshape(-1,dim)
+			return data
+		except IOError:
+			print "IOError: Cannot open %s for reading." %(fname)
+			raise IOError
+		finally:
+			if fd:
+				fd.close()
 
 #####
 # UTILITIES - borrowed from Bregman Toolkit
 
 def _normalize(x):
     """
-    ::
-
-        static method to copy array x to new array with min 0.0 and max 1.0
+    Static method to copy array x to new array with min 0.0 and max 1.0
     """
     y=x.copy()
     y=y-P.np.min(y)
@@ -514,9 +516,7 @@ def _normalize(x):
 
 def feature_plot(M, normalize=False, dbscale=False, norm=False, title_string=None, interp='nearest', bels=False, nofig=False,**kwargs):
     """
-    ::
-
-        static method for plotting a matrix as a time-frequency distribution (audio features)
+    Static method for plotting a matrix as a time-frequency distribution (audio features)
     """
     X = feature_scale(M, normalize, dbscale, norm, bels)
     if not nofig: P.figure()
@@ -532,12 +532,10 @@ def feature_plot(M, normalize=False, dbscale=False, norm=False, title_string=Non
 
 def feature_scale(M, normalize=False, dbscale=False, norm=False, bels=False):
     """
-    ::
-
-        Perform mutually-orthogonal scaling operations, otherwise return identity:
-          normalize [False]
-          dbscale  [False]
-          norm      [False]        
+    Perform mutually-orthogonal scaling operations, otherwise return identity:
+    normalize [False]
+    dbscale [False]
+    norm [False]        
     """
     if not (normalize or dbscale or norm or bels):
         return M
