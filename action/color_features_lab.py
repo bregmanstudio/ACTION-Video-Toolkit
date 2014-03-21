@@ -7,7 +7,7 @@ Part of Bregman:ACTION - Cinematic information retrieval toolkit
 Overview
 ========
 
-Use the color features (L*a*b*) extractor class to analyze streams of images or video files. The color features class steps through movie frames and extracts histograms for two frame types. The first is a histogram of color features for the entire image. The second is a set of sixteen histograms, each describing a region of the image. The regions are arranged in an even four-by-four non-overlapping grid, with the first region at the upper left and the last at the lower right. These values, in sequence, are stored in a binary file.
+Use the color features (L*a*b*) extractor class to analyze streams of images or video files. The color features class steps through movie frames and extracts histograms for two frame types. The first is a histogram of color features for the entire image. The second is a set of sixteen histograms, each describing a region of the image. The regions are arranged in an even four-by-four non-overlapping grid, with the first region at the upper left and the last at the lower right. These values are stored in a binary file using Numpy memory-mapped arrays.
 
 In order to reduce the amount of data involved (and the processing time involved), a stride parameter is used. This number is the number of movie frames to account for in one analysis frame. The default is 6. As of version 1.0, there is no averaging or interpolation, the "skipped" frames are simply dropped.
 
@@ -18,7 +18,7 @@ Instantiate the ColorFeaturesLAB class, optionally with additional keyword argum
 
 .. code-block:: python
 
-	myCFLAB = ColorFeaturesLAB (fileName, param1=value1, param2=value2, ...)
+	cfl = ColorFeaturesLAB (fileName, param1=value1, param2=value2, ...)
 
 The global default color_features-extractor parameters are defined in a parameter dictionary: 
 
@@ -92,8 +92,8 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
 
 .. code-block:: python
 
-   myCFLAB = ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
-   myCFLAB = ColorFeaturesLAB(fileName, **{'vrange':[32, 256], 'verbose':True} )
+   cfl = ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
+   cfl = ColorFeaturesLAB(fileName, **{'vrange':[32, 256], 'verbose':True} )
 
 Using ColorFeaturesLAB
 ======================
@@ -103,38 +103,52 @@ Analyze a full film:
 
 .. code-block:: python
 
-	cflab = ColorFeaturesLAB('Psycho')
-	cflab.analyze_movie() # Assumes that ~/Movies/action/Psycho.mov exists; returns otherwise
+	cfl = ColorFeaturesLAB('Psycho')
+	cfl.analyze_movie() # Assumes that ~/Movies/action/Psycho.mov exists; returns otherwise
 
 This also works, so you can define your own file locations:
 
 .. code-block:: python
 
-	cflab = ColorFeaturesLAB('Psycho', action_dir='~/somewhere')
-	cflab.analyze_movie()
+	cfl = ColorFeaturesLAB('Psycho', action_dir='~/somewhere')
+	cfl.analyze_movie()
 
 To screen (the video only) of your film as it is analyzed:
 
 .. code-block:: python
 
-	cflab = ColorFeaturesLAB('Psycho')
-	cflab.analyze_movie_with_display()
+	cfl = ColorFeaturesLAB('Psycho')
+	cfl.analyze_movie_with_display()
 
 To play back your analysis later:
 
 .. code-block:: python
 
-	cflab = ColorFeaturesLAB('Psycho')
-	cflab.playback_movie()
+	cfl = ColorFeaturesLAB('Psycho')
+	cfl.playback_movie()
 
 To directly access your analysis data as a memory-mapped array:
 
 .. code-block:: python
 	
 	import action.segment as aseg
-	cflab = ColorFeaturesLAB('Psycho')
+	cfl = ColorFeaturesLAB('Psycho')
 	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
-	data = cflab.cflab_for_segment(segment_in_seconds)
+	data = cfl._color_features_for_segment_from_onset_with_duration(segment_in_seconds)
+
+More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
+
+.. code-block:: python
+
+	cfl = ColorFeaturesLAB('Psycho')
+	fullseg = aseg.Segment(0, cfl.determine_movie_length()) # requesting entire film
+	data = cfl.middle_band_color_features_for_segment(fullseg)
+
+
+A Note on Paths
+===============
+
+This class (as well as all feature classes in ACTION) is set up for the following directory structure. You may place your action data directories anywhere, and there can be multiple directories/databases.
 
 A Note on Paths
 ===============
@@ -152,7 +166,7 @@ There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per se
 
 .. code-block:: python
 
-	cflab = ColorFeaturesLAB('Psycho', 'stride'=4)
+	cfl = ColorFeaturesLAB('Psycho', 'stride'=4)
 
 Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
 
@@ -216,7 +230,6 @@ class ColorFeaturesLAB:
 			self.filename = filename
 		
 		# self.determine_movie_length() no need
-
  		if (os.path.exists(self.json_path) != True):
  			self._write_metadata_to_json()
 		ap['afps'] = self._read_json_value('fps')
@@ -402,30 +415,6 @@ class ColorFeaturesLAB:
 		DYNAMIC ACCESS FUNCTION
 		"""
 		return getattr(self,func)(segment)
-
-# 	def color_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
-# 
-# 		#ap = self._check_cflab_params()
-# 		ap = self.analysis_params
-# 		frames_per_stride = (ap['fps'] / ap['stride'])
-#		
-# 		onset_frame = int(segment.time_span.start_time * frames_per_stride)
-# 		print onset_frame
-# 		if segment.time_span.duration < 0:
-# 			dur_frames = self.determine_movie_length()
-# 		else:
-# 			dur_frames = int(segment.time_span.duration * frames_per_stride)
-# 		print self.s_movie_length()
-# 		print dur_frames
-# 		
-# 		if grid_flag == 0:
-# 			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 48))
-# 		else:
-# 			data24 = self._color_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
 
 	def _color_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
 		"""
