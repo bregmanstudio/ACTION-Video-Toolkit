@@ -28,7 +28,7 @@ body {
 /* Page layout */
 
 div.header, div.content, div.footer {
-  width: 70em;
+  width: 72em;
   margin-left: auto;
   margin-right: auto;
 }
@@ -170,7 +170,7 @@ div.content-wrapper {
 }
 
 div.document {
-  width: 50em;
+  width: 49em;
   float: left;
 }
 
@@ -260,6 +260,7 @@ div.sidebar {
   width: 20em;
   float: right;
   font-size: .8em;
+  margin: 0 1.5em 0.5em 0.5em;
 }
 
 div.sidebar a, div.header a {
