@@ -18,9 +18,10 @@ Raw Data: Files
 
 The raw analysis is stored in binary files. To summarize, these files, identified by descriptive extensions, are:
 
-#. MOVIE_TITLE.color_lab - Normalized L*a*b* color space: histograms summarizing the distribution of color and luminescence (brightness) over each frame, first for the whole screen, then for a 4 by 4 gridded division of the screen.
-#. MOVIE_TITLE.opticalflow24 - Optical flow data: motion vectors based on an intermediate corner-detection step.
-#. MOVIE_TITLE.phase_corr - Phase correlation data: 8 by 8 gridded division of screen.
+#. MOVIE_TITLE.color_lab - Normalized L*a*b* color space: histograms summarizing the distribution of color and luminescence (brightness) over each frame: 8-by-8 grid and full screen.
+#. MOVIE_TITLE.opticalflow24 - Optical flow data: motion vectors based on an intermediate corner-detection step: 8-by-8 grid and full screen.
+#. MOVIE_TITLE.phasecorr - Phase correlation data: 8-by-8 grid and full screen.
+#. MOVIE_TITLE.tvl1 - TV-L1 optical flow data: 8-by-8 grid and full screen.
 
 For a detailed list of the meanings of the various extensions, please see our `Overview <http://bregman.dartmouth.edu/action/action_overview.html>`_. 
 
@@ -29,7 +30,7 @@ Access
 
 Import ACTION Classes, Create a Histogram Object, and Play a Movie
 ------------------------------------------------------------------
-We will use Histogram objects for this first example. Let us assume that there are the folowing files: ~/Movies/Vertigo.mov and ~/Movies/Vertigo.hist. Execute the following commands in your Python interpreter:
+We will use color_features_lab for this first example. Let us assume that there are the folowing files: ~/Movies/Vertigo.mov and ~/Movies/Vertigo.hist. Execute the following commands in your Python interpreter:
 
 .. code-block:: python
 
@@ -70,10 +71,10 @@ Visualization is nice, however we wish to expose raw data for the user to do som
 
 	# data for the central cells, for minute 2
 	import action.segment as aseg
-	myseg = aseg.Segment(60, duration=60)
-	cfl_data = cfl.full_color_features_for_segment(myseg)	
+	myseg = aseg.Segment(start_time=60, duration=60)
+	cfl_data = cfl.all_color_features_for_segment(myseg)	
 
-The data is returned as a tuple, first the full screen data, then the gridded data (see below for more).
+By default, we return all the features as a tuple (see below for more).
 
 .. code-block:: python
 
@@ -82,7 +83,7 @@ The data is returned as a tuple, first the full screen data, then the gridded da
 	cfl_data[1].shape
 	>>> (240, 768)
 
-Segments, simple containers that wrap segments of time, are objects from ACTION's sister project Bregman. You may also create them using an ending time rather than duration: `myseg = aseg.Segment(60, end_time=120)`.
+Segments, simple containers that wrap segments of time, are objects from the Bregman Toolkit for Music Information Retrieval. You may also create them using an ending time rather than duration: `myseg = aseg.Segment(start_time=60, end_time=120)`.
 
 Access to Subsets of Histogram Data
 -----------------------------------

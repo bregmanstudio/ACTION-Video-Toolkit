@@ -66,7 +66,7 @@ Tutorials
 =========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    
 	Tutorial One - setup and analysis <tutorial_one_analysis>
 	Tutorial Two - access to video data <tutorial_two_access>
@@ -76,7 +76,7 @@ Examples
 ========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
 	Example One - simple clustering <example_one_clustering>
 	Example Two - centers of mass and random sampling <example_two_centers_of_mass>
@@ -93,7 +93,7 @@ ACTION Python Modules
    :maxdepth: 1
    
 	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
-	opticalflow - optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
+	opticalflow - Lukas-Kanade optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
 	opticalflow_tvl1 - TVL optical flow frame-to-frame analysis and visulaization <opticalflow_tvl1>
 	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
 	segment - segmentation and container data structure <segment>

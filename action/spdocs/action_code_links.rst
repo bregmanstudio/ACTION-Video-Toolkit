@@ -2,7 +2,7 @@
 Code and Links
 **************
 
-`Action Python toolkit (action_0.13-09-12) <resources/action_0.13-09-12.zip>`_
+`Action at Github <http://github.com/bregmanstudio/action>`_
 
 `Bregman Python toolkit (bregman_0.12-11-15) <resources/bregman_0.12-11-15.zip>`_
 
