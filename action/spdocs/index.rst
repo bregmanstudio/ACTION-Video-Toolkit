@@ -46,17 +46,17 @@ You can also view the data alongside the imagery of the film:
 
 ACTION also has functionality for analyzing and accessing optical flow (movement) information and audio analysis metadata.
 
-Can I See a Demo
-================
+Demo 
+====
 
-	We have created a page linking to `segmentation and visualization of ACTION data for 132 films <segmenter/action_db.html>`_.
+	We have created a page demonstrating `segmentation and visualization of ACTION data for 139 films <segmenter/action_db.html>`_.
 
 
 Overview
 ========
 
 .. toctree::
-	:maxdepth: 1
+	:maxdepth: 2
 	
 	ACTION - data overview <action_overview>
 	ACTION - source code and links <action_code_links>
