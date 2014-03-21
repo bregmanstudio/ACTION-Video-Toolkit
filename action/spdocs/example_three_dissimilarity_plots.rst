@@ -35,7 +35,7 @@ These are the usual includes for working with ACTION data. We will use color and
 
 
 View the dissimilarity matrices
-----------------------------
+-------------------------------
 
 We now plot dissimilarity matrices using cosine distance. They both show about the same thing, but with some subtle variations.
 
@@ -97,7 +97,7 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 .. image:: /images/action_ex3B_cosine_mfcc_pca.png
 
 Example 3C: Dissimilarity plots of combined video + audio features
-===============================================================
+==================================================================
 
 Using the same visual and audio features as above, we **normalize** them and then combine them (before reducing dimensionality) into a single feature. We show two dissimilarity matrices.
 
