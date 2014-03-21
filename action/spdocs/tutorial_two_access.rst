@@ -128,27 +128,21 @@ which is indexed in the flattened output array like so:
 Optical Flow
 ------------
 
-The same work flow applies to utilizing the optical flow data. There are no convenience functions for dividing up the screen; if you want to pull out a subset of the data you are free to do so on your own.
+The same work flow applies to utilizing the optical flow data.
+
 ::
 
 	oflow = opticalflow.OpticalFlow('Vertigo')
 	myseg = aseg.Segment(60, duration=60)
-	oflow_data = oflow.middle_band_phasecorr_features_for_segment(myseg)
+	oflow_data = oflow.middle_band_opticalflow_features_for_segment(myseg)
 
-The optical flow data is collected for all 24 frames in each second:
+The optical flow data is collected for all 24 frames in each second, but our access functions have a default stride of 6 frames built in:
 
 .. code-block:: python
 
 	oflow_data.shape
-	>>> (240, 512)
+	>>> (240, 256)
 
-In order to access data with the convenient ``stride`` feature, a separate function is provided. Note the default stride value of 6 that corresponds to 4 analysis frames per second, as in the color features:
-
-.. code-block:: python
-
-	oflow_hist_data = oflow.opticalflow_for_segment_with_stride(myseg, stride=6)	
-	oflow_hist_data.shape
-	>>> (240, 512)
 
 Phase Correlation
 -----------------
@@ -158,6 +152,7 @@ Phase Correlation is identical to OpticalFlow for access; just change the action
 .. code-block:: python
 
 	pcorr = phase_correlation.PhaseCorrelation('Vertigo')
+	#...
 
 
 Visualizing the Data as Numpy Arrays
@@ -167,21 +162,21 @@ Finally, let us look at some examples of visualizing this data. Recall that hist
 
 .. code-block:: python
 
-	import action.color_features_lab as color_features_lab
-	import action.segment as aseg
-	from action.actiondata import *
+import action.color_features_lab as color_features_lab
+import action.segment as aseg
+from action.actiondata import *
 
-	cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
+cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
 
-	myseg = aseg.Segment(60, duration=60)
-	mb_data = cfl.middle_band_color_features_for_segment(myseg)
+myseg = aseg.Segment(60, duration=60)
+mb_data = cfl.middle_band_color_features_for_segment(myseg)
 	
 	# ACTION has has a function, borrowed from Bregman, which we use here to visualize 2-D arrays
 	imagesc(mb_data)
 
 .. image:: /images/action_tut2_mbdata.png
 
-That's better. Transpose to see time on the X axis.
+Transpose to see time on the X axis.
 
 .. code-block:: python
 

@@ -23,11 +23,12 @@ These are the usual includes for working with ACTION data. We will use color and
 
 .. code-block:: python
 
-	title = TITLE
+	
+	title = 'Meshes_of_the_Afternoon'
 
 	cfl = color_features_lab.ColorFeaturesLAB(title, ACTION_DIR)
 	pcorr = phase_correlation.PhaseCorrelation(title, ACTION_DIR)
-	length = 600 # 600 seconds = 10 minutes
+	length = 600 # == 10 minutes
 	length_in_frames = length * 4
 	ten_minute_segment = aseg.Segment(0, duration=length)
 	cfl_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
@@ -43,7 +44,8 @@ We now plot dissimilarity matrices using cosine distance. They both show about t
 
 	ad = actiondata.ActionData()
 	c_decomposed = ad.calculate_pca_and_fit(cfl_ten_minute_segment, locut=0.0001)
-	p_decomposed = ad.calculate_pca_and_fit(pcorr_ten_minute_segment, locut=0.01)
+	pcorr_ten_minute_segment = ad.meanmask_data(pcorr_ten_minute_segment)
+	p_decomposed = ad.calculate_pca_and_fit(pcorr_ten_minute_segment, locut=0.025)
 
 	imagesc(distance.euc2(c_decomposed, c_decomposed), 'EUC: Color Features-PCA - first 10 minutes')
 	imagesc(distance.euc2(p_decomposed, p_decomposed), 'EUC: Phase corr.-PCA - first 10 minutes')
@@ -80,11 +82,10 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 	title = TITLE
 
 	mfccs_ten_minute_segment = adb.read(os.path.expanduser(ACTION_DIR) + title + '/' + title + '.mfcc')[:2400,:]
-	D = np.ma.masked_invalid(mfccs_ten_minute_segment)
-	D = D.filled(D.mean())
+	mfccs_ten_minute_segment = ad.meanmask_data(mfccs_ten_minute_segment)
 
 	ad = actiondata.ActionData()
-	decomposed = ad.calculate_pca_and_fit(D, locut=0.2)
+	decomposed = ad.calculate_pca_and_fit(mfccs_ten_minute_segment, locut=0.2)
 
 	imagesc(distance.euc2(D, D), title_string='EUC: MFCC - first 10 minutes')
 	imagesc(distance.euc2(decomposed, decomposed), title_string='EUC: MFCC-PCA - first 10 minutes')
@@ -105,7 +106,7 @@ Using the same visual and audio features as above, we **normalize** them and the
 
 	cfl_normed		= cfl_ten_minute_segment # already normed!
 	pcorr_normed	= ad.normalize_data(pcorr_ten_minute_segment)
-	mfccs_normed	= ad.normalize_data(audio)
+	mfccs_normed	= ad.normalize_data(mfccs_ten_minute_segment)
 
 	full_feature = np.c_[cfl_normed, pcorr_normed, mfccs_normed]
 	ad = actiondata.ActionData()

@@ -27,14 +27,14 @@ These are the usual includes for working with ACTION data. For this example, we 
 	import action.segment as aseg
 	import numpy as np
 
-	oflow = opticalflow.OpticalFlow('North_by_Northwest')
+	pcorr = phase_correlation.PhaseCorrelation('Amistad')
 
-	length = oflow.determine_movie_length() # in seconds
+	length = pcorr.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 
 	full_segment = aseg.Segment(0, duration=length)
-	oflow_full_film = oflow.opticalflow_for_segment_with_stride(full_segment) # default stride is 6 frames
-	print oflow_full_film.shape == (length_in_frames, 512) # should be True
+	pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment) # default stride is 6 frames
+	print pcorr_full_film.shape == (length_in_frames, 512) # should be True
 
 Perform PCA and cluster
 ---------------------------------------------
@@ -44,7 +44,8 @@ Here we find the principle components of the data and select those dimensions wi
 .. code-block:: python
 
 	ad = actiondata.ActionData()
-	decomposed = ad.calculate_pca_and_fit(oflow_full_film, locut=100.0)
+	pcorr_full_film = ad.meanmask_data(pcorr_full_film)
+	decomposed = ad.calculate_pca_and_fit(ad.normalize_data(pcorr_full_film), locut=0.0025)
 	
 Now we randomly sample 500 points from the entire film's data set. We use Numpy's array shuffle function to randomly select points. If we did not sort the indices, the data would look slightly more chaotic.
 
@@ -55,9 +56,10 @@ Now we randomly sample 500 points from the entire film's data set. We use Numpy'
 	random_samples = decomposed[ np.sort(index_array[:500]) ]
 	
 The following is a wrapper function in ``actiondata'' that will do the same thing:
+
 .. code-block:: python
 
-	random_samples_2, ordering= sample_n_frames(decomposed, n=500, sort_flag=True)
+	random_samples_2, ordering = ad.sample_n_frames(decomposed, n=500, sort_flag=True)
 	random_samples.shape == random_samples_2.shape # should be True
 	
 Plot the clusters
@@ -85,36 +87,38 @@ When dealing with multiple films, we iterate and concatenate the resulting 500 p
 
 	ad = actiondata.ActionData()
 	av = actiondata.ActionView()
-	combo_oflow = np.array(np.zeros(512), dtype='int32')
-	titles = ['North_by_Northwest', 'Psycho', 'Rope', 'Vertigo']
+	combo_pcorr = np.array(np.zeros(64), dtype='int32')
+	titles = ['Amistad', 'Dune', 'Grapes_of_Wrath', 'A_Woman_is_a_Woman']
 	num_samples_per_film = 500
 
 	for title in titles:
-	
-		oflow = opticalflow24.OpticalFlow24(title)
-	
-		length = oflow.determine_movie_length() # in seconds
+
+		pcorr = phase_correlation.PhaseCorrelation(title)
+
+		length = pcorr.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 
-		full_segment = bseg.Segment(0, duration=length)
-		oflow_full_film = oflow.opticalflow_for_segment_with_stride(full_segment)
-
-		random_samples, ordering = ad.sample_n_frames(oflow_full_film, num_samples_per_film)
+		full_segment = aseg.Segment(0, duration=length)
+		pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment)
 	
-		combo_oflow = np.append(np.atleast_2d(combo_oflow), np.atleast_2d(random_samples), axis=0)
+		random_samples, ordering = ad.sample_n_frames(pcorr_full_film, num_samples_per_film)	
+	
+		combo_pcorr = np.append(np.atleast_2d(combo_pcorr), np.atleast_2d(random_samples), axis=0)
 
 	# get rid of the empty first row
-	combo_oflow = combo_oflow[1:,:]
+	combo_pcorr = combo_pcorr[1:,:]
 
 Finally, we demonstrate a function that will calculate principal components and retain those with variances above a threshold.
 
 .. code-block:: python
 
-	decomposed = ad.calculate_pca_and_fit(combo_oflow, locut=100.0)
+	combo_pcorr = ad.meanmask_data(combo_pcorr)
+	decomposed = ad.calculate_pca_and_fit(combo_pcorr, locut=0.0025)
 	decomposed.shape
-	>>> (2000,366)
+	>>> (2000,40)
 
-	imagesc(decomposed.T)
+	av.plot_clusters(np.atleast_2d(decomposed), np.array([(i/num_samples_per_film) for i in range(len(titles)*num_samples_per_film)]), ttl='ex_2B dims 0-2')
+	av.plot_clusters(np.atleast_2d(decomposed)[:,1:], np.array([(i/num_samples_per_film) for i in range(len(titles)*num_samples_per_film)]), ttl='ex_2B dims 1-3')
 
 The result is four clusters of points color-labeled to show which film-grouping each belongs to.
 
@@ -129,25 +133,26 @@ In a similar manner, the centers of mass of each movie's points can be graphed i
 .. code-block:: python
 
 	av = actiondata.ActionView()
-	combo_oflow = np.array(np.zeros(512), dtype='float32')
-	
+	combo_pcorr = np.array(np.zeros(64), dtype='float32')
+
 	for title in titles:
-		oflow = opticalflow.OpticalFlow(title)
-		
-		length = oflow.determine_movie_length() # in seconds
+		pcorr = phase_correlation.PhaseCorrelation(title)
+	
+		length = pcorr.determine_movie_length() # in seconds
 		length_in_frames = length * 4
-		
+	
 		full_segment = aseg.Segment(0, duration=length)
-		oflow_full_film = oflow.opticalflow_for_segment_with_stride(full_segment)
-				
-		oflow_COM = np.mean(oflow_full_film, axis=0)
-		combo_oflow = np.append(np.atleast_2d(combo_oflow), np.atleast_2d(oflow_COM), axis=0)
-	
+		pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment)
+			
+		pcorr_full_film = ad.meanmask_data(pcorr_full_film)
+		pcorr_COM = np.mean(pcorr_full_film, axis=0)
+		combo_pcorr = np.append(np.atleast_2d(combo_pcorr), np.atleast_2d(pcorr_COM), axis=0)
+
 	# get rid of row of 0's
-	combo_oflow = combo_oflow[1:,:]
-	
+	combo_pcorr = combo_pcorr[1:,:]
+
 	# plot once
-	av.plot_clusters(np.atleast_2d(combo_oflow)[:,1:], np.array([i for i in range(len(titles))]), ttl='ex_2D')
+	av.plot_clusters(np.atleast_2d(combo_pcorr)[:,1:], np.array([i for i in range(len(titles))]), ttl='ex_2C')
 
 .. image:: /images/action_ex2_multiple_centroids.png
 
