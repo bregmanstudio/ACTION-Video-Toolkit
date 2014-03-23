@@ -28,7 +28,7 @@ Using ACTION is as easy as:
 .. code-block:: python
 
 	from action import *
-	cfl = ColorFeaturesLAB('North_by_Northwest')
+	cfl = color_features_lab.ColorFeaturesLAB('North_by_Northwest')
 	cfl.analyze_movie()
 
 ...then access the analysis data:
@@ -59,8 +59,9 @@ Overview
 	:maxdepth: 1
 	
 	ACTION - data overview <action_overview>
-	ACTION - source code and links <action_code_links>
 	ACTION - raw data <action_data>
+	ACTION - interactive segmentation <http://bregman.dartmouth.edu/action/segmenter/action_db.html>
+	ACTION - source code and links <action_code_links>
 
 Tutorials
 =========
