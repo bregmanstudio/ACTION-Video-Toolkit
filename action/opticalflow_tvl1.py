@@ -46,6 +46,8 @@ The full list of settable parameters, with default values and explanations:
 +------------------------+-----------------+----------------------------------------------------+
 | fps                    | 24              | fps: frames per second                             |
 +------------------------+-----------------+----------------------------------------------------+
+| afps                   | 24              | afps: 'access' frames per second                   |
++------------------------+-----------------+----------------------------------------------------+
 | offset                 | 0               | time offset in seconds                             |
 +------------------------+-----------------+----------------------------------------------------+
 | duration               | -1              | time duration in seconds, -1 (default) maps to full|
@@ -77,6 +79,13 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
 
    tvl1 = OpticalFlowTVL1(fileName, verbose=True )
    tvl1 = OpticalFlowTVL1(fileName, **{'verbose':True} )
+
+If you ``from action import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
+
+.. code-block:: python
+	
+   tvl1 = opticalflow_tvl1.OpticalFlowTVL1(fileName, verbose=True )
+
 
 Using OpticalFlowTVL1
 ======================
@@ -117,7 +126,17 @@ To directly access your analysis data as a memory-mapped array:
 	import action.segment as aseg
 	tvl1 = OpticalFlowTVL1('Psycho')
 	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
-	data = tvl1.tvl1_for_segment(segment_in_seconds)
+	data = tvl1._tvl1_features_for_segment_from_onset_with_duration(segment_in_seconds)
+	
+More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
+
+.. code-block:: python
+
+	cfl = OpticalFlowTVL1('Psycho')
+	fullseg = aseg.Segment(0, tvl1.determine_movie_length()) # requesting entire film
+	data = tvl1.middle_band_color_features_for_segment(fullseg)
+
+
 
 A Note on Paths
 ===============
@@ -223,14 +242,15 @@ class OpticalFlowTVL1:
 			'action_dir' : os.path.expanduser('~/Movies/action/'),	# default dir
 			'movie_extension' : '.mov',
 			'data_extension' : '.tvl1',
-			'mode' : 'playback',			# 'playback'
+			'mode' : 'playback',				# 'playback'
 			'grid_divs_x' : 8,
 			'grid_divs_y' : 8,
-			'fps' : 24,					# fps: frames per second
-			'afps' : 24,				# afps: frames per second for access or alignment
-			'offset' : 0,				# time offset in seconds
-			'duration' : -1,			# time duration in seconds, -1 (default) maps to full duration of media
-			'stride' : 6,				# number of frames to that comprise one analysis point, skips stride - 1 frames
+			'hist_bins' : 8,					# each bin is 22.5 degrees?
+			'fps' : 24,							# fps: frames per second
+			'afps' : 24,						# afps: frames per second for access or alignment
+			'offset' : 0,						# time offset in seconds
+			'duration' : -1,					# time duration in seconds, -1 (default) maps to full duration of media
+			'stride' : 6,						# number of frames to that comprise one analysis point, skips stride - 1 frames
 			'verbose' : True,					# useful for debugging
 			'display' : True,					# Launch display screen
 			'hist_shrink_factor' : 0.5,			# (adjustable) ratio for size of histogram window
@@ -329,7 +349,7 @@ class OpticalFlowTVL1:
 			all_tvl1_features_for_segment(...)[1][:,[5,6,9,10],...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,::2][ range(18,22)+range(26,30)+range(34,38)+range(52,56) ].reshape(-1, 16)
+		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][ range((18*2),(22*2))+range((26*2),(30*2))+range((34*2),(38*2))+range((52*2),(56*2)) ].reshape(-1, 32)
 		return self.X
 
 	def middle_band_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
@@ -348,7 +368,7 @@ class OpticalFlowTVL1:
 			all_tvl1_features_for_segment(...)[1][:,::2][,16:48].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,::2][:,16:48].reshape(-1, 32)
+		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,(16*2):(48*2)].reshape(-1, 64)
 		return self.X
 	
 	def plus_band_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
@@ -368,7 +388,7 @@ class OpticalFlowTVL1:
 		
 		"""
 		
-		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,::2][:,range(2,6)+range(10,14)+range(16,48)+range(50,54)+range(58,62)].reshape(-1, 48)
+		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,range((2*2),(6*2))+range((10*2),(14*2))+range((16*2),(48*2))+range((50*2),(54*2))+range((58*2),(62*2))].reshape(-1, 96)
 		return self.X
 	
 	def default_tvl1_features_for_segment(self, func='middle_band_tvl1_features_for_segment', segment=aseg.Segment(0, -1)):
@@ -466,7 +486,7 @@ class OpticalFlowTVL1:
 			print "dsize: ", dsize
 			# since we are reading raw tvl1 analysis data that always has the same size on disc!
 			# the constant had better be correct!
-			dur_total_aframes = dsize / float((((ap['grid_divs_x'] * ap['grid_divs_y']) * 2) + 16) * 4) # REGIONS * CHANNELS + 16 * BYTES
+			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'] * 2) + 16) * 4) # REGIONS * CHANNELS + 16 * BYTES
 			print 'dtaf: ', dur_total_aframes
 			dur_total_seconds = int(dur_total_aframes / frames_per_stride)
 			print "total secs: ", dur_total_seconds
