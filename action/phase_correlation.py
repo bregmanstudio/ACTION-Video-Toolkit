@@ -262,7 +262,7 @@ class PhaseCorrelation:
 		fps = capture.get(cv.CV_CAP_PROP_FPS)
 		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
-		length = frames / fps
+		length = float(frames) / float(fps)
 		
 		
 		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
@@ -426,7 +426,7 @@ class PhaseCorrelation:
 			# probably should have some error handling here if the reshape fails
 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 128))
 
-	def _phasecorr_features_for_segment_from_onset_with_duration(self, onset_frame=0, duration_frames=-1):
+	def _phasecorr_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=-1):
 		"""
 		This will be the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
@@ -437,16 +437,17 @@ class PhaseCorrelation:
 		
 		"""
 		ap = self.analysis_params
-		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
+		frames_per_astride = (24.0 / ap['stride']) # 24.0, not ap['fps']
 
 		print ap['fps']
 		print ap['stride']
-
-		onset_frame = int(onset_frame)
-		if duration_frames < 0:
-			dur_frames = int(self.determine_movie_length() * frames_per_stride)
+		print duration_s
+		
+		onset_frame = int(onset_s * frames_per_astride)
+		if duration_s < 0:
+			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps'])
 		else:
-			dur_frames = int(duration_frames * frames_per_stride)
+			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
 		
 		print 'dur: ', dur_frames
 		# print "data path: ", self.data_path
@@ -492,7 +493,7 @@ class PhaseCorrelation:
 			print "dsize: ", dsize
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 2 * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
+			dur_total_seconds = (dur_total_aframes / 24.0) * (ap['fps'] / ap['afps'])
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1

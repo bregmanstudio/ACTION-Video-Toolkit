@@ -293,7 +293,7 @@ class OpticalFlow:
 		fps = capture.get(cv.CV_CAP_PROP_FPS)
 		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
-		length = frames / fps
+		length = float(frames) / float(fps)
 		
 		
 		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}

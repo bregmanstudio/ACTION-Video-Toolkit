@@ -53,7 +53,7 @@ The full list of settable parameters, with default values and explanations:
 | duration               | -1              | time duration in seconds, -1 (default) maps to full|
 |                        |                 | duration of media                                  |
 +------------------------+-----------------+----------------------------------------------------+
-| stride                 | 6               | number of video frames to that comprise one        |
+| stride                 | 1               | number of video frames to that comprise one        |
 |                        |                 | analysis frame, skips stride - 1 frames            |
 +------------------------+-----------------+----------------------------------------------------+
 | verbose                | True            | useful for debugging                               |
@@ -250,7 +250,7 @@ class OpticalFlowTVL1:
 			'afps' : 24,						# afps: frames per second for access or alignment
 			'offset' : 0,						# time offset in seconds
 			'duration' : -1,					# time duration in seconds, -1 (default) maps to full duration of media
-			'stride' : 6,						# number of frames to that comprise one analysis point, skips stride - 1 frames
+			'stride' : 1,						# number of frames to that comprise one analysis point, skips stride - 1 frames
 			'verbose' : True,					# useful for debugging
 			'display' : True,					# Launch display screen
 			'hist_shrink_factor' : 0.5,			# (adjustable) ratio for size of histogram window
@@ -421,7 +421,7 @@ class OpticalFlowTVL1:
 # 			# probably should have some error handling here if the reshape fails
 # 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
 
-	def _tvl1_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
+	def _tvl1_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=60):
 		"""
 		This will be the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
@@ -432,13 +432,17 @@ class OpticalFlowTVL1:
 		
 		"""
 		ap = self.analysis_params
-		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
+		frames_per_astride = (24.0 / ap['stride']) # 24.0 == ap['fps']
 
-		onset_frame = int(onset_time * frames_per_stride)
-		if duration < 0:
-			dur_frames = self.determine_movie_length() * frames_per_stride
+		print ap['fps']
+		print ap['stride']
+		print duration_s
+
+		onset_frame = int(onset_s * frames_per_astride)
+		if duration_s < 0:
+			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']) # convert back to aframes
 		else:
-			dur_frames = int(duration * frames_per_stride)
+			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
 		
 		# memmap
 		print dur_frames
@@ -475,7 +479,7 @@ class OpticalFlowTVL1:
 	
 		# ap = self._check_tvl1_params(kwargs)
 		ap = self.analysis_params
-		frames_per_stride = (ap['fps'] / ap['stride'])
+		strides_per_second = (ap['fps'] / ap['stride'])
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			self.capture = cv2.VideoCapture(self.movie_path)
@@ -488,7 +492,7 @@ class OpticalFlowTVL1:
 			# the constant had better be correct!
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'] * 2) + 16) * 4) # REGIONS * CHANNELS + 16 * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = int(dur_total_aframes / frames_per_stride)
+			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1

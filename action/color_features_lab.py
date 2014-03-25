@@ -42,9 +42,13 @@ The full list of settable parameters, with default values and explanations:
 +------------------------+-----------------+----------------------------------------------------+
 | mode                   | analyze         | 'playback' or 'analyze'                            |
 +------------------------+-----------------+----------------------------------------------------+
+| grid_divs_x            | 4               | number of divisions along x axis                   |
++------------------------+-----------------+----------------------------------------------------+
+| grid_divs_y            | 4               | number of divisions along y axis                   |
++------------------------+-----------------+----------------------------------------------------+
 | fps                    | 24              | fps: frames per second                             |
 +------------------------+-----------------+----------------------------------------------------+
-| afps                   | 24              | afps: 'access' frames per second                    |
+| afps                   | 24              | afps: 'access' frames per second                   |
 +------------------------+-----------------+----------------------------------------------------+
 | offset                 | 0               | time offset in seconds                             |
 +------------------------+-----------------+----------------------------------------------------+
@@ -96,6 +100,13 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
 
    cfl = ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
    cfl = ColorFeaturesLAB(fileName, **{'vrange':[32, 256], 'verbose':True} )
+
+If you ``from action import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
+
+.. code-block:: python
+	
+	cfl = color_features_lab.ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
+
 
 Using ColorFeaturesLAB
 ======================
@@ -290,7 +301,7 @@ class ColorFeaturesLAB:
 		fps = capture.get(cv.CV_CAP_PROP_FPS)
 		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
-		length = frames / fps
+		length = float(frames) / float(fps)
 		
 		
 		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
@@ -418,7 +429,7 @@ class ColorFeaturesLAB:
 		"""
 		return getattr(self,func)(segment)
 
-	def _color_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=60):
+	def _color_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=60):
 		"""
 		This will be the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
@@ -429,14 +440,19 @@ class ColorFeaturesLAB:
 		
 		"""
 		ap = self.analysis_params
-		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
+		frames_per_astride = (24.0 / ap['stride']) # 24.0, not ap['fps']
 
-		onset_frame = int(onset_time * frames_per_stride)
-		if duration < 0:
-			dur_frames = self.determine_movie_length() * frames_per_stride
+		print ap['fps']
+		print ap['stride']
+		print duration_s
+
+		onset_frame = int(onset_s * frames_per_astride)
+		if duration_s < 0:
+			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']) # round down to nearest second, convert back to aframes
 		else:
-			dur_frames = int(duration * frames_per_stride)
+			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
 		
+		print dur_frames
 		# memmap
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
 		ad = actiondata.ActionData()
@@ -489,14 +505,16 @@ class ColorFeaturesLAB:
 		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
 	
 	def determine_movie_length(self, **kwargs):
-	
+		"""
+		Result:  duration in real seconds
+		"""
 		# ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
-		frames_per_stride = (ap['fps'] / ap['stride'])
+		strides_per_second = (ap['fps'] / ap['stride']) # 24 / 6 = 4
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			self.capture = cv2.VideoCapture(self.movie_path)
-			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
+			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps'])
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
@@ -505,7 +523,7 @@ class ColorFeaturesLAB:
 			# the constant had better be correct!
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 3 * ap['ldims'] * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = int(dur_total_aframes / frames_per_stride)
+			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
@@ -640,7 +658,7 @@ class ColorFeaturesLAB:
 		
 		# set up memmap
 		if ap['mode'] == 'playback' and display == True:
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
+			 fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_y'])+1,3,ap['ldims']))
 		else:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides, (ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
 		
