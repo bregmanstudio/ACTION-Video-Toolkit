@@ -6,7 +6,7 @@ __copyright__ = "Copyright (C) 2012-2013, Trustees of Dartmouth College, All Rig
 __license__ = "gpl 2.0 or higher"
 __email__ = 'thomas.m.stoll@dartmouth.edu'
 
-__all__ = ["color_features_lab", "opticalflow", "opticalflow_tvl1", "actiondata", "action_filmdb", "phase_correlation", "segment"]
+__all__ = ["suite", "color_features_lab", "opticalflow", "opticalflow_tvl1", "actiondata", "action_filmdb", "phase_correlation", "segment", "distance"]
 
 # import the ACTION modules
-import color_features_lab, opticalflow, opticalflow_tvl1, actiondata, action_filmdb, phase_correlation, segment
+import suite, color_features_lab, opticalflow, opticalflow_tvl1, actiondata, action_filmdb, phase_correlation, segment, distance
