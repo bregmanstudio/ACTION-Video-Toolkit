@@ -465,25 +465,49 @@ class PhaseCorrelation:
 		
 		"""
 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
-	
-	def playback_movie_frame_by_frame(self, offset=0, duration=-1, **kwargs):
-		"""
-		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Doesn't use general _process function; uses _display_movie_frame_by_frame()
-		"""
-		ap = self._check_pcorr_params(kwargs)
-		offset_s = float(offset) / (ap['fps'] / ap['stride'])
-		dur_s = float(duration) / (ap['fps'] / ap['stride'])
-		
-		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
-	
-	def determine_movie_length(self, **kwargs):
-	
-		ap = self.analysis_params
-	
-		if os.path.exists(self.movie_path) and HAVE_CV:
-			# self.capture = cv.CaptureFromFile(self.movie_path)
-	 		self.capture = cv2.VideoCapture(self.movie_path)
 
+
+# 	def playback_movie(self, offset=None, duration=None):
+# 		"""
+# 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
+# 		::
+# 		
+# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+# 		
+# 		"""
+# 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
+
+
+	def playback_movie_frame_by_frame(self, offset=0, duration=-1):
+		"""
+		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Equivalent to:
+		::
+		
+			_display_movie_frame_by_frame(mode='playback', display=True, offset=offset, duration=duration)
+		
+		"""
+		# ap = self._check_pcorr_params(kwargs)
+		ap = self.analysis_params
+		frames_per_stride = (ap['fps'] / ap['stride'])
+				
+		if offset == 0:
+			offset_s = ap['offset']
+		else:
+			offset_s = offset
+		if duration < 0:
+			dur_s = ap['duration']
+		else:
+			dur_s = duration
+		
+		print offset_s, dur_s
+
+		self._process_movie(mode='playback', display=True, offset=offset_s, duration=dur_s)
+
+
+	def determine_movie_length(self, **kwargs):
+		ap = self.analysis_params
+		if os.path.exists(self.movie_path) and HAVE_CV:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
 			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
@@ -500,8 +524,8 @@ class PhaseCorrelation:
 			print "Cannot determine movie duration. Both the movie and data files are missing!"
 		self.analysis_params['duration'] = dur_total_seconds			
 		return dur_total_seconds
-	
-	def analyze_movie(self, offset=0, duration=-1, stride_frames=6):
+
+	def analyze_movie(self):
 		"""
 		Analyze the movie without displaying on screen. Equivalent to:
 		::
@@ -509,42 +533,56 @@ class PhaseCorrelation:
 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', offset=0, duration=-1, stride=6, display=False)
 		
 		"""
-		self._process_movie(mode='analyze', display=False, offset=offset, duration=duration)
+		self._process_movie(mode='analyze', display=False)
 
-	def analyze_movie_with_display(self, offset=0, duration=-1, stride=6):
+	def analyze_movie_with_display(self):
 		"""
 		Analyze the movie; display on screen. Equivalent to:
 		::
 		
 			_process_movie(offset=0, duration=-1, stride=6, display=True)
 		"""
-		self._process_movie(mode='analyze', display=True, offset=offset, duration=duration)
-	
+		self._process_movie(mode='analyze', display=True)
+
+
 	def _process_movie(self, **kwargs):
 	
 		"""
-			Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
+			Function for analyzing a full film or video. This is where the magic happens when we're making analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the two analyze_ functions instead, which will call this function.
 		
 		"""
+
+		ap = self._check_pcorr_params(kwargs)
+		verbose = ap['verbose']
 
 		if not HAVE_CV:
 			print "WARNING: You must install OpenCV in order to analyze or view!"
 			return
 		
-		if (self.movie_path is None) or (self.data_path is None):
-			print "ERROR: Must supply both a movie and a data path!"
+		if (self.movie_path is None) and (self.data_path is None) and ap['mode'] is 'analysis':
+			print "ERROR: Must supply both a movie and a data path for analysis!"
 			return
 		
-		ap = self._check_pcorr_params(kwargs)
-		verbose = ap['verbose']
+		have_mov = os.path.exists(self.movie_path)
+		have_data = os.path.exists(self.data_path)
 		
-		self.capture = cv2.VideoCapture(self.movie_path)
+		if (have_mov is False) and (have_data is False):
+			print "Both movie file and data file are missing! Please supply at least one."
+			return None
+		
+		print ap
+
+		if have_mov:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
+			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		else:
+			frame_width = 640
+			frame_height = int(frame_width / self._read_json_value('aspect'))
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 		frame_size = (frame_width, frame_height)
 		grid_width = int(frame_width/grid_x_divs)
 		grid_height = int(frame_height/grid_y_divs)
@@ -557,26 +595,40 @@ class PhaseCorrelation:
 			print fps, ' | ', frame_size, ' | ', grid_size
 		
 		# container for prev. frame's grayscale subframes
-		prev_sub_grays = []				
-		
-		# last but not least, get total_frame_count and set up the memmapped file
-		dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
-		stride_frames = ap['stride']
-		if ap['duration'] < 0:
-			dur_secs = dur_total_secs
+		prev_sub_grays = []								
+
+		if ap['offset'] > 0:
+			offset_secs = ap['offset']
 		else:
-			dur_secs = ap['duration']
+			offset_secs = 0
 		
-		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-		dur_secs = min(max(dur_secs, 0), (dur_total_secs - offset_secs))
+		print "%%% ", ap['duration']
+		
+		if ap['duration'] > 0:
+			dur_secs = ap['duration']
+		elif ap['duration'] < 0:
+			ap['duration'] = self.determine_movie_length()
+		else:
+			print "Duration cannot be 0."
+			return
+		dur_secs = ap['duration']
+		
+		stride_frames = ap['stride']
+		stride_hop = stride_frames - 1
+
+		print "1. ", ap['duration']
+		print "2. ", dur_secs
+		
+		# check offset first, then compress duration, if needed
+		offset_secs = min(max(offset_secs, 0), ap['duration'])
+		dur_secs = min(max(dur_secs, 0), (ap['duration'] - offset_secs))
 		offset_strides = int(offset_secs * (fps / stride_frames))
 		dur_strides = int(dur_secs * (fps / stride_frames))
 		offset_frames = offset_strides * stride_frames
 		dur_frames = dur_strides * stride_frames
-				
+		
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
 			print 'DUR TOTAL: ', dur_total_secs
 			print "OFFSET (SECONDS): ", offset_secs
 			print "OFFSET (STRIDES): ", offset_strides
@@ -595,92 +647,104 @@ class PhaseCorrelation:
 		else:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,(64+1),2))
 		
-		# set some drawing constants
-		vert_offset = int(frame_height*ap['viz_vert_offset_ratio'])	# NA
-		ratio = grid_height/255.									# NA
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
 		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-
-		self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			cv.ResizeWindow('Image', frame_width, frame_height)
 		
-		ret, frame = self.capture.read()
-		if frame is None: 
-			print 'Frame error! Exiting...'
-			return # no image captured... end the processing
-		frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		prev_frame_gray = np.float32(frame_gray[:])
+		if have_mov:
+			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			ret, frame = self.capture.read()
+			if frame is None: 
+				print 'Frame error! Exiting...'
+				return # no image captured... end the processing		
+			frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			prev_frame_gray = np.float32(frame_gray[:])
+		
+			fhann = cv2.createHanningWindow((frame_width,frame_height), cv2.CV_32FC1)
+			ghann = cv2.createHanningWindow((grid_width,grid_height), cv2.CV_32FC1)
+		
+			for row in range(grid_y_divs):
+				for col in range(grid_x_divs):
+					prev_sub_grays += [np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)])]
+		
+		else:
+			frame = np.empty((frame_width, frame_height), np.uint8)
+			print frame.shape
+
 		self.frame_idx += 1
 		
-		fhann = cv2.createHanningWindow((frame_width,frame_height), cv2.CV_32FC1)
-		ghann = cv2.createHanningWindow((grid_width,grid_height), cv2.CV_32FC1)
-		
-		for row in range(grid_y_divs):
-			for col in range(grid_x_divs):
-				prev_sub_grays += [np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)])]
+		print "<<< ", frame.mean()
+# 		cv.ShowImage('Image', cv.fromarray(frame))
 
 		while self.frame_idx < end_frame:
 			
 			if (self.frame_idx % 1000) == 0: print 'fr. idx: ', self.frame_idx, ' (', self.frame_idx / float(end_frame), ' | ', end_frame, ')'
 
-			# grab next frame
-			ret, frame = self.capture.read()
-			if frame is None: 
-				print 'Frame error! Exiting...'
-				break # no image captured... end the processing
-			frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			if have_mov:
+				# grab next frame
+				ret, frame = self.capture.read()
+				if frame is None: 
+					print 'Frame error! Exiting...'
+					break # no image captured... end the processing
+				frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			else:
+				frame[:] = 0
 			
-			if ap['mode'] == 'playback' and ap['display'] == True:
+			# display stage (full)
+			if ap['mode'] == 'playback' and ap['display']:
 				fret = fp[self.frame_idx][64]
 				# print fret
-			else:
+			elif have_mov:
 				fret, fres = cv2.phaseCorrelateRes(prev_frame_gray, np.float32(frame_gray[:]), fhann)
 				print fret
 				if abs(fres) > 0.01:
 					fp[self.frame_idx][64] = [(fret[0]/frame_width),(fret[1]/frame_height)]
 				else:
 					fp[self.frame_idx][64] = [0,0]
+			else:
+				return
 			
-			# display stage (full)
+			# display stage (gridded)
 			for row in range(grid_y_divs):
 				for col in range(grid_x_divs):
-					if ap['mode'] == 'playback':
+					if ap['mode'] == 'playback' and ap['display']:
 						cell = ((row*8)+col)
 						gret = fp[self.frame_idx][cell]
-					else:
+					elif have_mov:
 						sub_gray = np.float32(frame_gray[(row*grid_height):((row+1)*grid_height), (col*grid_width):((col+1)*grid_width)][:])
 						gret, gres = cv2.phaseCorrelateRes(prev_sub_grays[(row*grid_x_divs)+col], sub_gray, ghann)
-
 						prev_sub_grays[(row*grid_x_divs)+col] = sub_gray
-						# if verbose:
-						#	print (row, col, (gret, gres))
 						if abs(gres) > 0.7: # WAS 0.01!!!!
 							fp[self.frame_idx][(row*grid_x_divs)+col] = [(gret[0]/grid_width),(gret[1]/grid_height)]
  						else:
 							fp[self.frame_idx][(row*grid_x_divs)+col] = [0,0]
-					if ap['display'] == True:
-# 						print gret
-# 						print grid_size
-# 						print abs(gret[0]*10.0)
-# 						print grid_size[0]
-# 						print abs(gret[1]*10.0)
-# 						print grid_size[1]
-						
-						if (gret[0] != 0 and gret[1] != 0):
-							xval = int(min((gret[0]*100), grid_size[0])+centers_x[col])
-							yval = int(min((gret[1]*100), grid_size[1])+centers_y[row])
-							# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
-							cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
+					else:
+						return
+					
+					if ap['display'] and (gret[0] != 0 and gret[1] != 0):
+						print gret
+						print grid_size
+						print centers_x[col]
+						print centers_y[row]
+						xval = int(min((gret[0]*1000), grid_size[0])+centers_x[col])
+						yval = int(min((gret[1]*1000), grid_size[1])+centers_y[row])
+						# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
+						print (centers_x[col], centers_y[row])	
+						print (xval, yval)
+						cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
 				
-				#### SHOW
-				if ap['display']:
-					cv.ShowImage('Image', cv.fromarray(frame))
-				fp.flush()
+			#### SHOW
+			if ap['display'] and have_mov:
+				print "<<< ", frame.mean()
+				cv.ShowImage('Image', cv.fromarray(frame))
+			fp.flush()
 			
 			self.frame_idx += 1
-			self.prev_gray = np.float32(frame_gray[:])
+			if have_mov:
+				self.prev_gray = np.float32(frame_gray[:])
 			
 			# handle events for abort
 			k = cv.WaitKey (1)	
