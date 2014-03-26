@@ -455,11 +455,11 @@ class ColorFeaturesLAB:
 
 		onset_frame = int(onset_s * frames_per_astride)
 		if duration_s < 0:
-			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']) # convert back to aframes
+			dur_frames = int(int(self.determine_movie_length()) * frames_per_astride * (ap['afps'] / ap['fps'])) - 4 # convert back to aframes
 		else:
-			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
+			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
-		print dur_frames
+		print 'df: ', dur_frames
 		# memmap
 		
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
