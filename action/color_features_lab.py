@@ -243,7 +243,7 @@ class ColorFeaturesLAB:
 			self.filename = filename
 		
 		# self.determine_movie_length() no need
- 		if (os.path.exists(self.json_path) != True):
+ 		if os.path.exists(self.json_path) is False:
  			self._write_metadata_to_json()
 		ap['afps'] = self._read_json_value('fps')
 		
@@ -298,8 +298,11 @@ class ColorFeaturesLAB:
 		"""
 		title = self.filename
 		capture = cv2.VideoCapture(self.movie_path)
+		
 		fps = capture.get(cv.CV_CAP_PROP_FPS)
-		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
+		w = float(cv.CV_CAP_PROP_FRAME_WIDTH)
+		h = float(cv.CV_CAP_PROP_FRAME_HEIGHT)
+		aspect = w / h
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
 		length = float(frames) / float(fps)
 		
@@ -448,12 +451,13 @@ class ColorFeaturesLAB:
 
 		onset_frame = int(onset_s * frames_per_astride)
 		if duration_s < 0:
-			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']) # round down to nearest second, convert back to aframes
+			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']) # convert back to aframes
 		else:
 			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
 		
 		print dur_frames
 		# memmap
+		
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
 		ad = actiondata.ActionData()
 		mapped = ad.interpolate_time(mapped, ap['afps'])
@@ -470,15 +474,15 @@ class ColorFeaturesLAB:
 		return np.reshape(data_L, (data.shape[0], -1))
 
 		
-	def playback_movie(self, offset=None, duration=None):
-		"""
-		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
-		::
-		
-			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
-		
-		"""
-		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
+# 	def playback_movie(self, offset=None, duration=None):
+# 		"""
+# 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
+# 		::
+# 		
+# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+# 		
+# 		"""
+# 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
 	
 	
 	def playback_movie_frame_by_frame(self, offset=None, duration=None):
@@ -550,9 +554,9 @@ class ColorFeaturesLAB:
 		"""
 		self._process_movie(mode='analyze', display=True)
 	
-	def _process_movie(self, mode='analyze', display=True, offset=None, duration=None):
+	def _process_movie(self, **kwargs):
 		"""
-		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the three more descriptive functions instead, and it will call this function.
+		Function for analyzing a full film or video. This is where the magic happens when we're making pixel-histogram analyses. Function will exit if neither a movie path nor a data path are supplied. This function is not intended to be called directly. Normally, call one of the two analyze_ functions instead, which will call this function.
 		
 		"""
 		if not HAVE_CV:
@@ -562,16 +566,19 @@ class ColorFeaturesLAB:
 			print "Must supply both a movie and a data path!"
 			return
 		
-		# ap = self._check_cflab_params(kwargs)
-		ap = self.analysis_params
+		ap = self._check_cflab_params(kwargs)
+		verbose = ap['verbose']
+		
+		print ap
+		# ap = self.analysis_params
 				
 		self.capture = cv2.VideoCapture(self.movie_path)
 		
 		self._write_metadata_to_json()
 		# probably should generate and check for errors
-		
-		ap['mode'] = mode
-		ap['display'] = display
+				
+		print ap['mode']
+		print ap['display']
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
@@ -586,7 +593,6 @@ class ColorFeaturesLAB:
 		grid_height = int(hist_height/grid_y_divs)
 		grid_size = (grid_width, grid_height)
 
-		verbose = ap['verbose']
 		
 		if verbose:
 			print ap['lrange'][0], ' | ', ap['arange'][0], ' | ', ap['brange'][0], ' | ', ap['lrange'][1], ' | ', ap['arange'][1], ' | ', ap['brange'][1]
@@ -621,19 +627,29 @@ class ColorFeaturesLAB:
 				
 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
-		# last but not least, get total_frame_count and set up the memmapped file
-		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
-		if offset is None:
+		# get total_frame_count and set up the memmapped file
+
+		if ap['offset'] > 0:
 			offset_secs = ap['offset']
 		else:
-			offset_secs = offset
-		if duration is None:
+			offset_secs = 0
+		
+		print ap['duration']
+		
+		if ap['duration'] > 0:
 			dur_secs = ap['duration']
+		elif ap['duration'] < 0:
+			ap['duration'] = self.determine_movie_length()
 		else:
-			dur_secs = duration
+			print "Duration cannot be 0."
+			return
+		dur_secs = ap['duration']
 		
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
+
+		print ap['duration']
+		print dur_secs
 		
 		# check offset first, then compress duration, if needed
 		offset_secs = min(max(offset_secs, 0), ap['duration'])
@@ -657,7 +673,7 @@ class ColorFeaturesLAB:
 			print "stride_frames: ", stride_frames
 		
 		# set up memmap
-		if ap['mode'] == 'playback' and display == True:
+		if ap['mode'] == 'playback' and ap['display'] == True:
 			 fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_y'])+1,3,ap['ldims']))
 		else:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides, (ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
@@ -670,7 +686,7 @@ class ColorFeaturesLAB:
 		self.frame_idx = offset_frames
 		end_frame = offset_frames + dur_frames
 		
-		if display:
+		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv.NamedWindow('Histogram', hist_width)
 			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.25))
@@ -709,7 +725,7 @@ class ColorFeaturesLAB:
 					lbins, abins, bbins = self._analyze_image(frame, fp, curr_stride_frame, lab, lab_min, lab_max, l_star, a_star, b_star, mask, l_histo, a_histo, b_histo, 0, 0, 0, 1., thresh=ap['threshold'])
 
 				# display stage (full)
-				if display:
+				if ap['display']:
 					histimg[:] = 0
 					for d in range(dims):
 						# for all the bins, get the value, and scale to the size of the grid
@@ -727,7 +743,7 @@ class ColorFeaturesLAB:
 							lbins, abins, bbins = self._analyze_image(sub, fp, (self.frame_idx/stride_frames), grid_lab, lab_min, lab_max, grid_l_star, grid_a_star, grid_b_star, grid_mask, l_histo, a_histo, b_histo, i, j, 1, 1., thresh=ap['threshold'])
 
 						# display stage (gridded)
-						if display:
+						if ap['display']:
 							for  d in range (dims):
 								# for all the bins, get the value, and scale to the size of the grid
 								lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
@@ -747,7 +763,7 @@ class ColorFeaturesLAB:
 # 				self.frame_idx = self.capture.get(cv.CV_CAP_PROP_POS_FRAMES) # better???
 			
 			# no need to waitkey if we are not displaying:
-			if display:
+			if ap['display']:
 				# handle events
 				k = cv.WaitKey (1)			
 				if k % 0x100 == 27:
@@ -780,23 +796,35 @@ class ColorFeaturesLAB:
 		"""
 		
 		if not HAVE_CV:
+			print "WARNING: You must install OpenCV in order to analyze or view!"
 			return
 		
-		if (self.movie_path is None) or (self.data_path is None):
-			print "Must supply both a movie and a data path!"
-			return
+		if (self.movie_path is None) and (self.data_path is None):
+			print "Both movie path and data path are missing! Please supply at least one."
+			return None
 		
-		# ap = self._check_cflab_params(kwargs)
+		have_mov = os.path.exists(self.movie_path)
+		have_data = os.path.exists(self.data_path)
+		
+		if (have_mov is False) and (have_data is False):
+			print "Both movie file and data file are missing! Please supply at least one."
+			return None
+		
+ 		ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
 		verbose = ap['verbose']
 		
- 		self.capture = cv2.VideoCapture(self.movie_path)
+		if have_mov is True:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
+			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		else:
+			frame_width = 800
+			frame_height = (self._read_json_value('aspect') * frame_width)
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 		frame_size = (frame_width, frame_height)
 		hist_width = int(frame_width * ap['hist_width_ratio'])
 		hist_height = int(frame_height * ap['hist_width_ratio'])
@@ -815,8 +843,7 @@ class ColorFeaturesLAB:
 		# histimg = cv.CreateImage ((hist_width, int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
-		# last but not least, get total_frame_count and set up the memmapped file
-		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
+		# get total_frame_count and set up the memmapped file
 		dur_total_secs = ap['duration']
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
@@ -834,7 +861,6 @@ class ColorFeaturesLAB:
 				
 		if verbose:
 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
 			print 'DUR TOTAL: ', dur_total_secs
 			print "OFFSET (SECONDS): ", offset_secs
 			print "OFFSET (STRIDES): ", offset_strides
@@ -847,16 +873,18 @@ class ColorFeaturesLAB:
 		
 		# set up memmap
 		# mode should always be playback and dislay should always be true!!!
-		if ap['mode'] == 'playback' and ap['display'] == True:
+		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
+			print '0--00-00-'
 			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),17,3,16))
-		
+					
 			# set some drawing constants
 			vert_offset = int(frame_height*ap['hist_vert_offset_ratio'])
 			grid_height_ratio = grid_height/255.
 			
-			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+			if have_mov:
+				cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv.NamedWindow('Histogram')
-			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.25))
+			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.275))
 			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
 			
 			lcolors, acolors, bcolors= range(16), range(16), range(16)
@@ -866,20 +894,23 @@ class ColorFeaturesLAB:
 				acolors[d] = cv.Scalar(gray_val, 128., 128.)
 				bcolors[d] = cv.Scalar(gray_val, gray_val, gray_val)
 			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w, grid_x_divs, grid_y_divs, 16) # 16: number of bins
-			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			if have_mov:
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 		
 			self.frame_idx = offset_frames
 			playing_flag = True
 			p_state = 7
 
-			while playing_flag:			
+			while playing_flag:
 				# div. by 6 everywhere (except in log prints) to count by strides
 				if (self.frame_idx%stride_frames) == 0:
-					ret, frame = self.capture.read()
+					
 					curr_stride_frame = self.frame_idx/stride_frames
-					if frame is None: 
-						print 'Frame error! Exiting...'
-						break # no image captured... end the processing
+					if have_mov:
+						ret, frame = self.capture.read()		
+						if frame is None: 
+							print 'Frame error! Exiting...'
+							break # no image captured... end the processing
 		
 					trio = fp[curr_stride_frame]
 					lbins, abins, bbins = trio[0][0], trio[0][1], trio[0][2]
@@ -905,8 +936,9 @@ class ColorFeaturesLAB:
 								self.make_rectangles(cv.fromarray(histimg), six_points, 6, i, j, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors]) #, voffset=0
 					
 					#### SHOW
-					cv.ShowImage('Image', cv.fromarray(frame))
-					cv.ShowImage('Histogram', cv.fromarray(e))
+					if have_mov:
+						cv.ShowImage('Image', cv.fromarray(frame))
+					cv.ShowImage('Histogram', cv.fromarray(histimg))
 					fp.flush()
 		
 					print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
@@ -926,7 +958,8 @@ class ColorFeaturesLAB:
 					self.frame_idx += 24
 				elif p_state == 9: # adv. 10 sec.
 					self.frame_idx += 240
-				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
+				if have_mov:
+					self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 				
 				# handle key events
 				k = cv.WaitKey (25)
@@ -956,7 +989,8 @@ class ColorFeaturesLAB:
 			
 			del fp
 			if ap['display']:
-				cv.DestroyWindow('Image')
+				if have_mov:
+					cv.DestroyWindow('Image')
 				cv.DestroyWindow('Histogram')	
 
 	def _analyze_image(self, img, mfp, fpindex, lab, lab_min, lab_max, l_star, a_star, b_star, mask, l_histo, a_histo, b_histo, i, j, grid_flag, grid_height=1, thresh=0.):
@@ -1004,7 +1038,7 @@ class ColorFeaturesLAB:
 	
 	def make_rectangles(self, h_img, pts, num_pts, i, j, h, vals, grid_height_ratio, colors, hoffset=0, voffset=0):
 		"""
-		Display helper function. Make a bank of three bars for the histogram. (16 in total, via 16 calls of this function.)
+		Display helper function. Make a bank of three bars for the histogram. (16 in total.)
 		"""
 		# ap = self._check_cflab_params(None)
 		ap = self.analysis_params
