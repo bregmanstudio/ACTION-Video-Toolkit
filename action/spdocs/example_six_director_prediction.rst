@@ -56,8 +56,7 @@ In the ``mvpa_pipeline_rand.py`` file, after imports and path setup, we have our
 
 .. code-block:: python
 
-	import action.action_filmdb as fdb
-	db  = fdb.FilmDB()
+	db  = FilmDB()
 	dirttl_pool = db.create_analysis_pool(directors, cflag)
 
 This creates a dictionary of directors and potential films. We randomly sample from this list to get the actual titles that we use. There is some additional setup.
@@ -95,7 +94,6 @@ Lastly, before setting up and actually running cross-validation, we gather (as N
 
 .. code-block:: python
 
-	ad = actiondata.ActionData()
 	datadict = ad.gather_color_histogram_data(titles, ACTION_MOVIE_DIR, grid='midband', cflag=True)
 
 	#		..- random frame sampling

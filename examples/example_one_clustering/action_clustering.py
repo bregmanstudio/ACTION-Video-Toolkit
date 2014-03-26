@@ -3,47 +3,42 @@
 # *************************
 
 
-from action import *
-import action.segment as aseg
+from action.suite import *
 import numpy as np
 
-ACTION_DIR = '/Users/kfl/Movies/action'
+ACTION_DIR = '/Users/ME/Movies/action'
 
 # 1A: K-means Clustering of first 2400 frames (10 minutes)
 def ex_1A(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
-	ten_minute_segment = aseg.Segment(0, duration=length)
+	ten_minute_segment = Segment(0, duration=length)
 	cf_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
 
-	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_ten_minute_segment, locut=0.0001)
 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4)
 
 	nc = 60 # sample 300 frames from total pool of 600 or 10%.
 	km_assigns, km_max_assign = ad.cluster_k_means(sliding_averaged, nc)
 
-	av = actiondata.ActionView(None)
 	av.plot_clusters(sliding_averaged, km_assigns, 'K Means - first three dimensions (0-2)')
 	av.plot_hcluster_segments(km_assigns, km_max_assign) #, 'K Means - segmentation view')
 
 
 # 1B: Hierarchical Clustering of full movie
 def ex_1B(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = cfl.determine_movie_length() # in seconds
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	#cf_full_film = cfl.center_quad_color_features_for_segment(full_segment)
 	cf_full_film = cfl.middle_band_color_features_for_segment(full_segment)
 
-	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
 
 	nc = 1000 # Rouchly 5/minute for a feature-length film.
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
-	av = actiondata.ActionView(None)
 	av.plot_clusters(decomposed, hc_assigns, 'Hierarchical - first three dimensions (0-2)')
 	av.plot_hcluster_segments(hc_assigns, nc) #, 'Hierarchical - segmentation view')
 
@@ -52,13 +47,12 @@ def ex_1B(title):
 
 
 def ex_1C(title):
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	length = cfl.determine_movie_length() # in seconds
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	#cf_full_film = cfl.center_quad_color_features_for_segment(full_segment)
 	cf_full_film = cfl.middle_band_color_features_for_segment(full_segment)
 
-	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(cf_full_film, locut=0.0001)
 
 	nc = int(length * 0.2) # Setting the density of clusters with a ratio. - don't forget the int cast!
@@ -77,7 +71,6 @@ def ex_1C(title):
 		comd = np.reshape(comd, (-1, decomposed.shape[1]))
 
 
-	av = actiondata.ActionView(None)
 	av.plot_clusters(decomposed, hc_assigns, 'Hierarchical - first three dimensions (0-2)')
 	av.plot_hcluster_segments(hc_assigns, nc) #, 'Hierarchical - segmentation view')
 

@@ -30,7 +30,8 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.pyplot as plt
 import pylab as P
 
-import action.segment as aseg
+from segment import *
+
 #import color_features_lab
 #import opticalflow
 #import opticalflow_tvl1
@@ -99,9 +100,9 @@ class ActionData:
 		Be careful!!! O(N^2)!
 		"""
 		if dist_flag is 'euc_normed':
-			return distance.euc_normed(raw_data, raw_data)
+			return euc_normed(raw_data, raw_data)
 		elif dist_flag is 'euc2':
-			return distance.euc2(raw_data, raw_data)
+			return euc2(raw_data, raw_data)
 	
 	def calculate_pca_and_fit(self, raw_data, locut=0.1, print_var=False):
 		"""
@@ -168,11 +169,11 @@ class ActionData:
 
 		for title in titles:
 			# set up an instance of the ColorFeaturesLAB class
-			cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=movie_dir)
+			cfl = ColorFeaturesLAB(title, action_dir=movie_dir)
 			# determine the film's length (in seconds)
 			length = cfl.determine_movie_length()
 			# create a segment spanning the full length of the film
-			full_segment = aseg.Segment(0, duration=length)
+			full_segment = Segment(0, duration=length)
 			# obtain the data
 			if grid == 'full':
 				res[title] =  cfl.full_color_features_for_segment(full_segment)
@@ -197,11 +198,11 @@ class ActionData:
 
 		for title in titles:
 			# set up an instance of the ColorFeaturesLAB class
-			oflow = opticalflow.OpticalFlow(title, action_dir=movie_dir)
+			oflow = OpticalFlow(title, action_dir=movie_dir)
 			# determine the film's length (in seconds)
 			length = oflow.determine_movie_length()
 			# create a segment spanning the full length of the film
-			full_segment = aseg.Segment(0, duration=length)
+			full_segment = Segment(0, duration=length)
 			# obtain the data
 			res[title] =  oflow.opticalflow_for_segment(full_segment)[0:-1:stride,:]
 		
@@ -218,9 +219,9 @@ class ActionData:
 			# determine the film's length (in seconds)
 			length = pcorr.determine_movie_length()
 			# create a segment spanning the full length of the film
-			full_segment = aseg.Segment(0, duration=length)
+			full_segment = Segment(0, duration=length)
 			# obtain the data
-			res[title] =  oflow.phase_correlation_for_segment(full_segment)[0:-1:stride,:]
+			res[title] =  pcorr.phase_correlation_for_segment(full_segment)[0:-1:stride,:]
 		
 		return res
 
@@ -232,7 +233,7 @@ class ActionData:
 
 		for title in titles:
 			# set up an instance of the PhaseCorrelation class
-			X = adb.read(os.path.join(movie_dir, title, (str(title)+type)))
+			X = ad.read_audio_metadata(os.path.join(movie_dir, title, (str(title)+type)))
 			res[title] =  X
 		
 		return res
@@ -362,15 +363,7 @@ class ActionView:
 		
 		av = actionview.ActionView()
 		av.plot_clusters(full_histogram_data, labeling, 'Clustering for my movie's histogram data')
-
-	To create an ActionView instance, you only need to pass a variable if you are intending to use the segment-viewer. In that case, simply create an ActionView like so:
 	
-	::
-		
-		oflow = opticalflow.OpticalFlow('Psycho')
-		av = actionview.ActionView(oflow)
-		av.view_sequences(...)
-
 	"""
 	def __init__(self, module=None, mfile=None, dfile=None):
 		self.ad = ActionData()

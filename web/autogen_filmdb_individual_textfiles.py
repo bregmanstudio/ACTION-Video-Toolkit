@@ -1,15 +1,14 @@
 #!/opt/local/bin/python
 
-import action.action_filmdb as fdb
-import action.color_features_lab as color_features_lab
 import glob, os, md5, shutil
+from action.suite import *
 import HTML
 
 ACTION_DIR = '/Volumes/ACTION/'
 WEBDIR = os.path.expanduser('/Library/WebServer/Documents')
 
 # FILM_DB controls what films are active 
-full_db = fdb.FilmDB()
+full_db = FilmDB()
 actionDB = full_db.actionDB
 actionDirectors = full_db.actionDirectors
 titles = set(actionDB)
@@ -81,7 +80,7 @@ for file in glob.glob(os.path.join(ACTION_DIR, '*', '*.color_lab')):
 		else:
 			cflag = "B/W"
 		f.write(str(cflag) + "\n")
-		cfl = color_features_lab.ColorFeaturesLAB(ttl, action_dir=ACTION_DIR)
+		cfl = ColorFeaturesLAB(ttl, action_dir=ACTION_DIR)
 		length = cfl.determine_movie_length()
 		f.write(str(length) + "\n")
 		f.close()

@@ -31,7 +31,7 @@ How is ACTION Used?
 Using ACTION is as easy as:
 
 ```
-from action import *
+from action.suite import *
 cfl = ColorFeaturesLAB('North_by_Northwest')
 cfl.analyze_movie()
 ```

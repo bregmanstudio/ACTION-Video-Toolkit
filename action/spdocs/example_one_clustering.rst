@@ -16,16 +16,6 @@ Prerequisites
 Step-by-step Instructions
 =========================
 
-Import + Setup
---------------
-
-These are the usual includes for working with ACTION data.
-
-.. code-block:: python
-
-	from action import *
-	import action.segment as aseg
-
 Get the data
 ------------
 
@@ -33,12 +23,13 @@ Create a histogram object, instantiating it with the standardized title (no exte
 
 .. code-block:: python
 
-	cfl = color_features_lab.ColorFeaturesLAB(TITLE, action_dir=ACTION_DIR)
+	from action.suite import *
+	cfl = ColorFeaturesLAB(TITLE, action_dir=ACTION_DIR)
 
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
 
-	ten_minute_segment = aseg.Segment(0, duration=length)
+	ten_minute_segment = Segment(0, duration=length)
 	colors_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
 
 
@@ -49,8 +40,7 @@ Here we demonstrate a helper function (see next section) that finds the principl
 
 .. code-block:: python
 
-	ad = actiondata.ActionData()
-
+	# ad is an alias for ActionData
 	colors_ten_minute_segment = ad.meanmask_data(colors_ten_minute_segment)
 	decomposed = ad.calculate_pca_and_fit(colors_ten_minute_segment, locut=0.0001)
 	sliding_averaged = ad.average_over_sliding_window(decomposed, 8, 4, length_in_frames)
@@ -77,7 +67,7 @@ Finally, we plot the clusters two ways. First as points in 3-dimensional space (
 
 .. code-block:: python
 
-	av = actiondata.ActionView()
+	# av is an alias for ActionView()
 	av.plot_clusters(sliding_averaged, km_assigns)
 	av.plot_hcluster_segments(km_assigns, km_max_assign)
 
@@ -94,7 +84,6 @@ Instead of k-means clustering, here is an example of hierarchical clustering of 
 	nc = 1000
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
-	av = actiondata.ActionView()
 	av.plot_clusters(decomposed, hc_assigns)
 	av.plot_hcluster_segments(hc_assigns, nc)
 

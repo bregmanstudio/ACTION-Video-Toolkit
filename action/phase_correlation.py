@@ -117,7 +117,7 @@ To directly access your analysis data as a memory-mapped array:
 
 	import action.segment as aseg
 	pcorr = PhaseCorrelation('Psycho')
-	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
+	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
 	data = pcorr._phasecorr_features_for_segment_from_onset_with_duration(segment_in_seconds)
 
 More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
@@ -125,7 +125,7 @@ More commonly, the user should use the access functions that refer to the screen
 .. code-block:: python
 
 	pcorr = PhaseCorrelation('Psycho')
-	fullseg = aseg.Segment(0, pcorr.determine_movie_length()) # requesting entire film
+	fullseg = Segment(0, pcorr.determine_movie_length()) # requesting entire film
 	data = pcorr.middle_band_phasecorr_features_for_segment(fullseg)
 
 
@@ -173,9 +173,11 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_phasecorr_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	HAVE_CV = False
 import numpy as np
-import action.segment as aseg
-import action.actiondata as actiondata
 import json
+from segment import *
+from actiondata import *
+ad = ActionData()
+av = ActionView()
 
 
 class PhaseCorrelation:
@@ -279,14 +281,14 @@ class PhaseCorrelation:
 		return jsondata[key]
 
 
-	def all_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def all_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from ACTION!
 		Takes a movie/file name and a Segment object that describes the desired timespan.
 		Returns a tuple of memory-mapped arrays corresponding to the full-frame color features followed by the 4 by 4 grid of color histograms: ([NUMBER OF FRAMES, NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (= 48)], [NUMBER OF FRAMES, NUMBER OF GRID-SQUARES(16) * NUMBER OF COLUMNS (3) * NUMBER OF BINS (16) (=768)])
 		::
 		
-			pcorr = phase_correlation.PhaseCorrelation('Psycho')
+			pcorr = PhaseCorrelation('Psycho')
 			seg = Segment(360, 720) # which is the same as seg = Segment(360, duration=360)
 			raw_hist_data = pcorr.phasecorr_features_for_segment(seg)
 			raw_hist_data[0].shape
@@ -298,7 +300,7 @@ class PhaseCorrelation:
 		res = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0:-1:access_stride]
 		return (res[0].reshape(-1, 2), res[1].reshape(-1, 128))
 	
-	def full_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def full_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Equivalent to:
 		::
@@ -309,7 +311,7 @@ class PhaseCorrelation:
 		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)[0:-1:access_stride]
 		return self.X
 	
-	def gridded_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def gridded_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms (all 64 bins) in the following order:
 		::
@@ -332,7 +334,7 @@ class PhaseCorrelation:
 		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[0:-1:access_stride]
 		return self.X
 	
-	def center_quad_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def center_quad_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -354,7 +356,7 @@ class PhaseCorrelation:
 		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[0:-1:access_stride]
 		return self.X
 
-	def middle_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def middle_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -375,7 +377,7 @@ class PhaseCorrelation:
 		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[0:-1:access_stride]
 		return self.X
 	
-	def plus_band_phasecorr_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def plus_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -398,13 +400,13 @@ class PhaseCorrelation:
 		plus_array = range(2,6)+range(10,14)+range(16,48)+range(50,54)+range(58,62)
 		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)[0:-1:access_stride]
 
-	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=aseg.Segment(0, -1), access_stride=6):
+	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=Segment(0, -1), access_stride=6):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
 		return getattr(self,func)(segment, access_stride)
 
-	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
+	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
 
 		ap = self._check_pcorr_params()
 		
@@ -452,7 +454,6 @@ class PhaseCorrelation:
 		print 'dur: ', dur_frames
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,65,2))
-		ad = actiondata.ActionData()
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,64,:], mapped[:,:64,:])
 		

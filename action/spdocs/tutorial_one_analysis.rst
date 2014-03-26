@@ -83,8 +83,8 @@ Using the Python classes directly:
 
 #. Move your .mov file(s) to ~/Movies/action/DVD_TITLE, or to your preferred location. For each movie, the folder with the standardized title should contain the .mov file (copy it to there) and will be where ACTION writes all data files. Either in IPython or in a Python script, these are the basic steps:
 
-#. ``from action import *`` 
-#. Create a ColorFeaturesLAB object: ``cflab = color_features_lab.ColorFeaturesLAB(TITLE)`` where ``TITLE`` is the standardized title string for the film (without any extension).
+#. ``from action.suite import *`` 
+#. Create a ColorFeaturesLAB object: ``cflab = ColorFeaturesLAB(TITLE)`` where ``TITLE`` is the standardized title string for the film (without any extension).
 #. Call ``cflab.analyze_histogram_for_movie()``. You can also try ``cflab.analyze_color_features_for_movie_with_display()`` to see a visualization of the analysis data as the process runs.
 #. Wait for analysis to complete. You will have the L*a*b* color features analysis file in your action movies folder alongside MOVIE.mov. The extension is ``.color_lab``.
 #. Carry out the same steps for additional analysis classes. Each class implements one type of feature extraction.

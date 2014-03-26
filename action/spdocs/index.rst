@@ -27,8 +27,8 @@ Using ACTION is as easy as:
 
 .. code-block:: python
 
-	from action import *
-	cfl = color_features_lab.ColorFeaturesLAB('North_by_Northwest')
+	from action.suite import *
+	cfl = ColorFeaturesLAB('North_by_Northwest')
 	cfl.analyze_movie()
 
 ...then access the analysis data:

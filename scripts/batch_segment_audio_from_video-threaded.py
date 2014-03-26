@@ -1,9 +1,6 @@
 import glob, os, argparse
-import action.segment as aseg
-from action import *
+from action.suite import *
 import numpy as np
-import bregman.features as features
-from bregman.suite import *
 from mvpa2.suite import *
 import pprint, pickle
 
@@ -21,9 +18,8 @@ def actionAnalyzeAll(inputlist, proc_limit):
 
 def actionWorkerAudio(title):
 
-	ad = actiondata.ActionData()
 	ds_segs = []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 	print cfl.analysis_params['action_dir']
 
 	length = cfl.determine_movie_length() # in seconds
@@ -31,9 +27,9 @@ def actionWorkerAudio(title):
 
 	outfile = open(os.path.expanduser(os.path.join(ACTION_DIR, title, (title+'_mfccs_hc.pkl'))), 'wb')
 	
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	try:
-		Dmfccs = adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc_13_M2_a0_C2_g0_i16000')))
+		Dmfccs = ad.read_audio_metadata(os.path.join(ACTION_DIR, title, (title + '.mfcc')))
 	except TypeError:
 		outfile.close()
 		return 1
@@ -51,7 +47,7 @@ def actionWorkerAudio(title):
 
 	for seg in segs:
 		if seg[0] > 0:
-			ds_segs += [aseg.Segment(
+			ds_segs += [Segment(
 				seg[0]*0.25,
 				duration=(seg[1]*0.25),
 				features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]

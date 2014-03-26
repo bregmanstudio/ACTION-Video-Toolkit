@@ -14,8 +14,7 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 
 .. code-block:: python
 
-	from action import *
-	import action.segment as aseg
+	from action.suite import *
 	import numpy as np
 	import os
 
@@ -23,16 +22,15 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 
 	def actionSegmenterHC(title, abFlag=False):
 		ds_segs = []
-		cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR)
+		cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 
 		length = cfl.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 		if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
 
-		ad = actiondata.ActionData()
 		decomposed = ad.calculate_pca_and_fit(Dmb, locut=0.0001)
 
 		nc = length_in_frames / 10
@@ -44,7 +42,7 @@ First some preliminaries, then the function ``actionSegmenterHC`` performs clust
 		#      del segs[0]
 
 		for seg in segs:
-		  ds_segs += [aseg.Segment(
+		  ds_segs += [Segment(
 			   seg[0]*0.25,
 			   duration=(seg[1]*0.25),
 			   features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
@@ -65,7 +63,7 @@ Next, do some thresholding based on the differences between data frames. The ``T
 First, view the dissimilarity matrix between the segment data (one set of data per frame from segmenter):
 
 	data = np.array([seg.features for seg in dssegs])
-	imagesc(distance.euc2(data, data))
+	imagesc(euc2(data, data))
 
 ..
 	.. image:: /images/action_ex5_sim_matrix.png
@@ -108,7 +106,7 @@ Only look at segments whose diff is above a threshold
 Viewing the segmentation data
 =============================
 
-Now rebuild your segments--cleaner holds all your segment onsets (as *segment* indices!)--and view their data.
+Now rebuild your segments--cleaner holds all your segment onsets (as *segment* indices)--and view their data.
 
 .. code-block:: python
 
@@ -126,7 +124,7 @@ Now rebuild your segments--cleaner holds all your segment onsets (as *segment* i
 		new_dur = dssegs[b].time_span.start_time - dssegs[a].time_span.start_time
 		new_med_feature = np.median(data[a:b], axis=0)
 		print (new_start, new_dur,  new_med_feature.shape)
-		final_segs += [aseg.Segment(label=i, start_time=new_start, duration=new_dur, features = new_med_feature)]
+		final_segs += [Segment(label=i, start_time=new_start, duration=new_dur, features = new_med_feature)]
 		i += 1
 
 	resegmented_data = np.array([seg.features for seg in final_segs])
@@ -144,7 +142,7 @@ A Better View
 	counter = 0
 	final_segs_stack = final_segs[:]
 	final_resegmented = np.zeros(384, dtype=np.float32)
-	cfl = color_features_lab.ColorFeaturesLAB('A_Serious_Man', action_dir=ACTION_DIR)
+	cfl = ColorFeaturesLAB('A_Serious_Man', action_dir=ACTION_DIR)
 
 	for i in range(0, int(cfl.determine_movie_length()), 60):
 		# always concat
@@ -169,7 +167,7 @@ Finally, let's see the dissimilarity matrix for our segmented data:
  
 .. code-block:: python
 
-	imagesc(distance.euc2(final_resegmented, final_resegmented), title_string='Dissimilarity map based on segments')
+	imagesc(euc2(final_resegmented, final_resegmented), title_string='Dissimilarity map based on segments')
 
 .. image:: images/action_ex5_sim_matrix.png
 

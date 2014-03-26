@@ -11,7 +11,6 @@ import pickle
 ACTION_MOVIE_DIR = os.path.expanduser("~/Movies/action/")
 
 ## .... IMPORT DATABASE OF AUTEURS
-import action.action_filmdb as fdb
 
 ##########################################################################################
 
@@ -27,7 +26,7 @@ def assemble_sample_data_and_crossvalidate(
 	cval=-1,
 	pklfile="~/actionresults/"):
 	
-	db  = fdb.FilmDB()
+	db  = FilmDB()
 	dirttl_pool = db.create_analysis_pool(directors, cflag)
 	
 	res_md = dict()
@@ -65,7 +64,6 @@ def assemble_sample_data_and_crossvalidate(
 	# 	... PREPROCESS DATA *
 	#	..- gathering	
 	# 	..* get the midband color hist data for all titles, converting Lab to LXX
-	ad = actiondata.ActionData()
 	datadict = ad.gather_color_feature_data(titles, ACTION_MOVIE_DIR, grid='midband', cflag=True)
 	
 	#		..- random frame sampling

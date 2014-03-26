@@ -80,7 +80,7 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
    tvl1 = OpticalFlowTVL1(fileName, verbose=True )
    tvl1 = OpticalFlowTVL1(fileName, **{'verbose':True} )
 
-If you ``from action import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
+If you ``from action.suite import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
 
 .. code-block:: python
 	
@@ -125,7 +125,7 @@ To directly access your analysis data as a memory-mapped array:
 	
 	import action.segment as aseg
 	tvl1 = OpticalFlowTVL1('Psycho')
-	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
+	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
 	data = tvl1._tvl1_features_for_segment_from_onset_with_duration(segment_in_seconds)
 	
 More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
@@ -133,7 +133,7 @@ More commonly, the user should use the access functions that refer to the screen
 .. code-block:: python
 
 	cfl = OpticalFlowTVL1('Psycho')
-	fullseg = aseg.Segment(0, tvl1.determine_movie_length()) # requesting entire film
+	fullseg = Segment(0, tvl1.determine_movie_length()) # requesting entire film
 	data = tvl1.middle_band_color_features_for_segment(fullseg)
 
 
@@ -180,9 +180,11 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_tvl1_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	HAVE_CV = False
 import numpy as np
-import action.segment as aseg
-import action.actiondata as actiondata
 import json
+from segment import *
+from actiondata import *
+ad = ActionData()
+av = ActionView()
 
 class OpticalFlowTVL1:
 	"""
@@ -285,7 +287,7 @@ class OpticalFlowTVL1:
 		jsondata = json.load(jsonfile)
 		return jsondata[key]
 	
-	def all_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def all_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -303,7 +305,7 @@ class OpticalFlowTVL1:
 		res = self._tvl1_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
 		return (res[0].reshape(-1, 16), res[1].reshape(-1, 128))
 	
-	def full_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def full_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Equivalent to:
 		::
@@ -314,7 +316,7 @@ class OpticalFlowTVL1:
 		self.X = self._tvl1_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 16)
 		return self.X
 	
-	def gridded_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def gridded_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms (all 16 bins) in the following order:
 		::
@@ -333,7 +335,7 @@ class OpticalFlowTVL1:
 		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1].reshape(-1, 128)
 		return self.X
 
-	def center_quad_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def center_quad_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -352,7 +354,7 @@ class OpticalFlowTVL1:
 		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][ range((18*2),(22*2))+range((26*2),(30*2))+range((34*2),(38*2))+range((52*2),(56*2)) ].reshape(-1, 32)
 		return self.X
 
-	def middle_band_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def middle_band_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -371,7 +373,7 @@ class OpticalFlowTVL1:
 		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,(16*2):(48*2)].reshape(-1, 64)
 		return self.X
 	
-	def plus_band_tvl1_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def plus_band_tvl1_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -391,13 +393,13 @@ class OpticalFlowTVL1:
 		self.X = self._tvl1_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,range((2*2),(6*2))+range((10*2),(14*2))+range((16*2),(48*2))+range((50*2),(54*2))+range((58*2),(62*2))].reshape(-1, 96)
 		return self.X
 	
-	def default_tvl1_features_for_segment(self, func='middle_band_tvl1_features_for_segment', segment=aseg.Segment(0, -1)):
+	def default_tvl1_features_for_segment(self, func='middle_band_tvl1_features_for_segment', segment=Segment(0, -1)):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
 		return getattr(self,func)(segment)
 
-# 	def tvl1_features_for_segment_with_stride(self, grid_flag=1, segment=aseg.Segment(0, -1), access_stride=6):
+# 	def tvl1_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
 # 
 # 		#ap = self._check_tvl1_params()
 # 		ap = self.analysis_params
@@ -447,7 +449,6 @@ class OpticalFlowTVL1:
 		# memmap
 		print dur_frames
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,(128+16)))
-		ad = actiondata.ActionData()
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,:16], mapped[:,16:])
 		

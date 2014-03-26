@@ -177,9 +177,11 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_opticalflow_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	HAVE_CV = False
 import numpy as np
-import action.segment as aseg
-import action.actiondata as actiondata
 import json
+from segment import *
+from actiondata import *
+ad = ActionData()
+av = ActionView()
 
 QPI = math.pi / 4.0
 
@@ -312,7 +314,7 @@ class OpticalFlow:
 	
 # NOTE THAT THERE IS NO <<FULL>> ACCESS FUNCTION.
 
-	def gridded_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def gridded_opticalflow_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms (all 64 bins) in the following order:
 		::
@@ -335,7 +337,7 @@ class OpticalFlow:
 		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration).reshape(-1, 512)[0:-1:access_stride]
 		return self.X
 	
-	def center_quad_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def center_quad_opticalflow_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -357,7 +359,7 @@ class OpticalFlow:
 		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[:,cq_array,...].reshape(-1, 128)[0:-1:access_stride]
 		return self.X
 
-	def middle_band_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def middle_band_opticalflow_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -378,7 +380,7 @@ class OpticalFlow:
 		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[:,(16*8):(48*8),...].reshape(-1, 256)[0:-1:access_stride]
 		return self.X
 	
-	def plus_band_opticalflow_features_for_segment(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def plus_band_opticalflow_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -402,7 +404,7 @@ class OpticalFlow:
 		return self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[:,plus_array,...].reshape(-1, 384)[0:-1:access_stride]
 
 	
-	def opticalflow_for_segment(self, segment=aseg.Segment(0, -1)):
+	def opticalflow_for_segment(self, segment=Segment(0, -1)):
 		"""
 		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -421,7 +423,7 @@ class OpticalFlow:
 		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
 		return X
 
-	def default_color_features_for_segment(self, func='opticalflow_for_segment_with_stride', segment=aseg.Segment(0, -1)):
+	def default_color_features_for_segment(self, func='opticalflow_for_segment_with_stride', segment=Segment(0, -1)):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
@@ -452,13 +454,12 @@ class OpticalFlow:
 		
 		# memmap
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
-		ad = actiondata.ActionData()
 		return ad.interpolate_time(mapped, ap['afps'])
 		
 		
 		
 
-	def opticalflow_for_segment_with_stride(self, segment=aseg.Segment(0, -1), access_stride=6):
+	def opticalflow_for_segment_with_stride(self, segment=Segment(0, -1), access_stride=6):
 		"""
 		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].

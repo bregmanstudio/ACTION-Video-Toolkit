@@ -23,16 +23,15 @@ These are the usual includes for working with ACTION data. For this example, we 
 
 .. code-block:: python
 
-	from action import *
-	import action.segment as aseg
+	from action.suite import *
 	import numpy as np
 
-	pcorr = phase_correlation.PhaseCorrelation('Amistad')
+	pcorr = PhaseCorrelation('Amistad')
 
 	length = pcorr.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment) # default stride is 6 frames
 	print pcorr_full_film.shape == (length_in_frames, 512) # should be True
 
@@ -43,7 +42,6 @@ Here we find the principle components of the data and select those dimensions wi
 
 .. code-block:: python
 
-	ad = actiondata.ActionData()
 	pcorr_full_film = ad.meanmask_data(pcorr_full_film)
 	decomposed = ad.calculate_pca_and_fit(ad.normalize_data(pcorr_full_film), locut=0.0025)
 	
@@ -85,20 +83,18 @@ When dealing with multiple films, we iterate and concatenate the resulting 500 p
 
 .. code-block:: python
 
-	ad = actiondata.ActionData()
-	av = actiondata.ActionView()
 	combo_pcorr = np.array(np.zeros(64), dtype='int32')
 	titles = ['Amistad', 'Dune', 'Grapes_of_Wrath', 'A_Woman_is_a_Woman']
 	num_samples_per_film = 500
 
 	for title in titles:
 
-		pcorr = phase_correlation.PhaseCorrelation(title)
+		pcorr = PhaseCorrelation(title)
 
 		length = pcorr.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment)
 	
 		random_samples, ordering = ad.sample_n_frames(pcorr_full_film, num_samples_per_film)	
@@ -132,16 +128,15 @@ In a similar manner, the centers of mass of each movie's points can be graphed i
 
 .. code-block:: python
 
-	av = actiondata.ActionView()
 	combo_pcorr = np.array(np.zeros(64), dtype='float32')
 
 	for title in titles:
-		pcorr = phase_correlation.PhaseCorrelation(title)
+		pcorr = PhaseCorrelation(title)
 	
 		length = pcorr.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 	
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		pcorr_full_film = pcorr.middle_band_phasecorr_features_for_segment(full_segment)
 			
 		pcorr_full_film = ad.meanmask_data(pcorr_full_film)

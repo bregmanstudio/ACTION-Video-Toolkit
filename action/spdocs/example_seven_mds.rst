@@ -45,5 +45,5 @@ Finally, the MDS function is called, and the data is plotted.
 	
 Multiple plots confirm some interesting structure in the results. The layout of the films in this example grouping is consistent and we see some interesting patterns: clustering of earlier black and white Hitchcock with later films (Eraserhead), the Twin Peaks titles stay together, there is a cluster of Godard's films, etc. While it would be difficult to draw any definitive conclusions based on these graphs, they do provide some insight into the relative similarities of these films' visuals.
 
-.. image:: /images/action_ex8_3dirs_9films_MDS.png
-.. image:: /images/action_ex8_3dirs_9films_MDS_2.png
+.. image:: /images/action_ex7_3dirs_9films_MDS.png
+.. image:: /images/action_ex7_3dirs_9films_MDS_2.png

@@ -101,11 +101,11 @@ Parameter keywords can be passed explicitly as formal arguments or as a keyword 
    cfl = ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
    cfl = ColorFeaturesLAB(fileName, **{'vrange':[32, 256], 'verbose':True} )
 
-If you ``from action import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
+If you ``from action.suite import *``, you will have to use the module_name.Class pattern to create ACTION visual features classes.
 
 .. code-block:: python
 	
-	cfl = color_features_lab.ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
+	cfl = ColorFeaturesLAB(fileName, vrange=[32, 256], verbose=True )
 
 
 Using ColorFeaturesLAB
@@ -146,7 +146,7 @@ To directly access your analysis data as a memory-mapped array:
 	
 	import action.segment as aseg
 	cfl = ColorFeaturesLAB('Psycho')
-	segment_in_seconds = aseg.Segment(60, 600) # requesting segment from 1'00" to 10'00"
+	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
 	data = cfl._color_features_for_segment_from_onset_with_duration(segment_in_seconds)
 
 More commonly, the user should use the access functions that refer to the screen area from which he/she desires data:
@@ -154,7 +154,7 @@ More commonly, the user should use the access functions that refer to the screen
 .. code-block:: python
 
 	cfl = ColorFeaturesLAB('Psycho')
-	fullseg = aseg.Segment(0, cfl.determine_movie_length()) # requesting entire film
+	fullseg = Segment(0, cfl.determine_movie_length()) # requesting entire film
 	data = cfl.middle_band_color_features_for_segment(fullseg)
 
 
@@ -205,9 +205,11 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_color_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	HAVE_CV = False
 import numpy as np
-import action.segment as aseg
-import action.actiondata as actiondata
 import json
+from segment import *
+from actiondata import *
+ad = ActionData()
+av = ActionView()
 
 class ColorFeaturesLAB:
 	"""
@@ -302,6 +304,8 @@ class ColorFeaturesLAB:
 		fps = capture.get(cv.CV_CAP_PROP_FPS)
 		w = float(cv.CV_CAP_PROP_FRAME_WIDTH)
 		h = float(cv.CV_CAP_PROP_FRAME_HEIGHT)
+		print 'w: ', w
+		print 'h: ', h
 		aspect = w / h
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
 		length = float(frames) / float(fps)
@@ -320,7 +324,7 @@ class ColorFeaturesLAB:
 		jsondata = json.load(jsonfile)
 		return jsondata[key]
 	
-	def all_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def all_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		This will be the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
@@ -338,7 +342,7 @@ class ColorFeaturesLAB:
 		res = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
 		return (res[0].reshape(-1, 48), res[1].reshape(-1, 768))
 	
-	def full_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def full_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Equivalent to:
 		::
@@ -349,7 +353,7 @@ class ColorFeaturesLAB:
 		self.X = self._color_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 48)
 		return self.X
 	
-	def gridded_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def gridded_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms (all 16 bins) in the following order:
 		::
@@ -368,7 +372,7 @@ class ColorFeaturesLAB:
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1].reshape(-1, 768)
 		return self.X
 
-	def center_quad_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def center_quad_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -387,7 +391,7 @@ class ColorFeaturesLAB:
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,[5,6,9,10],...].reshape(-1, 192)
 		return self.X
 
-	def middle_band_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def middle_band_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -406,7 +410,7 @@ class ColorFeaturesLAB:
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 384)
 		return self.X
 	
-	def plus_band_color_features_for_segment(self, segment=aseg.Segment(0, -1)):
+	def plus_band_color_features_for_segment(self, segment=Segment(0, -1)):
 		"""
 		Return the gridded histograms after applying the following filter:
 		::
@@ -426,7 +430,7 @@ class ColorFeaturesLAB:
 		self.X = self._color_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,4:12,...].reshape(-1, 576)
 		return self.X
 	
-	def default_color_features_for_segment(self, func='middle_band_color_features_for_segment', segment=aseg.Segment(0, -1)):
+	def default_color_features_for_segment(self, func='middle_band_color_features_for_segment', segment=Segment(0, -1)):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
@@ -459,7 +463,6 @@ class ColorFeaturesLAB:
 		# memmap
 		
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
-		ad = actiondata.ActionData()
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
 

@@ -36,13 +36,12 @@ Access to audio is handled by a function borrowed from audiodb, which is part of
 
 .. code-block:: python
 
-	from action.actiondata import *
-	ad = actiondata.
+	from action.suite import *
 
-	powers = adb.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.power')
-	cqfts = adb.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.cqft')
-	mfccs = adb.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.mfcc')
-	chromas = adb.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.chrom')
+	powers = ad.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.power')
+	cqfts = ad.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.cqft')
+	mfccs = ad.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.mfcc')
+	chromas = ad.read_audio_metadata('/Users/kfl/Movies/action/Vertigo/Vertigo.chrom')
 
 These four calls will load in power, constant-Q Fourier transform, Mel-frequency cepstral coefficients, and Chromagram data, respectively.
 

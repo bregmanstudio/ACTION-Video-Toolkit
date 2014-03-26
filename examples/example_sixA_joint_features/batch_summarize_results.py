@@ -9,7 +9,7 @@
 import pickle, os, glob, sys, getopt
 from mvpa2.suite import *
 import numpy as np
-import action.actiondata as ad
+from action.suite import *
 import pylab as P
 
 def main(argv):

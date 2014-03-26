@@ -1,5 +1,5 @@
 import glob, os, argparse
-from action import *
+from action.suite import *
 
 
 ACTIONDIR = '/Volumes/ACTION'
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 	# Call the mainfunction that sets up threading.
 	for name in names:
-		cfl = color_features_lab.ColorFeaturesLAB(name, action_dir=ACTIONDIR)
+		cfl = ColorFeaturesLAB(name, action_dir=ACTIONDIR)
 		cfl._write_metadata_to_json()
 		del cfl
 

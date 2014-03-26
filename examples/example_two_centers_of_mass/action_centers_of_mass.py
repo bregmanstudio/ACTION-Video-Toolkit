@@ -2,21 +2,19 @@
 # ACTION Example Two: Centers of Mass and Random Sampling
 # *******************************************************
 
-from action import *
+from action.suite import *
 import action.segment as aseg
 import numpy as np
 
 # 2A: plot random sampling of points from one film
 def ex_2A(title):
 	
-	ad = actiondata.ActionData()
-	av = actiondata.ActionView()
-	oflow = opticalflow.OpticalFlow(title)
+	oflow = OpticalFlow(title)
 	
 	length = oflow.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 	
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	oflow_full_film = oflow.opticalflow_for_segment(full_segment)
 	
 	decomposed = ad.calculate_pca_and_fit(oflow_full_film, locut=100.0)
@@ -35,18 +33,16 @@ def ex_2A(title):
 # 2B: plot random sampling of points from multiple films
 def ex_2B(titles):
 	
-	ad = actiondata.ActionData()
-	av = actiondata.ActionView()
 	combo_oflow = np.zeros(512, dtype='float32')
 	
 	for title in titles:
 		
-		oflow = opticalflow.OpticalFlow(title)
+		oflow = OpticalFlow(title)
 		
 		length = oflow.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 	
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		oflow_full_film_strided = oflow.opticalflow_for_segment_with_stride(full_segment)
 		
 		random_samples, order = ad.sample_n_frames(oflow_full_film_strided, 500)
@@ -67,13 +63,12 @@ def ex_2B(titles):
 # 2C: plot center of mass of one film
 def ex_2C(title):
 	
-	av = actiondata.ActionView(None)
-	oflow = opticalflow.OpticalFlow(title)
+	oflow = OpticalFlow(title)
 	
 	length = oflow.determine_movie_length() # in seconds
 	length_in_frames = length * 4
 	
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	oflow_full_film = oflow.opticalflow_for_segment_with_stride(full_segment)
 
 	center_of_mass = np.mean(np.power(oflow_full_film, 0.1), axis=0)
@@ -88,12 +83,12 @@ def ex_2D(titles):
 	combo_oflow = np.zeros(512, dtype='float32')
 	
 	for title in titles:
-		oflow = opticalflow.OpticalFlow(title)
+		oflow = OpticalFlow(title)
 		
 		length = oflow.determine_movie_length() # in seconds
 		length_in_frames = length * 4
 		
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		oflow_full_film = oflow.opticalflow_for_segment_with_stride(full_segment)
 				
 		oflow_COM = np.mean(np.power(oflow_full_film, 0.1), axis=0)

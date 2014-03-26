@@ -1,8 +1,6 @@
 import glob, os, argparse
 import multiprocessing
-from action import *
-import action
-
+from action.suite import *
 
 ACTIONDIR = '/Volumes/ACTION'
 NUM_PROCS = 4 # This is how many processes we want
@@ -26,7 +24,7 @@ def actionAnalyzeAll(clist, plist, olist):
 
 
 def actionCFLabWorker(cfile):
-	cflab = action.color_features_lab.ColorFeaturesLAB(cfile, action_dir=ACTIONDIR)
+	cflab = ColorFeaturesLAB(cfile, action_dir=ACTIONDIR)
 	print 'analyzing colors: ', (hfile + '.mov'), ' ', (cfile + '.color_lab')
 	print 'action_dir=/Volumes/ACTION'
 	cflab.analyze_movie()
@@ -34,7 +32,7 @@ def actionCFLabWorker(cfile):
 	return 1
 
 def actionPCorrWorker(pfile):
-	pcorr = action.phase_correlation.PhaseCorrelation(pfile, action_dir=ACTIONDIR)
+	pcorr = PhaseCorrelation(pfile, action_dir=ACTIONDIR)
 	print 'analyzing phasecorr: ', (pfile + '.mov'), ' ', (pfile + '.phasecorr')
 	print 'action_dir=/Volumes/ACTION'
 	pcorr.analyze_movie()
@@ -42,7 +40,7 @@ def actionPCorrWorker(pfile):
 	return 1
 
 def actionOFlowWorker(ofile):
-	oflow = action.opticalflow.OpticalFlow(ofile, action_dir=ACTIONDIR)
+	oflow = OpticalFlow(ofile, action_dir=ACTIONDIR)
 	print 'analyzing CFLab: ', (ofile + '.mov'), ' ', (ofile + '.opticalflow24')
 	print 'action_dir=/Volumes/ACTION'
 	oflow.analyze_movie()

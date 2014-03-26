@@ -1,10 +1,8 @@
 import glob, os, argparse
 import pickle, multiprocessing
 import numpy as np
-from action import *
-import action.segment as aseg
-from action.actiondata import *
-#from bregman.suite import *
+from action.suite import *
+
 
 ACTION_DIR = '/Volumes/ACTION/'
 # ACTION_DIR = '/Users/kfl/Movies/action'
@@ -18,19 +16,18 @@ def actionAnalyzeAll(inputlist, proc_limit):
 
 # print statements will alert user to any inconsistencies
 def actionWorker(title):
-	ad = actiondata.ActionData()
 	ds_segs_mb, ds_segs_mfccs, ds_segs_combo = [], [], []
-	cfl = color_features_lab.ColorFeaturesLAB(title, action_dir=ACTION_DIR) #, fps=actual_fps)
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR) #, fps=actual_fps)
 	print '----------------------------------'
 	print title
 	print ''
 	length = cfl.determine_movie_length() # in seconds
 	length_in_frames = length * 4
-	full_segment = aseg.Segment(0, duration=length)
+	full_segment = Segment(0, duration=length)
 	Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 	# if abFlag is True: Dmb = cfl.convertLabToL(Dmb)
 	Dmb = ad.meanmask_data(Dmb)
-	Dmfccs = ad.meanmask_data(adb.read(os.path.join(ACTION_DIR, title, (title + '.mfcc'))))
+	Dmfccs = ad.meanmask_data(ad.read_audio_metadata(os.path.join(ACTION_DIR, title, (title + '.mfcc'))))
 	Dmfccs = ad.normalize_data(Dmfccs)
 	Dmfccs = ad.meanmask_data(Dmfccs)
 	print [Dmb.shape, Dmb.min(), Dmb.max(), np.isnan(Dmb).any()]
@@ -48,7 +45,7 @@ def actionWorker(title):
 		segs_mb = ad.convert_clustered_frames_to_segs(hc_assigns_mb, nc)
 		segs_mb.sort()
 		for seg in segs_mb:
-			ds_segs_mb += [aseg.Segment(
+			ds_segs_mb += [Segment(
 				seg[0]*0.25,
 				duration=(seg[1]*0.25),
 				features=np.mean(Dmb[seg[0]:(seg[0]+seg[1]),:],axis=0))]
@@ -62,7 +59,7 @@ def actionWorker(title):
 		segs_mfccs = ad.convert_clustered_frames_to_segs(hc_assigns_mfccs, nc)
 		segs_mfccs.sort()
 		for seg in segs_mfccs:
-			ds_segs_mfccs += [aseg.Segment(
+			ds_segs_mfccs += [Segment(
 				seg[0]*0.25,
 				duration=(seg[1]*0.25),
 				features=np.mean(Dmfccs[seg[0]:(seg[0]+seg[1]),:],axis=0))]
@@ -76,7 +73,7 @@ def actionWorker(title):
 		segs_combo = ad.convert_clustered_frames_to_segs(hc_assigns_combo, nc)
 		segs_combo.sort()
 		for seg in segs_combo:
-			ds_segs_combo += [aseg.Segment(
+			ds_segs_combo += [Segment(
 				seg[0]*0.25,
 				duration=(seg[1]*0.25),
 				features=np.mean(Dcombo[seg[0]:(seg[0]+seg[1]),:],axis=0))]

@@ -34,8 +34,8 @@ We will use color_features_lab for this first example. Let us assume that there 
 
 .. code-block:: python
 
-	from action import *
-	vertigo_cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
+	from action.suite import *
+	vertigo_cfl = ColorFeaturesLAB('Vertigo')
 	vertigo_cfl.playback_movie()
 
 You will see the analysis data as bar graphs in the Histogram window. When you have seen enough, press escape to exit the viewer. Below are still shots of the histogram visualization:
@@ -70,8 +70,7 @@ Visualization is nice, however we wish to expose raw data for the user to do som
 .. code-block:: python
 
 	# data for the central cells, for minute 2
-	import action.segment as aseg
-	myseg = aseg.Segment(start_time=60, duration=60)
+	myseg = Segment(start_time=60, duration=60)
 	cfl_data = cfl.all_color_features_for_segment(myseg)	
 
 By default, we return all the features as a tuple (see below for more).
@@ -83,7 +82,7 @@ By default, we return all the features as a tuple (see below for more).
 	cfl_data[1].shape
 	>>> (240, 768)
 
-Segments, simple containers that wrap segments of time, are objects from the Bregman Toolkit for Music Information Retrieval. You may also create them using an ending time rather than duration: `myseg = aseg.Segment(start_time=60, end_time=120)`.
+Segments, simple containers that wrap segments of time, are objects from the Bregman Toolkit for Music Information Retrieval. You may also create them using an ending time rather than duration: `myseg = Segment(start_time=60, end_time=120)`.
 
 Access to Subsets of Histogram Data
 -----------------------------------
@@ -99,8 +98,7 @@ The `for_segment` part of the function means that we will be asking for a (tempo
 ::
 
 	# data for the central cells, for minutes 2-8
-	import action.segment as aseg
-	myseg = aseg.Segment(120, duration=360)
+	myseg = Segment(120, duration=360)
 	cq_data = cfl.center_quad_color_features_for_segment(myseg)
 
 The histogram data will be sized as appropriate. The cell ordering is preserved with gaps eliminated so that bins are numbered from top to bottom, left to right. The data (48 bins of histogram data per cell) is flattened. 
@@ -132,8 +130,8 @@ The same work flow applies to utilizing the optical flow data.
 
 ::
 
-	oflow = opticalflow.OpticalFlow('Vertigo')
-	myseg = aseg.Segment(60, duration=60)
+	oflow = OpticalFlow('Vertigo')
+	myseg = Segment(60, duration=60)
 	oflow_data = oflow.middle_band_opticalflow_features_for_segment(myseg)
 
 The optical flow data is collected for all 24 frames in each second, but our access functions have a default stride of 6 frames built in:
@@ -147,12 +145,12 @@ The optical flow data is collected for all 24 frames in each second, but our acc
 Phase Correlation
 -----------------
 
-Phase Correlation is identical to OpticalFlow for access; just change the action class...
+Phase Correlation is identical to OpticalFlow for access...
 
 .. code-block:: python
 
-	pcorr = phase_correlation.PhaseCorrelation('Vertigo')
-	#...
+	pcorr = PhaseCorrelation('Vertigo')
+	# etc...
 
 
 Visualizing the Data as Numpy Arrays
@@ -162,14 +160,10 @@ Finally, let us look at some examples of visualizing this data. Recall that hist
 
 .. code-block:: python
 
-import action.color_features_lab as color_features_lab
-import action.segment as aseg
-from action.actiondata import *
-
-cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
-
-myseg = aseg.Segment(60, duration=60)
-mb_data = cfl.middle_band_color_features_for_segment(myseg)
+	from action.suite import *
+	cfl = ColorFeaturesLAB('Vertigo')
+	myseg = Segment(60, duration=60)
+	mb_data = cfl.middle_band_color_features_for_segment(myseg)
 	
 	# ACTION has has a function, borrowed from Bregman, which we use here to visualize 2-D arrays
 	imagesc(mb_data)

@@ -14,28 +14,25 @@ We can view the raw data from our three video features. First we normalize and s
 
 .. code-block:: python
 
-	from action import *
-	from action.actiondata import *
-	import action.segment as aseg
+	from action.suite import *
 	import numpy as np
 	import matplotlib.pyplot as plt
 
 	# idx = np.arange(48)
 	# barwidth = 0.5
 	# barwidth2 = 0.75
-	ad = actiondata.ActionData()
 
-	cfl_vert = color_features_lab.ColorFeaturesLAB('Vertigo')
-	cfl_nbr = color_features_lab.ColorFeaturesLAB('No_Blood_Relation')
+	cfl_vert = ColorFeaturesLAB('Vertigo')
+	cfl_nbr = ColorFeaturesLAB('No_Blood_Relation')
 
-	pcorr_vert = phase_correlation.PhaseCorrelation('Vertigo')
-	pcorr_nbr = phase_correlation.PhaseCorrelation('No_Blood_Relation')
+	pcorr_vert = PhaseCorrelation('Vertigo')
+	pcorr_nbr = PhaseCorrelation('No_Blood_Relation')
 
-	oflow_vert = opticalflow.OpticalFlow('Vertigo')
-	oflow_nbr = opticalflow.OpticalFlow('No_Blood_Relation')
+	oflow_vert = OpticalFlow('Vertigo')
+	oflow_nbr = OpticalFlow('No_Blood_Relation')
 
-	fullseg_vert = aseg.Segment(0, cfl_vert.determine_movie_length())
-	fullseg_nbr = aseg.Segment(0, cfl_nbr.determine_movie_length())
+	fullseg_vert = Segment(0, cfl_vert.determine_movie_length())
+	fullseg_nbr = Segment(0, cfl_nbr.determine_movie_length())
 
 	cfl_vert_X = cfl_vert.middle_band_color_features_for_segment(fullseg_vert)
 	cfl_nbr_X = cfl_nbr.middle_band_color_features_for_segment(fullseg_nbr)

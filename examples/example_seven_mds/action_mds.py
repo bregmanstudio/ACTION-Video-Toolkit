@@ -1,8 +1,5 @@
-import action.color_features_lab as cflab
-import action.actiondata as actiondata
-import action.segment as aseg
+from action.suite import *
 import numpy as np
-# from bregman.suite import *
 from mvpa2.suite import *
 import pylab as P
 from matplotlib import offsetbox
@@ -10,16 +7,15 @@ from sklearn import (manifold, datasets, decomposition, ensemble, lda,
                      random_projection)
 
 def sampleAllFilms(titles, directors, num_samples=500):
-	ad = actiondata.ActionData()
 	d_num = len(directors)*num_samples
 
 	all_histograms = np.zeros(384, dtype='float32')
 	
 	for i, title in enumerate(titles):
 
-		cfl = cflab.ColorFeaturesLAB(title)
+		cfl = ColorFeaturesLAB(title)
 		length = cfl.determine_movie_length() # in seconds
-		full_segment = aseg.Segment(0, duration=length)
+		full_segment = Segment(0, duration=length)
 		print 'L: ', full_segment
 		Dmb = cfl.middle_band_color_features_for_segment(full_segment)
 		print Dmb.shape
@@ -83,8 +79,6 @@ n_samples, n_features = X.shape
 Xconcat = np.array([np.concatenate(X[(i*SAMPLE_FRAMES_PER_TITLE):((i+1)*SAMPLE_FRAMES_PER_TITLE),:]) for i in  range(TITLES_PER_DIR*NUMBER_OF_DIRECTORS)])
 yconcat = range(TITLES_PER_DIR*NUMBER_OF_DIRECTORS)
 
-
-ad = actiondata.ActionData()
 
 X_stdzd = np.divide(Xconcat, np.max(Xconcat))
 X_stdzd_ma = np.ma.masked_invalid(X_stdzd)

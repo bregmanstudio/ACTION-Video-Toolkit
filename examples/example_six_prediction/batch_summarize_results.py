@@ -9,12 +9,10 @@
 import pickle, os, glob, sys, getopt
 from mvpa2.suite import *
 import numpy as np
-import action.actiondata as ad
 import pylab as P
 
 def main(argv):
 
-	av = ad.ActionView()
 	try:
 		opts, args = getopt.getopt(argv,"d:")
 	except getopt.GetoptError:

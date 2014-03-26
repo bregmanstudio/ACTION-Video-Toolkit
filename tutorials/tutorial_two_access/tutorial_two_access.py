@@ -1,8 +1,8 @@
 ####################################################
 # feature extraction class for L*a*b* color features
 
-from action import *
-vertigo_cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
+from action.suite import *
+vertigo_cfl = ColorFeaturesLAB('Vertigo')
 
 # assuming that you have already done the analysis and the analysis is on disc
 vertigo_cfl.analyze_movie()
@@ -21,18 +21,17 @@ del vertigo_cfl
 ##########################################
 # data for the four central cells (of a 4 by 4 grid), for minute 2
 
-from action import *
-import action.segment as aseg
+from action.suite import *
 
-vertigo_cfl = color_features_lab.ColorFeaturesLAB('Vertigo')
-myseg = aseg.Segment(60, duration=60)
+vertigo_cfl = ColorFeaturesLAB('Vertigo')
+myseg = Segment(60, duration=60)
 full_data = vertigo_cfl.full_color_features_for_segment(myseg)
 
 print full_data.shape
 # (240, 48)
 
 # different segment length:
-myseg = aseg.Segment(120, duration=360)
+myseg = Segment(120, duration=360)
 # different set of regions on screen:
 cq_data = vertigo_cfl.center_quad_color_features_for_segment(myseg)
 
@@ -46,11 +45,10 @@ print cq_data.shape
 #####################################################
 # opticalflow
 
-from action import *
-import action.segment as aseg
+from action.suite import *
 
-oflow = opticalflow.OpticalFlow('Vertigo')
-myseg = aseg.Segment(60, duration=60)
+oflow = OpticalFlow('Vertigo')
+myseg = Segment(60, duration=60)
 ###!!! oflow_data = oflow.opticalflow_features_for_segment_with_stride(myseg, stride=6)
 
 # different data:
@@ -61,12 +59,11 @@ print oflow_data.shape
 #####################################################
 # phase correlation
 
-from action import *
-import action.segment as aseg
+from action.suite import *
 
-pcorr = phase_correlation.PhaseCorrelation('Vertigo')
-myseg = aseg.Segment(60, duration=60)
-pcorr_data = pcorr.pcorr.phasecorr_features_for_segment_with_stride(myseg, stride=6)
+pcorr = PhaseCorrelation('Vertigo')
+myseg = Segment(60, duration=60)
+pcorr_data = pcorr.phasecorr_features_for_segment_with_stride(myseg, stride=6)
 
 # different data:
 print pcorr_data.shape

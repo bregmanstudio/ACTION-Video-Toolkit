@@ -26,11 +26,11 @@ These are the usual includes for working with ACTION data. We will use color and
 	
 	title = 'Meshes_of_the_Afternoon'
 
-	cfl = color_features_lab.ColorFeaturesLAB(title, ACTION_DIR)
-	pcorr = phase_correlation.PhaseCorrelation(title, ACTION_DIR)
+	cfl = ColorFeaturesLAB(title, ACTION_DIR)
+	pcorr = PhaseCorrelation(title, ACTION_DIR)
 	length = 600 # == 10 minutes
 	length_in_frames = length * 4
-	ten_minute_segment = aseg.Segment(0, duration=length)
+	ten_minute_segment = Segment(0, duration=length)
 	cfl_ten_minute_segment = cfl.center_quad_color_features_for_segment(ten_minute_segment)
 	pcorr_ten_minute_segment = pcorr.center_quad_phasecorr_features_for_segment(ten_minute_segment, access_stride=6) # 6 is the default
 
@@ -42,21 +42,20 @@ We now plot dissimilarity matrices using cosine distance. They both show about t
 
 .. code-block:: python
 
-	ad = actiondata.ActionData()
 	c_decomposed = ad.calculate_pca_and_fit(cfl_ten_minute_segment, locut=0.0001)
 	pcorr_ten_minute_segment = ad.meanmask_data(pcorr_ten_minute_segment)
 	p_decomposed = ad.calculate_pca_and_fit(pcorr_ten_minute_segment, locut=0.025)
 
-	imagesc(distance.euc2(c_decomposed, c_decomposed), 'EUC: Color Features-PCA - first 10 minutes')
-	imagesc(distance.euc2(p_decomposed, p_decomposed), 'EUC: Phase corr.-PCA - first 10 minutes')
+	imagesc(euc2(c_decomposed, c_decomposed), 'EUC Dist: Color Features-PCA - first 10 minutes')
+	imagesc(euc2(p_decomposed, p_decomposed), 'EUC Dist: Phase corr.-PCA - first 10 minutes')
 
 .. image:: /images/action_ex3A_euc_hist_pca.png
 .. image:: /images/action_ex3A_euc_pcorr_pca.png
 
 .. code-block:: python
 
-	imagesc(distance.cosine(c_decomposed, c_decomposed), 'Cosine: Color Features-PCA - first 10 minutes')
-	imagesc(distance.cosine(p_decomposed, p_decomposed), 'Cosine: Phase Corr.-PCA - first 10 minutes')
+	imagesc(cosine(c_decomposed, c_decomposed), 'Cosine Dist: Color Features-PCA - first 10 minutes')
+	imagesc(cosine(p_decomposed, p_decomposed), 'Cosine Dist: Phase Corr.-PCA - first 10 minutes')
 
 .. image:: /images/action_ex3A_cosine_hist_pca.png
 .. image:: /images/action_ex3A_cosine_pcorr_pca.png
@@ -65,8 +64,8 @@ We now plot dissimilarity matrices using cosine distance. They both show about t
 
 	combo_decomposed = np.c_[c_decomposed, p_decomposed]
 
-	imagesc(distance.euc2(combo_decomposed, combo_decomposed), 'EUC: Combo-PCA - first 10 minutes')
-	imagesc(distance.cosine(combo_decomposed, combo_decomposed), 'Cosine: Combo-PCA - first 10 minutes')
+	imagesc(euc2(combo_decomposed, combo_decomposed), 'EUC Dist: Combo-PCA - first 10 minutes')
+	imagesc(cosine(combo_decomposed, combo_decomposed), 'Cosine Dist: Combo-PCA - first 10 minutes')
 
 .. image:: /images/action_ex3A_euc_combo_pca.png
 .. image:: /images/action_ex3A_cosine_combo_pca.png
@@ -84,13 +83,12 @@ In order to work with audio features, we use the Bregman toolkit, specifically t
 	mfccs_ten_minute_segment = ad.read_audio_metadata(os.path.expanduser(ACTION_DIR) + title + '/' + title + '.mfcc')[:2400,:]
 	mfccs_ten_minute_segment = ad.meanmask_data(mfccs_ten_minute_segment)
 
-	ad = actiondata.ActionData()
 	decomposed = ad.calculate_pca_and_fit(mfccs_ten_minute_segment, locut=0.2)
 
-	imagesc(distance.euc2(D, D), title_string='EUC: MFCC - first 10 minutes')
-	imagesc(distance.euc2(decomposed, decomposed), title_string='EUC: MFCC-PCA - first 10 minutes')
-	imagesc(distance.cosine(D, D), title_string='Cosine: MFCC - first 10 minutes')
-	imagesc(distance.cosine(decomposed, decomposed), title_string='Cosine: MFCC-PCA - first 10 minutes')
+	imagesc(euc2(D, D), title_string='EUC Dist: MFCC - first 10 minutes')
+	imagesc(euc2(decomposed, decomposed), title_string='EUC Dist: MFCC-PCA - first 10 minutes')
+	imagesc(cosine(D, D), title_string='Cosine Dist: MFCC - first 10 minutes')
+	imagesc(cosine(decomposed, decomposed), title_string='Cosine Dist: MFCC-PCA - first 10 minutes')
 
 .. image:: /images/action_ex3B_euc_mfcc.png
 .. image:: /images/action_ex3B_euc_mfcc_pca.png
@@ -109,14 +107,13 @@ Using the same visual and audio features as above, we **normalize** them and the
 	mfccs_normed	= ad.normalize_data(mfccs_ten_minute_segment)
 
 	full_feature = np.c_[cfl_normed, pcorr_normed, mfccs_normed]
-	ad = actiondata.ActionData()
 	full_feature_decomposed = ad.calculate_pca_and_fit(full_feature, locut=0.01)
 
-	imagesc(distance.cosine(full_feature, full_feature), title_string='Cosine: full feature - first 10 minutes')
-	imagesc(distance.cosine(full_feature_decomposed, full_feature_decomposed), title_string='Cosine: PCA - full feature - first 10 minutes')
+	imagesc(cosine(full_feature, full_feature), title_string='Cosine Dist: full feature - first 10 minutes')
+	imagesc(cosine(full_feature_decomposed, full_feature_decomposed), title_string='Cosine Dist: PCA - full feature - first 10 minutes')
 
-	imagesc(distance.euc2(full_feature, full_feature), title_string='EUC: full feature - first 10 minutes')
-	imagesc(distance.euc2(full_feature_decomposed, full_feature_decomposed), title_string='EUC: PCA - full feature - first 10 minutes')
+	imagesc(euc2(full_feature, full_feature), title_string='EUC Dist: full feature - first 10 minutes')
+	imagesc(euc2(full_feature_decomposed, full_feature_decomposed), title_string='EUC Dist: PCA - full feature - first 10 minutes')
 	
 .. image:: /images/action_ex3C_euc_fullnormed.png
 .. image:: /images/action_ex3C_euc_fullnormed_pca.png

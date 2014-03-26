@@ -7,7 +7,7 @@ from opticalflow_tvl1 import *
 from segment import *
 from actiondata import *
 from distance import *
+from action_filmdb import *
 
-import action.segment as aseg
-import action_filmdb as filmdb
-
+ad = ActionData()
+av = ActionView()
