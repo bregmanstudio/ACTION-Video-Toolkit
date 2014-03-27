@@ -447,15 +447,15 @@ class ColorFeaturesLAB:
 		
 		"""
 		ap = self.analysis_params
-		frames_per_astride = (24.0 / ap['stride']) # 24.0, not ap['fps']
-
+		frames_per_astride = (24.0 / ap['stride']) # 24.0
+		
 		print ap['fps']
 		print ap['stride']
 		print duration_s
 
 		onset_frame = int(onset_s * frames_per_astride)
 		if duration_s < 0:
-			dur_frames = int(int(self.determine_movie_length()) * frames_per_astride * (ap['afps'] / ap['fps'])) - 4 # convert back to aframes
+			dur_frames = int(int(self.determine_movie_length()) * frames_per_astride * (ap['afps'] / ap['fps'])) # convert back to aframes
 		else:
 			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
@@ -511,23 +511,23 @@ class ColorFeaturesLAB:
 		
 		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
 	
+	
 	def determine_movie_length(self, **kwargs):
 		"""
 		Result:  duration in real seconds
 		"""
 		# ap = self._check_cflab_params(kwargs)
 		ap = self.analysis_params
-		strides_per_second = (ap['fps'] / ap['stride']) # 24 / 6 = 4
+		strides_per_second = float(ap['fps'] / ap['stride']) # 24 / 6 = 4
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			self.capture = cv2.VideoCapture(self.movie_path)
-			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps'])
+			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps']
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
 			print "dsize: ", dsize
-			# since we are reading raw color analysis data that always has the same size on disc!
-			# the constant had better be correct!
+			# since we are reading raw color analysis data that always has the same size on disc
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 3 * ap['ldims'] * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
 			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])

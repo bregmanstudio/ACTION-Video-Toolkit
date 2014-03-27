@@ -406,27 +406,27 @@ class PhaseCorrelation:
 		"""
 		return getattr(self,func)(segment, access_stride)
 
-	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
-
-		ap = self._check_pcorr_params()
-		
-		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
-		print onset_frame
-		if segment.time_span.duration < 0:
-			dur_frames = int(self.determine_movie_length() * (ap['fps'] / ap['stride']))
-		else:
-			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-		print self.determine_movie_length()
-		print dur_frames
-		
-		if grid_flag == 0:
-			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-			# probably should have some error handling here if the reshape fails
-			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 2))
-		else:
-			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[1]
-			# probably should have some error handling here if the reshape fails
-			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 128))
+# 	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
+# 
+# 		ap = self._check_pcorr_params()
+# 		
+# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
+# 		print onset_frame
+# 		if segment.time_span.duration < 0:
+# 			dur_frames = int(self.determine_movie_length() * (ap['fps'] / ap['stride']))
+# 		else:
+# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
+# 		print self.determine_movie_length()
+# 		print dur_frames
+# 		
+# 		if grid_flag == 0:
+# 			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
+# 			# probably should have some error handling here if the reshape fails
+# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 2))
+# 		else:
+# 			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[1]
+# 			# probably should have some error handling here if the reshape fails
+# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 128))
 
 	def _phasecorr_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=-1):
 		"""
@@ -447,11 +447,11 @@ class PhaseCorrelation:
 		
 		onset_frame = int(onset_s * frames_per_astride)
 		if duration_s < 0:
-			dur_frames = self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps'])
+			dur_frames = int(self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']))
 		else:
-			dur_frames = duration_s * frames_per_astride * (ap['afps'] / ap['fps'])
+			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
-		print 'dur: ', dur_frames
+		print 'df: ', dur_frames
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,65,2))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
@@ -507,9 +507,10 @@ class PhaseCorrelation:
 
 	def determine_movie_length(self, **kwargs):
 		ap = self.analysis_params
+		strides_per_second = float(ap['fps'] / ap['stride'])
 		if os.path.exists(self.movie_path) and HAVE_CV:
 	 		self.capture = cv2.VideoCapture(self.movie_path)
-			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
+			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps']
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
@@ -518,7 +519,7 @@ class PhaseCorrelation:
 			print "dsize: ", dsize
 			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 2 * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = (dur_total_aframes / 24.0) * (ap['fps'] / ap['afps'])
+			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
