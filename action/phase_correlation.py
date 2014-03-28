@@ -140,8 +140,8 @@ This class (as well as all feature classes in ACTION) is set up for the followin
 ...etc...
 
 
-Advanced Use
-============
+Advanced Access
+===============
 
 There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per second), unless overridden. The following would result in 24 / 4 = 6 analyzed frames per second:
 
@@ -150,6 +150,16 @@ There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per se
 	pcorr = PhaseCorrelation('Psycho', 'stride'=4)
 
 Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
+
+Playback
+========
+
+Use the playback_movie_frame_by_frame method to screen movies and/or data visualizations. See the function for documentation of key -> control mappings.
+
+.. code-block:: python
+
+	cfl.playback_movie_frame_by_frame()
+
 
 
 Class Module and Specific Functions
@@ -218,7 +228,9 @@ class PhaseCorrelation:
  			self._write_metadata_to_json()
 		ap['afps'] = self._read_json_value('fps')
 
-		#TO DO: try to naively get some data and store in a class var, as in color_lab...
+		# try to naively get some data and store in a class var
+		if os.path.exists(self.data_path):
+			self.default_phasecorr_features_for_segment()
 	
 	def _check_pcorr_params(self, analysis_params=None):
 		"""
@@ -453,31 +465,24 @@ class PhaseCorrelation:
 		
 		print 'df: ', dur_frames
 		# print "data path: ", self.data_path
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,65,2))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,65,2))
+		mapped = mapped.reshape((-1,65,2))
+		print mapped.shape
+		self.before = mapped.reshape((-1, 130))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
+		print mapped.shape
 		return (mapped[:,64,:], mapped[:,:64,:])
-		
-	def playback_movie(self, offset=0, duration=-1):
-		"""
-		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
-		::
-		
-			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', mode='playback', offset=0, duration=-1, stride=6, display=True)
-		
-		"""
-		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
-
-
-# 	def playback_movie(self, offset=None, duration=None):
+	
+	
+# 	def playback_movie(self, offset=0, duration=-1):
 # 		"""
 # 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
 # 		::
 # 		
-# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
+# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', mode='playback', offset=0, duration=-1, stride=6, display=True)
 # 		
 # 		"""
 # 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
-
 
 	def playback_movie_frame_by_frame(self, offset=0, duration=-1):
 		"""
@@ -490,19 +495,17 @@ class PhaseCorrelation:
 		# ap = self._check_pcorr_params(kwargs)
 		ap = self.analysis_params
 		frames_per_stride = (ap['fps'] / ap['stride'])
-				
-		if offset == 0:
-			offset_s = ap['offset']
-		else:
-			offset_s = offset
-		if duration < 0:
-			dur_s = ap['duration']
-		else:
-			dur_s = duration
 		
-		print offset_s, dur_s
-
-		self._process_movie(mode='playback', display=True, offset=offset_s, duration=dur_s)
+		if offset is None:
+			offset_s = float(ap['offset']) / frames_per_stride
+		else:
+			offset_s = float(offset) / frames_per_stride
+		if duration is None:
+			dur_s = float(ap['duration']) / frames_per_stride
+		else:
+			dur_s = float(duration) / frames_per_stride
+		
+		self._display_movie_frame_by_frame(mode='playback', display=True, offset=offset_s, duration=dur_s)
 
 
 	def determine_movie_length(self, **kwargs):
@@ -510,7 +513,7 @@ class PhaseCorrelation:
 		strides_per_second = float(ap['fps'] / ap['stride'])
 		if os.path.exists(self.movie_path) and HAVE_CV:
 	 		self.capture = cv2.VideoCapture(self.movie_path)
-			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps']
+			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps']
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
@@ -649,13 +652,13 @@ class PhaseCorrelation:
 		else:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,(64+1),2))
 		
-		self.frame_idx = offset_frames
-		end_frame = offset_frames + dur_frames
-		
 		if ap['display']:
 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv.ResizeWindow('Image', frame_width, frame_height)
 		
+		self.frame_idx = offset_frames
+		end_frame = offset_frames + dur_frames
+
 		if have_mov:
 			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
 			ret, frame = self.capture.read()
@@ -680,6 +683,8 @@ class PhaseCorrelation:
 		
 		print "<<< ", frame.mean()
 # 		cv.ShowImage('Image', cv.fromarray(frame))
+
+
 
 		while self.frame_idx < end_frame:
 			
@@ -758,4 +763,224 @@ class PhaseCorrelation:
 		if ap['display']:
 			cv2.destroyAllWindows()
 	
-	# frame-by-frame display function - TO DO
+	
+	def _display_movie_frame_by_frame(self, **kwargs):
+		"""
+		Same as _process function's playback capabilities, but with interactive keyboard control.
+		
+		1 = rewind 10 seconds per display frame
+		2 = rewind 1 second per display frame
+		3 = rewind 1/4 second (one analysis frame) per display frame
+
+		5 = pause
+	
+		7 = advance 1/4 second (one analysis frame) per display frame
+		8 = advance 1 second per display frame
+		9 = advance 10 seconds per display frame
+		
+		esc = quit visualization
+		
+		"""
+		if not HAVE_CV:
+			print "WARNING: You must install OpenCV in order to analyze or view!"
+			return
+		
+		if (self.movie_path is None) and (self.data_path is None):
+			print "Both movie path and data path are missing! Please supply at least one."
+			return None
+		
+		have_mov = os.path.exists(self.movie_path)
+		have_data = os.path.exists(self.data_path)
+		
+		if (have_mov is False) and (have_data is False):
+			print "Both movie file and data file are missing! Please supply at least one."
+			return None
+		
+ 		ap = self._check_pcorr_params(kwargs)
+		ap = self.analysis_params
+		verbose = ap['verbose']
+		
+		if have_mov is True:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
+			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		else:
+			frame_width = 800
+			frame_height = int(float(frame_width) * self._read_json_value('aspect'))
+			print self._read_json_value('aspect')
+		
+		fps = ap['fps']
+		grid_x_divs = ap['grid_divs_x']
+		grid_y_divs = ap['grid_divs_y']
+		frame_size = (frame_width, frame_height)
+		grid_width = int(frame_width/float(grid_x_divs))
+		grid_height = int(frame_height/float(grid_y_divs))
+		grid_size = (grid_width, grid_height)
+		
+		print frame_width
+		print frame_height
+		
+		centers_x = range((frame_width/16),frame_width,(frame_width/8))
+		centers_y = range((frame_height/16),frame_height,(frame_height/8))
+		
+		if verbose:
+			print fps, ' | ', frame_size, ' | ', grid_size
+				
+		# container for prev. frame's grayscale subframes
+		prev_sub_grays = []								
+
+		if ap['offset'] > 0:
+			offset_secs = ap['offset']
+		else:
+			offset_secs = 0
+		
+		print "%%% ", ap['duration']
+		
+		if ap['duration'] > 0:
+			dur_secs = ap['duration']
+		elif ap['duration'] < 0:
+			ap['duration'] = self.determine_movie_length()
+		else:
+			print "Duration cannot be 0."
+			return
+		dur_secs = ap['duration']
+		
+		stride_frames = ap['stride']
+		stride_hop = stride_frames - 1
+
+# 		print "1. ", ap['duration']
+# 		print "2. ", dur_secs
+		
+		# check offset first, then compress duration, if needed
+		offset_secs = min(max(offset_secs, 0), ap['duration'])
+		dur_secs = min(max(dur_secs, 0), (ap['duration'] - offset_secs))
+		offset_strides = int(offset_secs * (fps / stride_frames))
+		dur_strides = int(dur_secs * (fps / stride_frames))
+		offset_frames = offset_strides * stride_frames
+		dur_frames = dur_strides * stride_frames
+		
+		if verbose:
+			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+			print 'DUR TOTAL: ', dur_total_secs
+			print "OFFSET (SECONDS): ", offset_secs
+			print "OFFSET (STRIDES): ", offset_strides
+			print "OFFSET (FRAMES): ", offset_frames
+			print "DUR (SECONDS): ", dur_secs
+			print 'DUR (STRIDES): ', dur_strides
+			print 'DUR (FRAMES): ', dur_frames
+			print 'XDIVS: ', grid_x_divs
+			print 'YDIVS: ', grid_y_divs
+			print "FPS: ", fps
+			print "stride_frames: ", stride_frames
+		
+		# set up memmap
+		# mode should always be playback and dislay should always be true!!!
+		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(64+1),2))
+			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+			cv2.resizeWindow('Image', frame_width, frame_height)
+		
+		self.frame_idx = offset_frames
+		end_frame = offset_frames + dur_frames
+
+		if have_mov:
+			self.capture.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			ret, frame = self.capture.read()
+			if frame is None: 
+				print 'Frame error! Exiting...'
+				return # no image captured... end the processing		
+					
+		else:
+			frame = np.empty((frame_width, frame_height), np.uint8)
+			print frame.shape
+
+		self.frame_idx += 1
+		playing_flag = True
+		p_state = 7
+		
+		cv.ShowImage('Image', cv.fromarray(frame))
+
+		while playing_flag:
+			
+			if have_mov:
+				# grab next frame
+				ret, frame = self.capture.read()
+				if frame is None: 
+					print 'Frame error! Exiting...'
+					break # no image captured... end the processing
+			else:
+				frame[:] = 0
+				
+			# display stage (gridded)
+			for row in range(grid_y_divs):
+				for col in range(grid_x_divs):
+					if ap['mode'] == 'playback' and ap['display']:
+						cell = ((row*8)+col)
+						gret = fp[self.frame_idx][cell]
+					else:
+						return
+					
+					if (gret[0] != 0 and gret[1] != 0):
+# 						print gret
+# 						print grid_size
+# 						print centers_x[col]
+# 						print centers_y[row]
+						xval = int(min((gret[0]*1000), grid_size[0])+centers_x[col])
+						yval = int(min((gret[1]*1000), grid_size[1])+centers_y[row])
+						# print ((centers_x[i], centers_y[j], xval, yval), False, (0,255,255))
+# 						print (centers_x[col], centers_y[row])	
+# 						print (xval, yval)
+						cv2.line(frame, (centers_x[col], centers_y[row]), (xval, yval), (255,255,255))
+				#### SHOW
+				cv.ShowImage('Image', cv.fromarray(frame))
+				fp.flush()
+	
+				print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
+				
+			# check p_state				
+			if p_state == 1: # rew. 10 sec.
+				self.frame_idx -= 240
+			elif p_state == 2: # rew. 1 sec.
+				self.frame_idx -= 24
+			elif p_state == 3:
+				self.frame_idx -= 6
+			elif p_state == 0:
+				pass
+			elif p_state == 7:
+				self.frame_idx += 6
+			elif p_state == 8: # adv. 1 sec.
+				self.frame_idx += 24
+			elif p_state == 9: # adv. 10 sec.
+				self.frame_idx += 240
+			if have_mov:
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
+			
+			# handle key events
+			k = cv.WaitKey (25)
+			if verbose is True:
+				print '>>>>>>>>>>>>>>>>>>'
+				print k % 0x100
+				print p_state
+			
+			if k % 0x100 == 27:
+				# user has press the ESC key, so exit
+				playing_flag = False
+				break
+			elif k % 0x100 == 49:
+				p_state = 1
+			elif k % 0x100 == 50:
+				p_state = 2
+			elif k % 0x100 == 51:
+				p_state = 3
+			elif k % 0x100 == 55:
+				p_state = 7
+			elif k % 0x100 == 56:
+				p_state = 8
+			elif k % 0x100 == 57:
+				p_state = 9
+			elif k % 0x100 == 53:
+				p_state = 0			 					
+		
+		del fp
+		if ap['display']:
+			cv.DestroyWindow('Image')

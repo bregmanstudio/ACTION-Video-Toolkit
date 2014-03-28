@@ -172,8 +172,8 @@ This class is set up for the following directory structure. You might want to mo
 /Users/me/Movies/action/NAME_OF_FILM/NAME_OF_FILM.color_lab
 ...etc...
 
-Advanced Use
-============
+Advanced Access
+===============
 
 There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per second), unless overridden. The following would result in 24 / 4 = 6 analyzed frames per second:
 
@@ -182,6 +182,17 @@ There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per se
 	cfl = ColorFeaturesLAB('Psycho', 'stride'=4)
 
 Note that choosing 'stride' values that are not factors of 24 will result in analysis rates that do not fit neatly into one second periods.
+
+
+Playback
+========
+
+Use the playback_movie_frame_by_frame method to screen movies and/or data visualizations. See the function for documentation of key -> control mappings.
+
+.. code-block:: python
+
+	cfl.playback_movie_frame_by_frame()
+
 
 
 Class Module and Specific Functions
@@ -462,8 +473,12 @@ class ColorFeaturesLAB:
 		print 'df: ', dur_frames
 		# memmap
 		
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,17,3,16))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,17,3,16))
+		mapped = mapped.reshape((-1,17,3,16))
+		print mapped.shape
+		self.before = mapped.reshape((-1, (17*3*16)))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
+		print mapped.shape
 		return (mapped[:,0,:,:], mapped[:,1:,:,:])
 
 	def convert_lab_to_l(self, data):
@@ -521,6 +536,14 @@ class ColorFeaturesLAB:
 		strides_per_second = float(ap['fps'] / ap['stride']) # 24 / 6 = 4
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
+			dsize = os.path.getsize(self.data_path)
+			print "dsize: ", dsize
+			# since we are reading raw color analysis data that always has the same size on disc
+			dur_total_aframes = dsize / float(((ap['grid_divs_x'] * ap['grid_divs_y'])+1) * 3 * ap['ldims'] * 4) # REGIONS * CHANNELS * BINS * BYTES
+			print 'dtaf: ', dur_total_aframes
+			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])
+			print "total secs: ", dur_total_seconds
+			##################################
 			self.capture = cv2.VideoCapture(self.movie_path)
 			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps']
 			print "mov total secs: ", dur_total_seconds
@@ -778,8 +801,6 @@ class ColorFeaturesLAB:
 			cv.DestroyWindow('Image')
 			cv.DestroyWindow('Histogram')	
 	
-	# frame-by-frame display function
-	
 	def _display_movie_frame_by_frame(self, **kwargs):
 		"""
 		Same as _process function's playback capabilities, but with interactive keyboard control.
@@ -797,7 +818,6 @@ class ColorFeaturesLAB:
 		esc = quit visualization
 		
 		"""
-		
 		if not HAVE_CV:
 			print "WARNING: You must install OpenCV in order to analyze or view!"
 			return

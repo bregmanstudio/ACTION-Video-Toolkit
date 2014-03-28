@@ -327,7 +327,7 @@ class ActionData:
 		print tratio
 		xx = np.linspace(
 			x[0],
-			int(x[-1] * tratio), 
+			int(x[-1]), # * tratio), 
 			int(data.shape[0] * tratio)
 		)
 		f = interpolate.interp1d(x,y,axis=0, bounds_error=False)
