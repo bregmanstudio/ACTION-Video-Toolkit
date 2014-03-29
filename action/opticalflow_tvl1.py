@@ -464,8 +464,8 @@ class OpticalFlowTVL1:
 		strides_per_second = (ap['fps'] / ap['stride'])
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
-			self.capture = cv2.VideoCapture(self.movie_path)
-			dur_total_seconds = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
+			capture = cv2.VideoCapture(self.movie_path)
+			dur_total_seconds = int(capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['fps'])
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
@@ -519,6 +519,13 @@ class OpticalFlowTVL1:
  		ap = self._check_tvl1_params(kwargs)
 		ap = self.analysis_params
 		verbose = ap['verbose']
+
+		fps = ap['fps']
+		grid_x_divs = ap['grid_divs_x']
+		grid_y_divs = ap['grid_divs_y']
+		hist_width = int(360)
+		hist_height = int(120)
+		hist_size = (hist_width, hist_height)
 		
 		if have_mov is True:
 	 		self.capture = cv2.VideoCapture(self.movie_path)
@@ -532,14 +539,7 @@ class OpticalFlowTVL1:
 			grid_width = 0
 			grid_height = 0
 			grid_size = (grid_width, grid_height)
-				
-		fps = ap['fps']
-		grid_x_divs = ap['grid_divs_x']
-		grid_y_divs = ap['grid_divs_y']
-		hist_width = int(360)
-		hist_height = int(120)
-		hist_size = (hist_width, hist_height)
-						
+								
 		histimg = np.zeros((int(hist_height), int(hist_width), 3), np.uint8)
 		
 		# container for prev. frame's grayscale subframes
