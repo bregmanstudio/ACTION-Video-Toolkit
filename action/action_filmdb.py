@@ -1,3 +1,5 @@
+import numpy as np
+
 class FilmDB:
 	
 	def __init__(self, arg=None, **params):
@@ -56,7 +58,7 @@ class FilmDB:
 			'Indiana_Jones_and_the_Last_Crusade' : ['Indiana_Jones_and_the_Last_Crusade', 'SS', 1, 1989],
 			'Indiana_Jones_and_the_Temple_of_Doom' : ['Indiana_Jones_and_the_Temple_of_Doom', 'SS', 1, 1984],	
 			'Inland_Empire' : ['Inland_Empire', 'DL', 1, 2006],
-			'Ivans_Childhood' : ['Ivans_Childhood', 'AT', 0, 1962], ## USE THIS TITLE
+			'Ivans_Childhood' : ['Ivans_Childhood', 'AT', 0, 1962],
 			'Jeanne_Dielman':  ['Jeanne_Dielman', 'ChA', 1, 1975],
 			'Kagemusha': ['Kagemusha', 'AK', 1, 1980],
 			'Koyaanisqatsi': ['Koyaanisqatsi', 'GoR', 1, 1982],
@@ -66,13 +68,13 @@ class FilmDB:
 			'Late_Spring': ['Late_Spring', 'YO', 0, 1949],
 			'Le_Petit_Soldat': ['Le_Petit_Soldat', 'JLG', 0, 1963],
 			#'Le_Quattro_Volte': ['Le_Quattro_Volte', 'MFr', 1, 2010],
-			'Les_Dames_du_Bois_de_Boulogne': ['Les_Dames_du_Bois_de_Boulogne', 'other', 0, 1945],
+			'Les_Dames_du_Bois_de_Boulogne': ['Les_Dames_du_Bois_de_Boulogne', 'MD', 0, 1945],
 			'Los_Olvidados': ['Los_Olvidados', 'LB', 0, 1950],
 			'Lost_Highway': ['Lost_Highway', 'DL', 1, 1997],
 			'Madadayo': ['Madadayo', 'AK', 1, 1993],
 			'Made_in_USA': ['Made_in_USA', 'JLG', 1, 1966],
 			'Marnie': ['Marnie', 'AH', 1, 1964],
-			'Meshes_of_the_Afternoon': ['Meshes_of_the_Afternoon', 'other', 0, 1943],
+			'Meshes_of_the_Afternoon': ['Meshes_of_the_Afternoon', 'AHa', 0, 1943],
 			'Millers_Crossing': ['Millers_Crossing', 'CB', 1, 1990],
 			'Mother': ['Mother', 'VsP', 0, 1926],
 			'Mr_and_Mrs_Smith': ['Mr_and_Mrs_Smith', 'AH', 0, 1941],
@@ -109,7 +111,7 @@ class FilmDB:
 			'Stagecoach': ['Stagecoach', 'JF', 0, 1939],
 			'Straight_Story': ['Straight_Story', 'DL', 1, 1999],
 			'Strangers_on_a_Train': ['Strangers_on_a_Train', 'AH', 0, 1951],
-			'Sullivans_Travels': ['Sullivans_Travels', 'PrS', 0, 1941],
+			'Sullivans_Travels': ['Sullivans_Travels', 'PSt', 0, 1941],
 			'That_Obscure_Object_of_Desire': ['That_Obscure_Object_of_Desire', 'LB', 1, 1977],
 			'The_39_Steps': ['The_39_Steps', 'AH', 0, 1935],
 			'The_Big_Lebowski': ['The_Big_Lebowski', 'CB', 1, 1998],
@@ -196,9 +198,10 @@ class FilmDB:
 		
 		#self.actionDocumentariesDB...
 		
-		# mapping of directors from name to name/num. b+w/num. color
+		# mapping of directors from initials to name + number of films + b+w/color flag
 		self.actionDirectors = {
 			'AH'  : ['Alfred Hitchcock', 0, 0],
+			'AHa' : ['Alexander Hammid', 0, 0],
 			'AK'  : ['Akira Kurisawa', 0, 0],
 			'AT'  : ['Andrei Tarkovsky', 0, 0],
 			'AWe' : ['Apichatpong Weerasethakul', 0, 0],
@@ -214,7 +217,8 @@ class FilmDB:
 			'GoR' : ['Godfrey Reggio', 0, 0],
 			'HH'  : ['Howard Hawkes', 0, 0],
 			'LB'  : ['Luis Bunuel', 0, 0],
-			'MFr' : ['Michelangelo Frammartino', 0, 0],
+			'MD'  : ['Maya Deren', 0, 0],
+			#'MFr' : ['Michelangelo Frammartino', 0, 0],
 			'MiN' : ['Mikio Naruse', 0, 0],
 			'PSt' : ['Preston Sturges', 0, 0],
 			'RBr' : ['Robert Bresson', 0, 0],
@@ -223,39 +227,53 @@ class FilmDB:
 			'WH'  : ['Werner Herzog', 0, 0],
 			'YO'  : ['Yasujiro Ozu', 0, 0], 
 			'other' : ['other', 0, 0]}
+		
+	def get_available_directors(self, justInits=False):
+		if justInits:
+			return sorted([self.actionDirectors[full][0] for full in self.actionDirectors.keys()])
+		else:
+			return sorted(self.actionDirectors.keys())
 	
-	def getAvailableDirectors(self):
-		return sorted(self.actionDirectors.keys())
-
 	def create_analysis_pool(self, directors, cflag):
 		analysisPool = dict()
 		for dir in directors:
 			for entry in self.actionDB:
 				# print self.actionDB[entry]
-				if ((self.actionDB[entry][2] == cflag) or (cflag == 2)) and (self.actionDB[entry][1] in directors): 
+				if ((self.actionDB[entry][2] == cflag) or (cflag == 2)) and (self.actionDB[entry][1] in directors):
 					# print "ADD TO SET: ", entry
 					try:
 						analysisPool[self.actionDB[entry][1]].add(self.actionDB[entry][0])
 					except KeyError:
 						analysisPool[self.actionDB[entry][1]] = set([self.actionDB[entry][0]])
 		return analysisPool
-
-
-	def films_for_directors(self, director):
+	
+	def films_for_director(self, director):
+		"""
+		Look up films by director initials.
+		"""
 		films = []
-		for ttl in self.actionDB.keys():
+		for ttl in sorted(self.actionDB.keys()):
 			if (self.actionDB[ttl][1] == director):
 				films += [ttl]
 		return films
-	def films_for_directors_with_year(self, director):
+	
+	def films_for_director_with_year(self, director):
 		films = []
-		for ttl in self.actionDB.keys():
+		for ttl in sorted(self.actionDB.keys()):
 			if (self.actionDB[ttl][1] == director):
 				films += [[ttl, self.actionDB[ttl][3]]]
 		return films
-	def films_for_years(self, years):
-		return NotImplementedError
+	
+	def films_for_year(self, year):
+		return [ttl for ttl in sorted(self.actionDB.keys()) if self.actionDB[ttl][3] == year]
+	 
 	def all_black_and_white_films(self):
-		return NotImplementedError
+		"""
+		Returns a sorted list of all black and white film titles
+		"""
+		return [ttl for ttl in sorted(self.actionDB.keys()) if self.actionDB[ttl][2] == 0]
 	def all_color_films(self):
-		return NotImplementedError
+		"""
+		Returns a sorted list of all color film titles
+		"""
+		return [ttl for ttl in sorted(self.actionDB.keys()) if self.actionDB[ttl][2] == 1]
