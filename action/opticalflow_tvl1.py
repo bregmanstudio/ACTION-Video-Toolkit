@@ -595,7 +595,7 @@ class OpticalFlowTVL1:
 		# set up memmap
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
-			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),((8*8*16)+16)))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),((8*8*2)+16)))
 			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv2.resizeWindow('Image', frame_width, frame_height)
 		else:
