@@ -532,7 +532,6 @@ class OpticalFlowTVL1:
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		theta_divs = ap['theta_divs']
 		frame_size = (frame_width, frame_height)
 		grid_width = int(frame_width/float(grid_x_divs))
 		grid_height = int(frame_height/float(grid_y_divs))
@@ -596,21 +595,9 @@ class OpticalFlowTVL1:
 		# set up memmap
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),((8*8*16)+16)))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),((8*8*16)+16)))
 			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv2.resizeWindow('Image', frame_width, frame_height)
-			ROOT2 = math.sqrt(2.0)
-			SIN_PI_8 = 0.3826834323650898
-			COS_PI_8 = 0.9238795325112867
-			THETAS_X = [-32, 	int(-32*COS_PI_8), 	int(-16*ROOT2), 	int(-32*SIN_PI_8), 
-						0, 		int(32*SIN_PI_8), 	int(16*ROOT2), 		int(32*COS_PI_8), 
-						32, 	int(32*COS_PI_8), 	int(16*ROOT2), 		int(32*SIN_PI_8), 
-						0, 		int(-32*SIN_PI_8),	int(-16*ROOT2), 	int(-32*COS_PI_8)]
-			THETAS_Y = [0, 		int(-32*SIN_PI_8), 	int(-16*ROOT2), 	int(-32*COS_PI_8), 	
-						-32, 	int(-32*COS_PI_8), 	int(-16*ROOT2), 	int(-32*SIN_PI_8), 	
-						0, 		int(32*SIN_PI_8), 	int(16*ROOT2), 		int(32*COS_PI_8), 	
-						32, 	int(32*COS_PI_8), 	int(16*ROOT2), 		int(32*SIN_PI_8)]
-			THETAS = [[pair[0],pair[1]] for pair in zip(THETAS_X, THETAS_Y)]
 		else:
 			return
 		self.frame_idx = offset_frames
@@ -655,7 +642,7 @@ class OpticalFlowTVL1:
 			framerange = framemax - framemin
 			if framerange > 0:
 				
-				grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
+				grays = np.multiply(np.subtract(currframe, framemin), (2*math.pi / framerange))
 				grays_ma = np.ma.masked_invalid(grays)
 				grays = grays_ma.filled(0.0)
 				print grays

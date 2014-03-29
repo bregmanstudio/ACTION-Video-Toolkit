@@ -637,7 +637,7 @@ class OpticalFlow:
 		# set up memmap		
 		if ap['mode'] == 'playback' and ap['display'] == True:
 			print 'PLAYBACK!'
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides+dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides+dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
 		else:
 			print 'ANALYZE!'
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides,(grid_x_divs * grid_y_divs * theta_divs)))
@@ -930,7 +930,7 @@ class OpticalFlow:
 		# set up memmap
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
 			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
 			cv2.resizeWindow('Image', frame_width, frame_height)
 			ROOT2 = math.sqrt(2.0)
@@ -969,41 +969,40 @@ class OpticalFlow:
 			else:
 				frame[:] = 0
 				
-# display stage (gridded)
-# 			for row in range(grid_y_divs):
-# 				for col in range(grid_x_divs):
-
-			if ap['mode'] == 'playback' and ap['display']:
-				currframe = fp[self.frame_idx,:512]
-			else:
-				return
-			currframe = fp[self.frame_idx,:512]
-			framemin = currframe[:512].min()
-			framemax = currframe[:512].max()
-			framerange = framemax - framemin
-			if framerange > 0:
-				grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
-				grays_ma = np.ma.masked_invalid(grays)
-				grays = grays_ma.filled(0.0)
+			# display stage (gridded)
+			for row in range(grid_y_divs):
+				for col in range(grid_x_divs):
+					if ap['mode'] == 'playback' and ap['display']:
+						currframe = fp[self.frame_idx,:512]
+					else:
+						return
+					currframe = fp[self.frame_idx,:512]
+					framemin = currframe[:512].min()
+					framemax = currframe[:512].max()
+					framerange = framemax - framemin
+					if framerange > 0:
+						grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
+						grays_ma = np.ma.masked_invalid(grays)
+						grays = grays_ma.filled(0.0)
 # 						print grays
 # 						countt = 0
-				for row in range(grid_y_divs):
-					for col in range(grid_x_divs):
-						for wdg in range(theta_divs):
-							gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
-							
-							if gry>0:
-								gry /= 2
-								gry += 256
-								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
+						for row in range(grid_y_divs):
+							for col in range(grid_x_divs):
+								for wdg in range(theta_divs):
+									gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
+									
+									if gry>0:
+										gry /= 2
+										gry += 256
+										cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
 # 									print countt
 # 									countt += 1
-		
-			#### SHOW
-			cv.ShowImage('Image', cv.fromarray(frame))
-			fp.flush()
+				
+				#### SHOW
+				cv.ShowImage('Image', cv.fromarray(frame))
+				fp.flush()
 	
-			print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
+				print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
 				
 			# check p_state				
 			if p_state == 1: # rew. 10 sec.

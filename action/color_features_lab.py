@@ -700,7 +700,7 @@ class ColorFeaturesLAB:
 		
 		# set up memmap
 		if ap['mode'] == 'playback' and ap['display'] == True:
-			 fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_y'])+1,3,ap['ldims']))
+			 fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),(ap['grid_divs_x']*ap['grid_divs_y'])+1,3,ap['ldims']))
 		else:
 			fp = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(dur_strides, (ap['grid_divs_x']*ap['grid_divs_x'])+1,3,ap['ldims']))
 		
@@ -898,7 +898,7 @@ class ColorFeaturesLAB:
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
 			print '0--00-00-'
-			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),17,3,16))
+			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),17,3,16))
 					
 			# set some drawing constants
 			vert_offset = int(frame_height*ap['hist_vert_offset_ratio'])
