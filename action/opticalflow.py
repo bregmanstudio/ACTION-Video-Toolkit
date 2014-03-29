@@ -240,7 +240,7 @@ class OpticalFlow:
 		
 		# try to naively get some data and store in a class var
 		if os.path.exists(self.data_path):
-			self.default_color_features_for_segment()	
+			self.default_opticalflow_features_for_segment()	
 	
 	def _check_opticalflow_params(self, analysis_params=None):
 		"""
@@ -404,32 +404,32 @@ class OpticalFlow:
 		return self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[:,plus_array,...].reshape(-1, 384)[0:-1:access_stride]
 
 	
-	def opticalflow_for_segment(self, segment=Segment(0, -1)):
-		"""
-		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
-		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
-		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
-		
-		::
-		
-			oflow = OpticalFlow('Psycho')
-			seg = Segment(0, duration=60)
-			raw_oflow24_data = opticalflow_for_segment(seg)
-			raw_oflow24_data.shape
-			>>> (1440, 512)
-		
-		PLEASE NOTE: Onset is relative to the onset of the analyzed file on disc. If you analyze starting at a 60 second offset, then your analysis file's 0 offset is actually the data starting 1 minute into the film!
-		"""
-		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-		return X
+# 	def opticalflow_for_segment(self, segment=Segment(0, -1)):
+# 		"""
+# 		This is the interface for grabbing analysis data for segments of the whole film. Uses Segment objects from Bregman/ACTION!
+# 		Takes a file name or complete path of a data file and a Segment object that describes the desired timespan.
+# 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
+# 		
+# 		::
+# 		
+# 			oflow = OpticalFlow('Psycho')
+# 			seg = Segment(0, duration=60)
+# 			raw_oflow_data = opticalflow_for_segment(seg)
+# 			raw_oflow_data.shape
+# 			>>> (1440, 512)
+# 		
+# 		PLEASE NOTE: Onset is relative to the onset of the analyzed file on disc. If you analyze starting at a 60 second offset, then your analysis file's 0 offset is actually the data starting 1 minute into the film!
+# 		"""
+# 		self.X = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+# 		return X
 
-	def default_color_features_for_segment(self, func='opticalflow_for_segment_with_stride', segment=Segment(0, -1)):
+	def default_opticalflow_features_for_segment(self, func='middle_band_opticalflow_features_for_segment', segment=Segment(0, -1), access_stride=6):
 		"""
 		DYNAMIC ACCESS FUNCTION
 		"""
 		return getattr(self,func)(segment)
 	
-	def _opticalflow_features_for_segment_from_onset_with_duration(self, onset_time=0, duration=-1):
+	def _opticalflow_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=-1):
 		"""
 		This is the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
@@ -441,63 +441,68 @@ class OpticalFlow:
 		
 		"""
 		ap = self._check_opticalflow_params()
-		frames_per_stride = (24.0 / ap['stride']) # 24.0, not ap['fps']
+		frames_per_astride = (24.0 / ap['stride']) # 24.0, not ap['fps']
 		
-		onset_frame = int(onset_time * (ap['fps'] / ap['stride']))
-		if duration < 0:
-			dur_frames = self.determine_movie_length()
+		onset_frame = int(onset_s * frames_per_astride)
+		if duration_s < 0:
+			dur_frames = int(self.determine_movie_length() * frames_per_astride * (ap['afps'] / ap['fps']))
 		else:
-			dur_frames = int(duration * (ap['fps'] / ap['stride']))
+			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
-#		return np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
-		
-		
-		# memmap
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,512))
-		return ad.interpolate_time(mapped, ap['afps'])
-		
-		
-		
+		print 'df: ', dur_frames
+		# print "data path: ", self.data_path
+		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,512))
+		mapped = mapped.reshape((-1,512))
+# 		print mapped.shape
+		mapped = ad.interpolate_time(mapped, ap['afps'])
+# 		print mapped.shape
+		return mapped
 
-	def opticalflow_for_segment_with_stride(self, segment=Segment(0, -1), access_stride=6):
-		"""
-		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
-		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
-		
-		::
-			
-			raw_opticalflow_data = opticalflow_for_segment(onset_time=360, duration=360)
-		
-		"""
-		ap = self._check_opticalflow_params()
-		
-		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
-		print onset_frame
-		if segment.time_span.duration < 0:
-			dur_frames = self.determine_movie_length()
-		else:
-			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-		print dur_frames
-		data24 = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-		self.X = data24[onset_frame:dur_frames:access_stride,:]
-		return self.X
+
+# 	def opticalflow_for_segment_with_stride(self, segment=Segment(0, -1), access_stride=6):
+# 		"""
+# 		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
+# 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
+# 		
+# 		::
+# 			
+# 			raw_opticalflow_data = opticalflow_for_segment(onset_time=360, duration=360)
+# 		
+# 		"""
+# 		ap = self._check_opticalflow_params()
+# 		
+# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
+# 		print onset_frame
+# 		if segment.time_span.duration < 0:
+# 			dur_frames = self.determine_movie_length()
+# 		else:
+# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
+# 		print dur_frames
+# 		data24 = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
+# 		self.X = data24[onset_frame:dur_frames:access_stride,:]
+# 		return self.X
 
 	def determine_movie_length(self, **kwargs):
 		"""
-		Helper function for determining the length of a movie using OpenCV to capture from a file and query the length of the film.
+		Helper function for determining the length of a movie using OpenCV to capture from a file and query the length of the film or read the data file.
+		
+		Returns movie duration in seconds as a floating point number, taking into account frame rate.
 		"""	
 		ap = self.analysis_params
+		strides_per_second = float(ap['fps'] / ap['stride'])
 	
 		if os.path.exists(self.movie_path) and HAVE_CV:
 			capture = cv.CaptureFromFile(self.movie_path)
-			dur_total_seconds = int(cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_COUNT)) / ap['fps']
+			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps']
 			print "mov total secs: ", dur_total_seconds
 		elif os.path.exists(self.data_path):
 			dsize = os.path.getsize(self.data_path)
+			# since we are reading raw color analysis data that always has the same size on disc!
+			# the constant had better be correct!
 			print "dsize: ", dsize
-			dur_total_aframes = dsize / float(ap['grid_divs_x'] * ap['grid_divs_y'] * ap['theta_divs'] * 4) # BINS * BYTES
+			dur_total_aframes = dsize / float((ap['grid_divs_x'] * ap['grid_divs_y'] * ap['theta_divs']) * 4) # REGIONS * CHANNELS * BINS * BYTES
 			print 'dtaf: ', dur_total_aframes
-			dur_total_seconds = int(dur_total_aframes / (ap['fps'] / ap['stride']))
+			dur_total_seconds = (dur_total_aframes / strides_per_second) * (ap['fps'] / ap['afps'])
 			print "total secs: ", dur_total_seconds
 		else:
 			dur_total_seconds = -1
@@ -523,7 +528,7 @@ class OpticalFlow:
 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
 		
 		"""
-		ap = self._check_oflow_params(kwargs)
+		ap = self._check_opticalflow_params(kwargs)
 		offset_s = float(offset) / (ap['fps'] / ap['stride'])
 		dur_s = float(duration) / (ap['fps'] / ap['stride'])
 		
@@ -787,7 +792,7 @@ class OpticalFlow:
 					grays_ma = np.ma.masked_invalid(grays)
 					grays = grays_ma.filled(0.0)
 # 					print grays
-					countt = 0
+# 					countt = 0
 					for row in range(grid_y_divs):
 						for col in range(grid_x_divs):
 							for wdg in range(theta_divs):
@@ -795,7 +800,7 @@ class OpticalFlow:
 								if gry>0.0:
 									cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
 # 								print countt
-								countt += 1
+# 								countt += 1
 
 				#### SHOW
 				cv.ShowImage('Image', cv.fromarray(frame))
@@ -812,5 +817,242 @@ class OpticalFlow:
 		if ap['display'] is True:
 			cv2.destroyAllWindows()
 
-	# frame-by-frame display function - TO DO
+	def _display_movie_frame_by_frame(self, **kwargs):
+		"""
+		Same as _process function's playback capabilities, but with interactive keyboard control.
+		
+		1 = rewind 10 seconds per display frame
+		2 = rewind 1 second per display frame
+		3 = rewind 1/4 second (one analysis frame) per display frame
+
+		5 = pause
+	
+		7 = advance 1/4 second (one analysis frame) per display frame
+		8 = advance 1 second per display frame
+		9 = advance 10 seconds per display frame
+		
+		esc = quit visualization
+		
+		"""
+		if not HAVE_CV:
+			print "WARNING: You must install OpenCV in order to analyze or view!"
+			return
+		
+		if (self.movie_path is None) and (self.data_path is None):
+			print "Both movie path and data path are missing! Please supply at least one."
+			return None
+		
+		have_mov = os.path.exists(self.movie_path)
+		have_data = os.path.exists(self.data_path)
+		
+		if (have_mov is False) and (have_data is False):
+			print "Both movie file and data file are missing! Please supply at least one."
+			return None
+		
+ 		ap = self._check_opticalflow_params(kwargs)
+		ap = self.analysis_params
+		verbose = ap['verbose']
+		
+		if have_mov is True:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
+			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		else:
+			frame_width = 800
+			frame_height = int(float(frame_width) * self._read_json_value('aspect'))
+			print self._read_json_value('aspect')
+		
+		fps = ap['fps']
+		grid_x_divs = ap['grid_divs_x']
+		grid_y_divs = ap['grid_divs_y']
+		theta_divs = ap['theta_divs']
+		frame_size = (frame_width, frame_height)
+		grid_width = int(frame_width/float(grid_x_divs))
+		grid_height = int(frame_height/float(grid_y_divs))
+		grid_size = (grid_width, grid_height)
+		
+		print frame_width
+		print frame_height
+		
+		centers_x = range((frame_width/16),frame_width,(frame_width/8))
+		centers_y = range((frame_height/16),frame_height,(frame_height/8))
+		
+		if verbose:
+			print fps, ' | ', frame_size, ' | ', grid_size
+				
+		# container for prev. frame's grayscale subframes
+		prev_sub_grays = []								
+
+		if ap['offset'] > 0:
+			offset_secs = ap['offset']
+		else:
+			offset_secs = 0
+		
+		print "%%% ", ap['duration']
+		
+		if ap['duration'] > 0:
+			dur_secs = ap['duration']
+		elif ap['duration'] < 0:
+			ap['duration'] = self.determine_movie_length()
+		else:
+			print "Duration cannot be 0."
+			return
+		dur_secs = ap['duration']
+		
+		stride_frames = ap['stride']
+		stride_hop = stride_frames - 1
+
+# 		print "1. ", ap['duration']
+# 		print "2. ", dur_secs
+		
+		# check offset first, then compress duration, if needed
+		offset_secs = min(max(offset_secs, 0), ap['duration'])
+		dur_secs = min(max(dur_secs, 0), (ap['duration'] - offset_secs))
+		offset_strides = int(offset_secs * (fps / stride_frames))
+		dur_strides = int(dur_secs * (fps / stride_frames))
+		offset_frames = offset_strides * stride_frames
+		dur_frames = dur_strides * stride_frames
+		
+		if verbose:
+			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+			print 'DUR TOTAL: ', dur_total_secs
+			print "OFFSET (SECONDS): ", offset_secs
+			print "OFFSET (STRIDES): ", offset_strides
+			print "OFFSET (FRAMES): ", offset_frames
+			print "DUR (SECONDS): ", dur_secs
+			print 'DUR (STRIDES): ', dur_strides
+			print 'DUR (FRAMES): ', dur_frames
+			print 'XDIVS: ', grid_x_divs
+			print 'YDIVS: ', grid_y_divs
+			print "FPS: ", fps
+			print "stride_frames: ", stride_frames
+		
+		# set up memmap
+		# mode should always be playback and dislay should always be true!!!
+		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),(grid_x_divs * grid_y_divs * theta_divs)))
+			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+			cv2.resizeWindow('Image', frame_width, frame_height)
+			ROOT2 = math.sqrt(2.0)
+			THETAS_X = [-32, int(-16*ROOT2), 0, int(16*ROOT2), 32, int(16*ROOT2), 0, int(-16*ROOT2)]
+			THETAS_Y = [0, int(-16*ROOT2), -32, int(-16*ROOT2), 0, int(16*ROOT2), 32, int(16*ROOT2)]
+			THETAS = [[pair[0],pair[1]] for pair in zip(THETAS_X, THETAS_Y)]
+		
+		self.frame_idx = offset_frames
+		end_frame = offset_frames + dur_frames
+
+		if have_mov:
+			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			ret, frame = self.capture.read()
+			if frame is None: 
+				print 'Frame error! Exiting...'
+				return # no image captured... end the processing		
+					
+		else:
+			frame = np.empty((frame_width, frame_height), np.uint8)
+			print frame.shape
+
+		self.frame_idx += 1
+		playing_flag = True
+		p_state = 7
+		
+		cv.ShowImage('Image', cv.fromarray(frame))
+
+		while playing_flag:
+			
+			if have_mov:
+				# grab next frame
+				ret, frame = self.capture.read()
+				if frame is None: 
+					print 'Frame error! Exiting...'
+					break # no image captured... end the processing
+			else:
+				frame[:] = 0
+				
+# display stage (gridded)
+# 			for row in range(grid_y_divs):
+# 				for col in range(grid_x_divs):
+
+			if ap['mode'] == 'playback' and ap['display']:
+				currframe = fp[self.frame_idx,:512]
+			else:
+				return
+			currframe = fp[self.frame_idx,:512]
+			framemin = currframe[:512].min()
+			framemax = currframe[:512].max()
+			framerange = framemax - framemin
+			if framerange > 0:
+				grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
+				grays_ma = np.ma.masked_invalid(grays)
+				grays = grays_ma.filled(0.0)
+# 						print grays
+# 						countt = 0
+				for row in range(grid_y_divs):
+					for col in range(grid_x_divs):
+						for wdg in range(theta_divs):
+							gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
+							
+							if gry>0:
+								gry /= 2
+								gry += 256
+								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
+# 									print countt
+# 									countt += 1
+		
+			#### SHOW
+			cv.ShowImage('Image', cv.fromarray(frame))
+			fp.flush()
+	
+			print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
+				
+			# check p_state				
+			if p_state == 1: # rew. 10 sec.
+				self.frame_idx -= 240
+			elif p_state == 2: # rew. 1 sec.
+				self.frame_idx -= 24
+			elif p_state == 3:
+				self.frame_idx -= 6
+			elif p_state == 0:
+				pass
+			elif p_state == 7:
+				self.frame_idx += 6
+			elif p_state == 8: # adv. 1 sec.
+				self.frame_idx += 24
+			elif p_state == 9: # adv. 10 sec.
+				self.frame_idx += 240
+			if have_mov:
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
+			
+			# handle key events
+			k = cv.WaitKey (1)
+			if verbose is True:
+				print '>>>>>>>>>>>>>>>>>>'
+				print k % 0x100
+				print p_state
+			
+			if k % 0x100 == 27:
+				# user has press the ESC key, so exit
+				playing_flag = False
+				break
+			elif k % 0x100 == 49:
+				p_state = 1
+			elif k % 0x100 == 50:
+				p_state = 2
+			elif k % 0x100 == 51:
+				p_state = 3
+			elif k % 0x100 == 55:
+				p_state = 7
+			elif k % 0x100 == 56:
+				p_state = 8
+			elif k % 0x100 == 57:
+				p_state = 9
+			elif k % 0x100 == 53:
+				p_state = 0			 					
+		
+		del fp
+		if ap['display']:
+			cv.DestroyWindow('Image')
+
+
+
 
