@@ -863,17 +863,12 @@ class ColorFeaturesLAB:
 		bin_w = int((hist_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
 		third_bin_w = int(bin_w/3)
 		
-		# histimg = cv.CreateImage ((hist_width, int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
 		
 		# get total_frame_count and set up the memmapped file
 		dur_total_secs = ap['duration']
 		stride_frames = ap['stride']
 		stride_hop = stride_frames - 1
-#		if ap['duration'] < 0:
-# 			dur_secs = dur_total_secs
-# 		else:
-# 			dur_secs = ap['duration']
 		
 		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
 		dur_secs = min(max(dur_total_secs, 0), (dur_total_secs - offset_secs))
@@ -905,10 +900,10 @@ class ColorFeaturesLAB:
 			grid_height_ratio = grid_height/255.
 			
 			if have_mov:
-				cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-			cv.NamedWindow('Histogram')
-			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.275))
-			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
+				cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+			cv2.namedWindow('Histogram')
+			cv2.resizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.275))
+			cv2.moveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
 			
 			lcolors, acolors, bcolors= range(16), range(16), range(16)
 			for d in range (dims):
