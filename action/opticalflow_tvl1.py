@@ -428,7 +428,8 @@ class OpticalFlowTVL1:
 		
 		# memmap
 		print dur_frames
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c', offset=onset_frame, shape=(dur_frames,(128+16)))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,(128+16)))
+		mapped = mapped.reshape((-1,144))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[:,:16], mapped[:,16:])
 		
@@ -648,26 +649,24 @@ class OpticalFlowTVL1:
 				currframe = fp[self.frame_idx,:512]
 			else:
 				return
-			currframe = fp[self.frame_idx,:512]
-			framemin = currframe[:512].min()
-			framemax = currframe[:512].max()
+			currframe = fp[self.frame_idx,:128]
+			framemin = currframe.min()
+			framemax = currframe.max()
 			framerange = framemax - framemin
 			if framerange > 0:
+				
 				grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
 				grays_ma = np.ma.masked_invalid(grays)
 				grays = grays_ma.filled(0.0)
-# 						print grays
-# 						countt = 0
-				for row in range(grid_y_divs):
-					for col in range(grid_x_divs):
-						for wdg in range(theta_divs):
-							gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
-							if gry>0:
-								gry /= 2
-								gry += 256
-								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
-# 							print countt
-# 							countt += 1
+				print grays
+
+# 				for row in range(grid_y_divs):
+# 					for col in range(grid_x_divs):
+# 							gry = int(grays[(row*grid_x_divs)+(col*2)])
+# 							if gry>0:
+# 								gry /= 2
+# 								gry += 256
+# 								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
 				#### SHOW
 				cv.ShowImage('Image', cv.fromarray(frame))
 				fp.flush()
