@@ -234,6 +234,19 @@ class FilmDB:
 		else:
 			return sorted(self.actionDirectors.keys())
 	
+	def actionDB_ordered_by_title(self, full_directors=False):
+		"""
+		Return the information lists (4 items per film) sorted by title, with either the directors' initials or the full names.
+		"""
+		if full_directors:
+			with_inits = [self.actionDB[ttl] for ttl in self.actionDB.keys()]
+			with_inits.sort()
+			return [[entry[0],self.actionDirectors[entry[1]][0],entry[2],entry[3]] for entry in with_inits]
+		else:
+			with_inits = [self.actionDB[ttl] for ttl in self.actionDB.keys()]
+			with_inits.sort()
+			return with_inits	
+	
 	def create_analysis_pool(self, directors, cflag):
 		analysisPool = dict()
 		for dir in directors:
