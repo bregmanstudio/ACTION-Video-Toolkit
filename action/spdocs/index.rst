@@ -38,11 +38,11 @@ Using ACTION is as easy as:
 	myseg = Segment(0, cfl.determine_movie_length())
 	data = cfl.full_color_features_for_segment(myseg)
 
-You can also view the data alongside the imagery of the film:
+You can also view the data alongside the imagery of the film (or even data for a film in the absense of the actual movie file):
 
 .. code-block:: python
 
-	cfl.playback_movie()
+	cfl.playback_movie_frame_by_frame()
 
 ACTION also has functionality for analyzing and accessing optical flow (movement) information and audio analysis metadata.
 
