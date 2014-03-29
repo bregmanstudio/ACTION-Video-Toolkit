@@ -56,6 +56,12 @@ The full list of settable parameters, with default values and explanations:
 | stride                 | 1               | number of video frames to that comprise one        |
 |                        |                 | analysis frame, skips stride - 1 frames            |
 +------------------------+-----------------+----------------------------------------------------+
+| grid_divs_x            | 8               | number of divisions along x axis                   |
++------------------------+-----------------+----------------------------------------------------+
+| grid_divs_y            | 8               | number of divisions along y axis                   |
++------------------------+-----------------+----------------------------------------------------+
+| theta_divs             | 16              | number of divisions of angle data                  |
++------------------------+-----------------+----------------------------------------------------+
 | verbose                | True            | useful for debugging                               |
 +------------------------+-----------------+----------------------------------------------------+
 | display                | True            | launch display screen during analysis              |
@@ -180,7 +186,7 @@ except ImportError:
 	print 'WARNING: Access only, use of methods other than *_tvl1_features_for_segment, etc. will cause errors! Install OpenCV to perform analysis and display movies/data.'
 	HAVE_CV = False
 import numpy as np
-import json
+import json, math
 from segment import *
 from actiondata import *
 ad = ActionData()
@@ -272,8 +278,6 @@ class OpticalFlowTVL1:
 		aspect = capture.get(cv.CV_CAP_PROP_FRAME_WIDTH / cv.CV_CAP_PROP_FRAME_HEIGHT)
 		frames = capture.get(cv.CV_CAP_PROP_FRAME_COUNT)
 		length = frames / fps
-		
-		
 		movdict = {'title':title, 'fps':fps, 'aspect': aspect,'frames': frames, 'length':length}
 		fp = file(self.json_path, 'w')
 		fp.write(json.dumps(movdict))
@@ -399,30 +403,6 @@ class OpticalFlowTVL1:
 		"""
 		return getattr(self,func)(segment)
 
-# 	def tvl1_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
-# 
-# 		#ap = self._check_tvl1_params()
-# 		ap = self.analysis_params
-# 		frames_per_stride = (ap['fps'] / ap['stride'])
-#		
-# 		onset_frame = int(segment.time_span.start_time * frames_per_stride)
-# 		print onset_frame
-# 		if segment.time_span.duration < 0:
-# 			dur_frames = self.determine_movie_length()
-# 		else:
-# 			dur_frames = int(segment.time_span.duration * frames_per_stride)
-# 		print self.s_movie_length()
-# 		print dur_frames
-# 		
-# 		if grid_flag == 0:
-# 			data24 = self._tvl1_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 48))
-# 		else:
-# 			data24 = self._tvl1_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 768))
-
 	def _tvl1_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=60):
 		"""
 		This will be the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
@@ -503,236 +483,241 @@ class OpticalFlowTVL1:
 		
 	# frame-by-frame display function
 	
-# 	def _display_movie_frame_by_frame(self, **kwargs):
-# 		
-# 		"""
-# 		Same as _process function's playback capabilities, but with interactive keyboard control.
-# 		
-# 		1 = rewind 10 seconds per display frame
-# 		2 = rewind 1 second per display frame
-# 		3 = rewind 1/4 second (one analysis frame) per display frame
-# 
-# 		5 = pause
-# 	
-# 		7 = advance 1/4 second (one analysis frame) per display frame
-# 		8 = advance 1 second per display frame
-# 		9 = advance 10 seconds per display frame
-# 		
-# 		esc = quit visualization
-# 		
-# 		"""
-# 		
-# 		if not HAVE_CV:
-# 			return
-# 		
-# 		if (self.movie_path is None) or (self.data_path is None):
-# 			print "Must supply both a movie and a data path!"
-# 			return
-# 		
-# 		# ap = self._check_tvl1_params(kwargs)
-# 		ap = self.analysis_params
-# 		verbose = ap['verbose']
-# 		
-# 		self.capture = cv2.VideoCapture(self.movie_path)
-# 		
-# 		fps = ap['fps']
-# 		grid_x_divs = ap['grid_divs_x']
-# 		grid_y_divs = ap['grid_divs_y']
-# 		frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-# 		frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
-# 		frame_size = (frame_width, frame_height)
-# 		hist_width = int(frame_width * ap['hist_width_ratio'])
-# 		hist_height = int(frame_height * ap['hist_width_ratio'])
-# 		hist_size = (hist_width, hist_height)
-# 		grid_width = int(hist_width/grid_x_divs)
-# 		grid_height = int(hist_height/grid_y_divs)
-# 		grid_size = (grid_width, grid_height)
-# 		
-# 		if verbose:
-# 			print ap['lrange'][0], ' | ', ap['arange'][0], ' | ', ap['brange'][0], ' | ', ap['lrange'][1], ' | ', ap['arange'][1], ' | ', ap['brange'][1], '\n', fps, ' | ', hist_size, ' | ', grid_size
-# 				
-# 		dims = ap['ldims']
-# 		bin_w = int((hist_width * ap['hist_width_ratio']) / (ap['ldims'] * grid_x_divs))
-# 		third_bin_w = int(bin_w/3)
-# 		
-# 		# histimg = cv.CreateImage ((hist_width, int(hist_height*1.25)), cv.IPL_DEPTH_8U, 3)
-# 		histimg = np.zeros((int(hist_height*1.25), int(hist_width), 3), np.uint8)
-# 		
-# 		# last but not least, get total_frame_count and set up the memmapped file
-# 		# dur_total_secs = int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / fps)
-# 		dur_total_secs = ap['duration']
-# 		stride_frames = ap['stride']
-# 		stride_hop = stride_frames - 1
-# #		if ap['duration'] < 0:
-# # 			dur_secs = dur_total_secs
-# # 		else:
-# # 			dur_secs = ap['duration']
-# 		
-# 		offset_secs = min(max(ap['offset'], 0), dur_total_secs)
-# 		dur_secs = min(max(dur_total_secs, 0), (dur_total_secs - offset_secs))
-# 		offset_strides = int(offset_secs * (fps / stride_frames))
-# 		dur_strides = int(dur_secs * (fps / stride_frames))
-# 		offset_frames = offset_strides * stride_frames
-# 		dur_frames = dur_strides * stride_frames
-# 				
-# 		if verbose:
-# 			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-# 			print 'FRAMES: ', int(self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT))
-# 			print 'DUR TOTAL: ', dur_total_secs
-# 			print "OFFSET (SECONDS): ", offset_secs
-# 			print "OFFSET (STRIDES): ", offset_strides
-# 			print "OFFSET (FRAMES): ", offset_frames
-# 			print "DUR (SECONDS): ", dur_secs
-# 			print 'DUR (STRIDES): ', dur_strides
-# 			print 'DUR (FRAMES): ', dur_frames
-# 			print "FPS: ", fps
-# 			print "stride_frames: ", stride_frames
-# 		
-# 		# set up memmap
-# 		# mode should always be playback and dislay should always be true!!!
-# 		if ap['mode'] == 'playback' and ap['display'] == True:
-# 			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),17,3,16))
-# 		
-# 			# set some drawing constants
-# 			vert_offset = int(frame_height*ap['hist_vert_offset_ratio'])
-# 			grid_height_ratio = grid_height/255.
-# 			
-# 			cv.NamedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-# 			cv.NamedWindow('Histogram')
-# 			cv.ResizeWindow('Histogram', int(hist_width*ap['hist_width_ratio']*1.0), int(hist_height*ap['hist_height_ratio']*1.25))
-# 			cv.MoveWindow('Histogram', int(frame_width*ap['hist_horiz_offset_ratio']), vert_offset)
-# 			
-# 			lcolors, acolors, bcolors= range(16), range(16), range(16)
-# 			for d in range (dims):
-# 				gray_val = (d * 192. / dims) + 32
-# 				lcolors[d] = cv.Scalar(255., gray_val, gray_val)
-# 				acolors[d] = cv.Scalar(gray_val, 128., 128.)
-# 				bcolors[d] = cv.Scalar(gray_val, gray_val, gray_val)
-# 			six_points = self.build_bars(grid_width, grid_height, bin_w, third_bin_w, grid_x_divs, grid_y_divs, 16) # 16: number of bins
-# 			self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
-# 		
-# 			self.frame_idx = offset_frames
-# 			playing_flag = True
-# 			p_state = 7
-# 
-# 			while playing_flag:			
-# 				# div. by 6 everywhere (except in log prints) to count by strides
-# 				if (self.frame_idx%stride_frames) == 0:
-# 					ret, frame = self.capture.read()
-# 					curr_stride_frame = self.frame_idx/stride_frames
-# 					if frame is None: 
-# 						print 'Frame error! Exiting...'
-# 						break # no image captured... end the processing
-# 		
-# 					trio = fp[curr_stride_frame]
-# 					lbins, abins, bbins = trio[0][0], trio[0][1], trio[0][2]
-# 
-# 					# display stage (full)
-# 					histimg[:] = 0 # clear/zero
-# 					for d in range(dims):
-# 						# for all the bins, get the value, and scale to the size of the grid
-# 						lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
-# 						#draw the rectangle in the wanted color
-# 						self.make_rectangles(cv.fromarray(histimg), six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=hist_height)
-# 
-# 					# access stage (gridded)
-# 					for i in range(grid_x_divs):
-# 						for j in range(grid_y_divs):
-# 							lbins, abins, bbins = trio[(j*4)+i+1][0], trio[(j*4)+i+1][1], trio[(j*4)+i+1][2]
-# 							# if verbose: print (np.sum(lbins), np.sum(abins), np.sum(bbins))
-# 							# display stage (grid)
-# 							for  d in range (dims):
-# 								# for all the bins, get the value, and scale to the size of the grid
-# 								lval, aval, bval = int(lbins[d]*255.), int(abins[d]*255.), int(bbins[d]*255.)
-# 								#draw the rectangle in the wanted color
-# 								self.make_rectangles(cv.fromarray(histimg), six_points, 6, i, j, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors]) #, voffset=0
-# 					
-# 					#### SHOW
-# 					cv.ShowImage('Image', cv.fromarray(frame))
-# 					cv.ShowImage('Histogram', cv.fromarray(e))
-# 					fp.flush()
-# 		
-# 					print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
-# 					
-# 				# check p_state				
-# 				if p_state == 1: # rew. 10 sec.
-# 					self.frame_idx -= 240
-# 				elif p_state == 2: # rew. 1 sec.
-# 					self.frame_idx -= 24
-# 				elif p_state == 3:
-# 					self.frame_idx -= 6
-# 				elif p_state == 0:
-# 					pass
-# 				elif p_state == 7:
-# 					self.frame_idx += 6
-# 				elif p_state == 8: # adv. 1 sec.
-# 					self.frame_idx += 24
-# 				elif p_state == 9: # adv. 10 sec.
-# 					self.frame_idx += 240
-# 				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
-# 				
-# 				# handle key events
-# 				k = cv.WaitKey (25)
-# 				if verbose is True:
-# 					print '>>>>>>>>>>>>>>>>>>'
-# 					print k % 0x100
-# 					print p_state
-# 				
-# 				if k % 0x100 == 27:
-# 					# user has press the ESC key, so exit
-# 					playing_flag = False
-# 					break
-# 				elif k % 0x100 == 49:
-# 					p_state = 1
-# 				elif k % 0x100 == 50:
-# 					p_state = 2
-# 				elif k % 0x100 == 51:
-# 					p_state = 3
-# 				elif k % 0x100 == 55:
-# 					p_state = 7
-# 				elif k % 0x100 == 56:
-# 					p_state = 8
-# 				elif k % 0x100 == 57:
-# 					p_state = 9
-# 				elif k % 0x100 == 53:
-# 					p_state = 0			 					
-# 			
-# 			del fp
-# 			if ap['display']:
-# 				cv.DestroyWindow('Image')
-# 				cv.DestroyWindow('Histogram')	
-# 	
-# 	# GUI helper functions
-# 	def build_bars(self, gw, gh, bw, tbw, xdivs, ydivs, numbins):
-# 		"""
-# 		Display helper function. Build list of points for the trios of histogram bars.
-# 		"""
-# 		# ap = self._check_tvl1_params(None)
-# 		ap = self.analysis_params
-# 		six_points = np.ndarray((16,16,6,2), dtype=int)
-# 		for i in range(xdivs):
-# 			for j in range(ydivs):
-# 				for h in range(numbins):
-# 					foo = six_points[h][(i*xdivs)+j]
-# 					foo[0] = [(j*gw)+(h * bw), (i+1)*gh]
-# 					foo[1] = [(j*gw)+((h+1) * bw)-(2*tbw), ((i+1)*gh)]
-# 					foo[2] = [(j*gw)+(h * bw)+(tbw), (i+1)*gh]
-# 					foo[3] = [(j*gw)+((h+1) * bw)-(tbw), ((i+1)*gh)]
-# 					foo[4] = [(j*gw)+(h * bw)+(2*tbw), (i+1)*gh]
-# 					foo[5] = [(j*gw)+((h+1) * bw), ((i+1)*gh)]
-# 		return six_points
-# 	
-# 	def make_rectangles(self, h_img, pts, num_pts, i, j, h, vals, grid_height_ratio, colors, hoffset=0, voffset=0):
-# 		"""
-# 		Display helper function. Make a bank of three bars for the histogram. (16 in total, via 16 calls of this function.)
-# 		"""
-# 		# ap = self._check_tvl1_params(None)
-# 		ap = self.analysis_params
-# 		grid_divs_x = ap['grid_divs_x']
-# 		grid_divs_y = ap['grid_divs_y']
-# 		# the 0.95 scalar is there so that there are gaps between the histograms in the grid view!
-# 		for n in range(int(num_pts/2)):
-# 			cv.Rectangle (h_img,
-# 							((pts[h][(i*grid_divs_x)+j][2*n][0] + hoffset),   (pts[h][(i*grid_divs_x)+j][2*n][1] + int(voffset))),
-# 							((pts[h][(i*grid_divs_x)+j][2*n+1][0] + hoffset), (pts[h][(i*grid_divs_x)+j][2*n+1][1] + int(voffset) - int(vals[n]*grid_height_ratio*0.95))), 
-# 							colors[n][h], -1, 8, 0)
+	def _display_movie_frame_by_frame(self, **kwargs):
+		"""
+		Same as _process function's playback capabilities, but with interactive keyboard control.
+		
+		1 = rewind 10 seconds per display frame
+		2 = rewind 1 second per display frame
+		3 = rewind 1/4 second (one analysis frame) per display frame
+
+		5 = pause
+	
+		7 = advance 1/4 second (one analysis frame) per display frame
+		8 = advance 1 second per display frame
+		9 = advance 10 seconds per display frame
+		
+		esc = quit visualization
+		
+		"""
+		if not HAVE_CV:
+			print "WARNING: You must install OpenCV in order to analyze or view!"
+			return
+		
+		if (self.movie_path is None) and (self.data_path is None):
+			print "Both movie path and data path are missing! Please supply at least one."
+			return None
+		
+		have_mov = os.path.exists(self.movie_path)
+		have_data = os.path.exists(self.data_path)
+		
+		if (have_mov is False) and (have_data is False):
+			print "Both movie file and data file are missing! Please supply at least one."
+			return None
+		
+ 		ap = self._check_tvl1_params(kwargs)
+		ap = self.analysis_params
+		verbose = ap['verbose']
+		
+		if have_mov is True:
+	 		self.capture = cv2.VideoCapture(self.movie_path)
+			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
+			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+		else:
+			frame_width = 800
+			frame_height = int(float(frame_width) * self._read_json_value('aspect'))
+			print self._read_json_value('aspect')
+		
+		fps = ap['fps']
+		grid_x_divs = ap['grid_divs_x']
+		grid_y_divs = ap['grid_divs_y']
+		theta_divs = ap['theta_divs']
+		frame_size = (frame_width, frame_height)
+		grid_width = int(frame_width/float(grid_x_divs))
+		grid_height = int(frame_height/float(grid_y_divs))
+		grid_size = (grid_width, grid_height)
+		
+		print frame_width
+		print frame_height
+		
+		centers_x = range((frame_width/16),frame_width,(frame_width/8))
+		centers_y = range((frame_height/16),frame_height,(frame_height/8))
+		
+		if verbose:
+			print fps, ' | ', frame_size, ' | ', grid_size
+				
+		# container for prev. frame's grayscale subframes
+		prev_sub_grays = []								
+
+		if ap['offset'] > 0:
+			offset_secs = ap['offset']
+		else:
+			offset_secs = 0
+		
+		print "%%% ", ap['duration']
+		
+		if ap['duration'] > 0:
+			dur_secs = ap['duration']
+		elif ap['duration'] < 0:
+			ap['duration'] = self.determine_movie_length()
+		else:
+			print "Duration cannot be 0."
+			return
+		dur_secs = ap['duration']
+		
+		stride_frames = ap['stride']
+		stride_hop = stride_frames - 1
+
+# 		print "1. ", ap['duration']
+# 		print "2. ", dur_secs
+		
+		# check offset first, then compress duration, if needed
+		offset_secs = min(max(offset_secs, 0), ap['duration'])
+		dur_secs = min(max(dur_secs, 0), (ap['duration'] - offset_secs))
+		offset_strides = int(offset_secs * (fps / stride_frames))
+		dur_strides = int(dur_secs * (fps / stride_frames))
+		offset_frames = offset_strides * stride_frames
+		dur_frames = dur_strides * stride_frames
+		
+		if verbose:
+			print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+			print "OFFSET (SECONDS): ", offset_secs
+			print "OFFSET (STRIDES): ", offset_strides
+			print "OFFSET (FRAMES): ", offset_frames
+			print "DUR (SECONDS): ", dur_secs
+			print 'DUR (STRIDES): ', dur_strides
+			print 'DUR (FRAMES): ', dur_frames
+			print 'XDIVS: ', grid_x_divs
+			print 'YDIVS: ', grid_y_divs
+			print "FPS: ", fps
+			print "stride_frames: ", stride_frames
+		
+		# set up memmap
+		# mode should always be playback and dislay should always be true!!!
+		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
+			fp = np.memmap(self.data_path, dtype='float32', mode='r+', shape=((offset_strides + dur_strides),((8*8*16)+16)))
+			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+			cv2.resizeWindow('Image', frame_width, frame_height)
+			ROOT2 = math.sqrt(2.0)
+			SIN_PI_8 = 0.3826834323650898
+			COS_PI_8 = 0.9238795325112867
+			THETAS_X = [-32, 	int(-32*COS_PI_8), 	int(-16*ROOT2), 	int(-32*SIN_PI_8), 
+						0, 		int(32*SIN_PI_8), 	int(16*ROOT2), 		int(32*COS_PI_8), 
+						32, 	int(32*COS_PI_8), 	int(16*ROOT2), 		int(32*SIN_PI_8), 
+						0, 		int(-32*SIN_PI_8),	int(-16*ROOT2), 	int(-32*COS_PI_8)]
+			THETAS_Y = [0, 		int(-32*SIN_PI_8), 	int(-16*ROOT2), 	int(-32*COS_PI_8), 	
+						-32, 	int(-32*COS_PI_8), 	int(-16*ROOT2), 	int(-32*SIN_PI_8), 	
+						0, 		int(32*SIN_PI_8), 	int(16*ROOT2), 		int(32*COS_PI_8), 	
+						32, 	int(32*COS_PI_8), 	int(16*ROOT2), 		int(32*SIN_PI_8)]
+			THETAS = [[pair[0],pair[1]] for pair in zip(THETAS_X, THETAS_Y)]
+		else:
+			return
+		self.frame_idx = offset_frames
+		end_frame = offset_frames + dur_frames
+
+		if have_mov:
+			self.capture.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, offset_frames)
+			ret, frame = self.capture.read()
+			if frame is None: 
+				print 'Frame error! Exiting...'
+				return # no image captured... end the processing		
+					
+		else:
+			frame = np.empty((frame_width, frame_height), np.uint8)
+			print frame.shape
+
+		self.frame_idx += 1
+		playing_flag = True
+		p_state = 7
+		
+		cv.ShowImage('Image', cv.fromarray(frame))
+
+		while playing_flag:
+			
+			if have_mov:
+				# grab next frame
+				ret, frame = self.capture.read()
+				if frame is None: 
+					print 'Frame error! Exiting...'
+					break # no image captured... end the processing
+			else:
+				frame[:] = 0
+				
+			# display stage (gridded)
+			if ap['mode'] == 'playback' and ap['display']:
+				currframe = fp[self.frame_idx,:512]
+			else:
+				return
+			currframe = fp[self.frame_idx,:512]
+			framemin = currframe[:512].min()
+			framemax = currframe[:512].max()
+			framerange = framemax - framemin
+			if framerange > 0:
+				grays = np.multiply(np.subtract(currframe, framemin), (256.0 / framerange))
+				grays_ma = np.ma.masked_invalid(grays)
+				grays = grays_ma.filled(0.0)
+# 						print grays
+# 						countt = 0
+				for row in range(grid_y_divs):
+					for col in range(grid_x_divs):
+						for wdg in range(theta_divs):
+							gry = int(grays[(row*(grid_x_divs*theta_divs))+(col*theta_divs)+wdg])
+							if gry>0:
+								gry /= 2
+								gry += 256
+								cv2.line(frame, (centers_x[col], centers_y[row]), ((centers_x[col]+THETAS_X[wdg]), (centers_y[row]+THETAS_Y[wdg])), (gry,gry,gry))
+# 							print countt
+# 							countt += 1
+				#### SHOW
+				cv.ShowImage('Image', cv.fromarray(frame))
+				fp.flush()
+	
+				print self.frame_idx, ':: ', (float(self.frame_idx - offset_frames) / dur_frames)
+				
+			# check p_state				
+			if p_state == 1: # rew. 10 sec.
+				self.frame_idx -= 240
+			elif p_state == 2: # rew. 1 sec.
+				self.frame_idx -= 24
+			elif p_state == 3:
+				self.frame_idx -= 6
+			elif p_state == 0:
+				pass
+			elif p_state == 7:
+				self.frame_idx += 6
+			elif p_state == 8: # adv. 1 sec.
+				self.frame_idx += 24
+			elif p_state == 9: # adv. 10 sec.
+				self.frame_idx += 240
+			if have_mov:
+				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
+			
+			# handle key events
+			k = cv.WaitKey (25)
+			if verbose is True:
+				print '>>>>>>>>>>>>>>>>>>'
+				print k % 0x100
+				print p_state
+			
+			if k % 0x100 == 27:
+				# user has press the ESC key, so exit
+				playing_flag = False
+				break
+			elif k % 0x100 == 49:
+				p_state = 1
+			elif k % 0x100 == 50:
+				p_state = 2
+			elif k % 0x100 == 51:
+				p_state = 3
+			elif k % 0x100 == 55:
+				p_state = 7
+			elif k % 0x100 == 56:
+				p_state = 8
+			elif k % 0x100 == 57:
+				p_state = 9
+			elif k % 0x100 == 53:
+				p_state = 0			 					
+		
+		del fp
+		if ap['display']:
+			cv.DestroyWindow('Image')
