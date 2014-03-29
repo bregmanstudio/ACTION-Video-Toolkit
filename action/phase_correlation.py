@@ -892,7 +892,8 @@ class PhaseCorrelation:
 				return # no image captured... end the processing		
 					
 		else:
-			frame = np.empty((frame_width, frame_height), np.uint8)
+# 			frame = np.empty((frame_width, frame_height), np.uint8)
+			frame = np.zeros((int(frame_height), int(frame_width), 3), np.uint8)
 			print frame.shape
 
 		self.frame_idx += 1

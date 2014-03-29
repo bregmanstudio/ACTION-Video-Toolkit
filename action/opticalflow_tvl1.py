@@ -525,30 +525,21 @@ class OpticalFlowTVL1:
 			frame_width = int(self.capture.get(cv.CV_CAP_PROP_FRAME_WIDTH))
 			frame_height = int(self.capture.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
 			frame_size = (frame_width, frame_height)
-# 		else:
-# 			frame_width = 800
-# 			frame_height = int(float(frame_width) * self._read_json_value('aspect'))
-# 			print self._read_json_value('aspect')
-		
+			grid_width = int(frame_width/float(grid_x_divs))
+			grid_height = int(frame_height/float(grid_y_divs))
+			grid_size = (grid_width, grid_height)
+		else:
+			grid_width = 0
+			grid_height = 0
+			grid_size = (grid_width, grid_height)
+				
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
 		grid_y_divs = ap['grid_divs_y']
-		grid_width = int(frame_width/float(grid_x_divs))
-		grid_height = int(frame_height/float(grid_y_divs))
-		grid_size = (grid_width, grid_height)
 		hist_width = int(360)
 		hist_height = int(120)
 		hist_size = (hist_width, hist_height)
-		
-		print frame_width
-		print frame_height
-		
-		centers_x = range((frame_width/16),frame_width,(frame_width/8))
-		centers_y = range((frame_height/16),frame_height,(frame_height/8))
-		
-		if verbose:
-			print fps, ' | ', frame_size, ' | ', grid_size
-				
+						
 		histimg = np.zeros((int(hist_height), int(hist_width), 3), np.uint8)
 		
 		# container for prev. frame's grayscale subframes
@@ -601,8 +592,9 @@ class OpticalFlowTVL1:
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
 			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),((8*8*2)+16)))
-			cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
-			cv2.resizeWindow('Image', frame_width, frame_height)
+			if have_mov:
+				cv2.namedWindow('Image', cv.CV_WINDOW_AUTOSIZE)
+				cv2.resizeWindow('Image', frame_width, frame_height)
 			cv2.namedWindow('Histo', cv.CV_WINDOW_AUTOSIZE)
 		else:
 			return
@@ -616,9 +608,8 @@ class OpticalFlowTVL1:
 				print 'Frame error! Exiting...'
 				return # no image captured... end the processing		
 					
-		else:
-			frame = np.empty((frame_height, frame_width), np.uint8)
-			print frame.shape
+# 		else:
+# 			frame = np.empty((frame_height, frame_width), np.uint8)
 
 		two_points = self.build_bars(100, 20) # 16: number of bins
 		
@@ -626,7 +617,8 @@ class OpticalFlowTVL1:
 		playing_flag = True
 		p_state = 7
 		
-		cv.ShowImage('Image', cv.fromarray(frame))
+		if have_mov:
+			cv.ShowImage('Image', cv.fromarray(frame))
 
 		while playing_flag:
 			
@@ -636,9 +628,7 @@ class OpticalFlowTVL1:
 				if frame is None: 
 					print 'Frame error! Exiting...'
 					break # no image captured... end the processing
-			else:
-				frame[:] = 0
-				
+			
 			# display stage (gridded)
 			if ap['mode'] == 'playback' and ap['display']:
 				currframe = fp[self.frame_idx,:16]
@@ -648,15 +638,15 @@ class OpticalFlowTVL1:
 			
 			normed_frame = np.array((currframe - currframe.min()) / (currframe.max() - currframe.min()))
 
-			print "---------------"
-			print np.isnan(normed_frame.any())
+			# ignore frames where the normed vals are (all) nan
 			if np.isnan(normed_frame).any() != True:
 				for i, val in enumerate(normed_frame):
 					#draw the rectangle in the wanted color
 					self.make_rectangles(cv.fromarray(histimg), two_points, val, hist_height, hoffset=int((hist_width/16.0)*i))
 			
 			#### SHOW
-			cv.ShowImage('Image', cv.fromarray(frame))
+			if have_mov:
+				cv.ShowImage('Image', cv.fromarray(frame))
 			cv.ShowImage('Histo', cv.fromarray(histimg))
 			fp.flush()
 
