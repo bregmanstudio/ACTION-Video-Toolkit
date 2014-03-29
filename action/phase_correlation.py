@@ -467,10 +467,10 @@ class PhaseCorrelation:
 		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,65,2))
 		mapped = mapped.reshape((-1,65,2))
-		print mapped.shape
-		self.before = mapped.reshape((-1, 130))
+# 		print mapped.shape
+# 		self.before = mapped.reshape((-1, 130))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
-		print mapped.shape
+# 		print mapped.shape
 		return (mapped[:,64,:], mapped[:,:64,:])
 	
 	
@@ -511,6 +511,7 @@ class PhaseCorrelation:
 	def determine_movie_length(self, **kwargs):
 		ap = self.analysis_params
 		strides_per_second = float(ap['fps'] / ap['stride'])
+		
 		if os.path.exists(self.movie_path) and HAVE_CV:
 	 		self.capture = cv2.VideoCapture(self.movie_path)
 			dur_total_seconds = self.capture.get(cv.CV_CAP_PROP_FRAME_COUNT) / ap['afps']
