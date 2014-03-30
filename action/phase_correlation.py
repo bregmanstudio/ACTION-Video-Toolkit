@@ -444,11 +444,7 @@ class PhaseCorrelation:
 		"""
 		This will be the interface for grabbing analysis data based on onsets and durations, translating seconds into frames.
 		Takes a file name or complete path of a data file, an onset time in seconds, and a duration in seconds.
-		Returns a tuple of memory-mapped arrays corresponding to the full-frame histogram followed by the 4 by 4 grid of histograms: ([NUMBER OF FRAMES, 1, NUMBER OF COLUMNS (3), NUMBER OF BINS (16)], [NUMBER OF FRAMES, 16, NUMBER OF COLUMNS (3), NUMBER OF BINS (16)])
-		::
-		
-			raw_hist_data = pcorr_for_segment('Psycho', onset_time=360, duration=360)
-		
+		Returns a tuple of memory-mapped arrays...
 		"""
 		ap = self.analysis_params
 		frames_per_astride = (24.0 / ap['stride']) # 24.0, not ap['fps']
@@ -465,9 +461,9 @@ class PhaseCorrelation:
 		
 		print 'df: ', dur_frames
 		# print "data path: ", self.data_path
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,65,2))
-		
-		mapped = mapped.reshape((65,2))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='r')
+		print mapped.shape
+		mapped = mapped.reshape((-1,65,2))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return mapped[onset_frame:(onset_frame+dur_frames),64,:], mapped[onset_frame:(onset_frame+dur_frames),:64,:]
 
