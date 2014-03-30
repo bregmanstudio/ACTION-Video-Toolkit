@@ -10,7 +10,7 @@ This example will demonstrate simple workflows for clustering color feature hist
 Prerequisites
 =============
 
-* Data analyzed through ACTION, which can take several forms (see below).
+* Data analyzed through ACTION, which can take several forms (see below). For this example, we use Hitchcock's North by Northwest.
 * See previous tutorials for more information.
 
 Step-by-step Instructions
@@ -19,12 +19,14 @@ Step-by-step Instructions
 Get the data
 ------------
 
-Create a histogram object, instantiating it with the standardized title (no extension). You can find its length through the helpful ``determine_movie_length()`` function. Create a segment describing the time interval that you would like to retrieve. Finally, grab the data. Here we are demonstrating one of the 'spatial' access functions ``center_quad_histogram_for_segment`` that returns just the histogram data for the central gridded squares of the 4-by-4 grid.
+Create a color feature instance, instantiating it with the standardized title (no extension). You can find its length through the helpful ``determine_movie_length()`` function. Create a segment describing the time interval that you would like to retrieve. Finally, grab the data. Here we are demonstrating one of the 'spatial' access functions ``center_quad_histogram_for_segment`` that returns just the histogram data for the central gridded squares of the 4-by-4 grid.
 
 .. code-block:: python
 
 	from action.suite import *
-	cfl = ColorFeaturesLAB(TITLE, action_dir=ACTION_DIR)
+	title = 'North_by_Northwest'
+	ACTION_DIR = '/Users/me/Movies/action'
+	cfl = ColorFeaturesLAB(title, action_dir=ACTION_DIR)
 
 	length = 600 # 600 seconds = 10 minutes
 	length_in_frames = length * 4
@@ -68,11 +70,21 @@ Finally, we plot the clusters two ways. First as points in 3-dimensional space (
 .. code-block:: python
 
 	# av is an alias for ActionView()
-	av.plot_clusters(sliding_averaged, km_assigns)
-	av.plot_hcluster_segments(km_assigns, km_max_assign)
+	av.plot_clusters(sliding_averaged, km_assigns, 'K Means - first three principle components')
+	
+	av.plot_hcluster_segments(km_assigns, km_max_assign, 'K Means - segmentation view', x_lbl='Time (seconds)', y_lbl='Labeling')
+	
+We can view the distribution of segment lengths, although this is not that informative, since the segments are non-contiguous.
+
+.. code-block:: python
+
+	segs = ad.convert_clustered_frames_to_segs(km_assigns, nc)
+	av.plot_segment_length_distribution(segs, ttl='K Means - distribution of segment lengths', x_lbl='Segment length (1/4 seconds)', y_lbl='Frequency')
 
 .. image:: /images/action_ex1A_kmeans.png
 .. image:: /images/action_ex1A_kmeans_segments.png
+.. image:: /images/action_ex1A_kmeans_seg_distro.png
+
 
 Hierarchical Clustering
 -----------------------
@@ -81,7 +93,7 @@ Instead of k-means clustering, here is an example of hierarchical clustering of 
 
 .. code-block:: python
 
-	nc = 1000
+	nc = 500 # Roughly 5 per minute for a feature-length film.
 	hc_assigns = ad.cluster_hierarchically(decomposed, nc, None)
 
 	av.plot_clusters(decomposed, hc_assigns)
@@ -89,14 +101,7 @@ Instead of k-means clustering, here is an example of hierarchical clustering of 
 
 .. image:: /images/action_ex1B_dims_0_2.png
 .. image:: /images/action_ex1B_segs_zoomed.png
-
-Let's try looking at dimensions 1-3 of the decomposed result (leaving out the dimension with the most variance). Since we can only visualize up to three dimensions of data at one time, this will give us a new way of seeing how the points cluster (or fail to do so). The view is different, and it's been rotated to show an interesting view. Here's the code for this second view:
-
-.. code-block:: python
-
-	av.plot_clusters(decomposed[:,1:], hc_assigns)
-
-.. image:: /images/action_ex1B_dims_1_3.png
+.. image:: /images/action_ex1B_distro.png
 
 Kmeans is not deterministic; Hierarchical is
 --------------------------------------------
