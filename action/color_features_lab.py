@@ -144,7 +144,6 @@ To directly access your analysis data as a memory-mapped array:
 
 .. code-block:: python
 	
-	import action.segment as aseg
 	cfl = ColorFeaturesLAB('Psycho')
 	segment_in_seconds = Segment(60, 600) # requesting segment from 1'00" to 10'00"
 	data = cfl._color_features_for_segment_from_onset_with_duration(segment_in_seconds)
@@ -175,7 +174,7 @@ This class is set up for the following directory structure. You might want to mo
 Advanced Access
 ===============
 
-There is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per second), unless overridden. The following would result in 24 / 4 = 6 analyzed frames per second:
+For ColorFeaturesLab, here is a default stride time of 6 frames (or 24 / 6 = 4 analyzed frames per second), unless overridden. The following would result in 24 / 4 = 6 analyzed frames per second:
 
 .. code-block:: python
 
@@ -222,6 +221,7 @@ from actiondata import *
 ad = ActionData()
 av = ActionView()
 
+
 class ColorFeaturesLAB:
 	"""
 	Color analysis of frame and 4-by-4 grid of subframes in L*a*b* colorspace.
@@ -255,7 +255,6 @@ class ColorFeaturesLAB:
 			print self.json_path
 			self.filename = filename
 		
-		# self.determine_movie_length() no need
  		if os.path.exists(self.json_path) is False:
  			self._write_metadata_to_json()
 		ap['afps'] = self._read_json_value('fps')
@@ -475,11 +474,10 @@ class ColorFeaturesLAB:
 		
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,17,3,16))
 		mapped = mapped.reshape((-1,17,3,16))
-		print mapped.shape
 		self.before = mapped.reshape((-1, (17*3*16)))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
-		print mapped.shape
-		return (mapped[:,0,:,:], mapped[:,1:,:,:])
+
+		return (mapped[onset_frame:(onset_frame+dur_frames),0,:,:], mapped[onset_frame:(onset_frame+dur_frames),1:,:,:])
 
 	def convert_lab_to_l(self, data):
 		"""
@@ -1032,7 +1030,6 @@ class ColorFeaturesLAB:
 		mfp[fpindex][ ((grid_divs_x*i)+j)+grid_flag ][2] = np.reshape(b_star[:], (16))
 		
 		return l_star[:], a_star[:], b_star[:]
-
 	
 	# GUI helper functions
 	def build_bars(self, gw, gh, bw, tbw, xdivs, ydivs, numbins):

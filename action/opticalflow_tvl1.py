@@ -431,7 +431,7 @@ class OpticalFlowTVL1:
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,(128+16)))
 		mapped = mapped.reshape((-1,144))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
-		return (mapped[:,:16], mapped[:,16:])
+		return (mapped[(onset_frame+dur_frames),:16], mapped[onset:(onset_frame+dur_frames),16:])
 		
 	
 # 	def playback_movie_frame_by_frame(self, offset=None, duration=None):

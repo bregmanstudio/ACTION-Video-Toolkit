@@ -450,37 +450,11 @@ class OpticalFlow:
 			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
 		print 'df: ', dur_frames
-		# print "data path: ", self.data_path
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,512))
 		mapped = mapped.reshape((-1,512))
-# 		print mapped.shape
 		mapped = ad.interpolate_time(mapped, ap['afps'])
-# 		print mapped.shape
-		return mapped
+		return mapped[onset_frame:(onset_frame+dur_frames),:]
 
-
-# 	def opticalflow_for_segment_with_stride(self, segment=Segment(0, -1), access_stride=6):
-# 		"""
-# 		This is an interface for getting analysis data using a stride parameter. By default, the optical flow class analyzes video at the full frame rate (24 FPS). In order to reduce the dimensionality of the data and align it with color data, we include this function with a slide parameter.
-# 		Returns a memory-mapped array corresponding to the reduced-dimension optical flow values: [NUMBER OF FRAMES, 512].
-# 		
-# 		::
-# 			
-# 			raw_opticalflow_data = opticalflow_for_segment(onset_time=360, duration=360)
-# 		
-# 		"""
-# 		ap = self._check_opticalflow_params()
-# 		
-# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
-# 		print onset_frame
-# 		if segment.time_span.duration < 0:
-# 			dur_frames = self.determine_movie_length()
-# 		else:
-# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-# 		print dur_frames
-# 		data24 = self._opticalflow_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)
-# 		self.X = data24[onset_frame:dur_frames:access_stride,:]
-# 		return self.X
 
 	def determine_movie_length(self, **kwargs):
 		"""
