@@ -468,26 +468,13 @@ class PhaseCorrelation:
 		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,65,2))
 		
 		mapped = mapped.reshape((65,2))
-# 		print mapped.shape
-# 		self.before = mapped.reshape((-1, 130))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
-# 		print mapped.shape
 		return mapped[onset_frame:(onset_frame+dur_frames),64,:], mapped[onset_frame:(onset_frame+dur_frames),:64,:]
-	
-	
-# 	def playback_movie(self, offset=0, duration=-1):
-# 		"""
-# 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
-# 		::
-# 		
-# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.color_lab', mode='playback', offset=0, duration=-1, stride=6, display=True)
-# 		
-# 		"""
-# 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
+
 
 	def playback_movie_frame_by_frame(self, offset=0, duration=-1):
 		"""
-		Play the movie alongside the analysis data visualization, supplying the indexing in ANALYSIS frames (usually 4 FPS). Equivalent to:
+		Play the movie alongside the analysis data visualization, supplying the indexing in analysis frames (usually 4 FPS). Equivalent to:
 		::
 		
 			_display_movie_frame_by_frame(mode='playback', display=True, offset=offset, duration=duration)
@@ -756,7 +743,7 @@ class PhaseCorrelation:
 				self.prev_gray = np.float32(frame_gray[:])
 			
 			# handle events for abort
-			k = cv.WaitKey (1)	
+			k = cv.WaitKey (int(1000 / ap['afps']))	
 			if k % 0x100 == 27:
 				# user has press the ESC key, so exit
 					break
@@ -959,7 +946,7 @@ class PhaseCorrelation:
 				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 			
 			# handle key events
-			k = cv.WaitKey (25)
+			k = cv.WaitKey (int(1000 / ap['afps']))
 			if verbose is True:
 				print '>>>>>>>>>>>>>>>>>>'
 				print k % 0x100

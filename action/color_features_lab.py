@@ -488,17 +488,6 @@ class ColorFeaturesLAB:
 		data_L = np.reshape(data_L, (data.shape[0], -1, 3))
 		data_L[:,:,1:] = 0.0
 		return np.reshape(data_L, (data.shape[0], -1))
-
-		
-# 	def playback_movie(self, offset=None, duration=None):
-# 		"""
-# 		Play the movie alongside the analysis data visualization, supplying the indexing as seconds. Note that if the data was analyzed with a stride factor, there will not be data for all 24 possible frames per second. Equivalent to:
-# 		::
-# 		
-# 			_process_movie(movie_file='Psycho.mov', data_file='Psycho.hist', mode='playback', offset=0, duration=-1, stride=6, display=True)
-# 		
-# 		"""
-# 		self._process_movie(mode='playback', display=True, offset=offset, duration=duration)
 	
 	
 	def playback_movie_frame_by_frame(self, offset=None, duration=None):
@@ -600,9 +589,6 @@ class ColorFeaturesLAB:
 		
 		self._write_metadata_to_json()
 		# probably should generate and check for errors
-				
-		print ap['mode']
-		print ap['display']
 		
 		fps = ap['fps']
 		grid_x_divs = ap['grid_divs_x']
@@ -784,16 +770,16 @@ class ColorFeaturesLAB:
 			elif (self.frame_idx%stride_frames) == 1:
 				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, int((self.frame_idx / stride_frames) + 1) * stride_frames)
 				self.frame_idx += stride_hop # stride_hop = 5 = stride - 1
-# 				self.frame_idx = self.capture.get(cv.CV_CAP_PROP_POS_FRAMES) # better???
+				
 			
 			# no need to waitkey if we are not displaying:
 			if ap['display']:
 				# handle events
-				k = cv.WaitKey (1)			
+				k = cv.WaitKey (int(1000 / ap['afps']))
 				if k % 0x100 == 27:
 					# user has press the ESC key, so exit
 						break
-		
+			
 		del fp
 		if ap['display']:
 			cv.DestroyWindow('Image')
@@ -890,7 +876,6 @@ class ColorFeaturesLAB:
 		# set up memmap
 		# mode should always be playback and dislay should always be true!!!
 		if ap['mode'] == 'playback' and ap['display'] == True and have_data:
-			print '0--00-00-'
 			fp = np.memmap(self.data_path, dtype='float32', mode='r', shape=((offset_strides + dur_strides),17,3,16))
 					
 			# set some drawing constants
@@ -939,7 +924,7 @@ class ColorFeaturesLAB:
 						#draw the rectangle in the wanted color
 						self.make_rectangles(cv.fromarray(histimg), six_points, 6, 0, 0, d, [lval, aval, bval], grid_height_ratio, [lcolors, acolors, bcolors], voffset=hist_height)
 
-					# access stage (gridded)
+					# display stage (gridded)
 					for i in range(grid_x_divs):
 						for j in range(grid_y_divs):
 							lbins, abins, bbins = trio[(j*4)+i+1][0], trio[(j*4)+i+1][1], trio[(j*4)+i+1][2]
@@ -978,7 +963,7 @@ class ColorFeaturesLAB:
 					self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 				
 				# handle key events
-				k = cv.WaitKey (25)
+				k = cv.WaitKey (int(1000 / ap['afps']))
 				if verbose is True:
 					print '>>>>>>>>>>>>>>>>>>'
 					print k % 0x100
@@ -988,7 +973,7 @@ class ColorFeaturesLAB:
 					# user has press the ESC key, so exit
 					playing_flag = False
 					break
-				elif k % 0x100 == 49:
+				elif k % 0x100 == 49:	# number keys
 					p_state = 1
 				elif k % 0x100 == 50:
 					p_state = 2
@@ -1003,7 +988,9 @@ class ColorFeaturesLAB:
 				elif k % 0x100 == 53:
 					p_state = 0			 					
 			
+			#clean up
 			del fp
+			
 			if ap['display']:
 				if have_mov:
 					cv.DestroyWindow('Image')

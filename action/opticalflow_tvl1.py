@@ -7,11 +7,11 @@ Part of Bregman:ACTION - Cinematic information retrieval toolkit
 Overview
 ========
 
-*PLEASE NOTE*: This TVL1 OpticalFlow class is set up for access only! TO DO: provide playback of visualization and provide OpenFrameworks/C++ analysis code.
+*PLEASE NOTE*: This TVL1 OpticalFlow class is set up for access only! We provide OpenFrameworks/C++ analysis code separately.
 
-Use the TVL1 OpticalFlow class to access optical flow features. The first 16 raw bins are a histogram over 16 angle-bins (22.5 degrees per bin) of detected angle features for the entire image. The second is a set of sixteen histograms, each describing a region of the image. The regions are arranged in an even four-by-four non-overlapping grid, with the first region at the upper left and the last at the lower right. These values, in sequence, are stored in a binary file.
+Use the TVL1 OpticalFlow class to access optical flow features. The first 16 raw bins are a histogram over 16 angle-bins (22.5 degrees per bin) of detected angles for the entire image. The second is a set of sixteen histograms, each describing a region of the image. The regions are arranged in an even 8-by-8 non-overlapping grid, with the first region at the upper left and the last at the lower right. These values are stored in a memory-mapped binary file.
 
-In order to reduce the amount of data involved (and the processing time involved), a stride parameter is used. This number is the number of movie frames to account for in one analysis frame. The default is 6. As of version 1.0, there is no averaging or interpolation, the "skipped" frames are simply dropped.
+In order to reduce the amount of data involved (and the processing time involved), a stride parameter is used. This number is the number of movie frames to account for in one analysis frame. The default is 6. 
 
 Creation and Parameters
 =======================
@@ -671,7 +671,7 @@ class OpticalFlowTVL1:
 				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 			
 			# handle key events
-			k = cv.WaitKey (250)
+			k = cv.WaitKey (int(1000 / ap['afps']))
 			if verbose is True:
 				print '>>>>>>>>>>>>>>>>>>'
 				print k % 0x100
