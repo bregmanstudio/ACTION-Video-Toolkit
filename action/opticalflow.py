@@ -451,7 +451,11 @@ class OpticalFlow:
 		
 		print 'df: ', dur_frames
 		try:
-			mapped = np.memmap(self.data_path, dtype='float32', mode='r') #, offset=onset_frame, shape=(dur_frames,512))
+			if os.path.exists(self.data_path):
+				mapped = np.memmap(self.data_path, dtype='float32', mode='r') #, offset=onset_frame, shape=(dur_frames,512))
+			else:
+				print "Optical flow analysis file does not exist for this film (", self.filename, "). Sorry."
+				return None
 		except IOError:
 			print "Attempting to access data file/mem map that does not exist!"
 			return None
