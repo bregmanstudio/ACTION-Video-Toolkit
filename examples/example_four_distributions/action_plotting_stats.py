@@ -1,12 +1,6 @@
 #  Example of plotting a joint feature space of three normalized/standardized visual features.
 
 from action.suite import *
-import numpy as np
-import matplotlib.pyplot as plt
-
-# idx = np.arange(48)
-# barwidth = 0.5
-# barwidth2 = 0.75
 
 cfl_vert = ColorFeaturesLAB('Vertigo')
 cfl_nbr = ColorFeaturesLAB('No_Blood_Relation')
@@ -39,11 +33,12 @@ video_vert_X = np.c_[cfl_vert_X, pcorr_vert_X, oflow_vert_X]
 video_nbr_X = np.c_[cfl_nbr_X, pcorr_nbr_X, oflow_nbr_X]
 
 
-imagesc(video_vert_X.T, title_string='Visual features: normalized, etc. for Vertigo')
-imagesc(video_nbr_X.T, title_string='Visual features: normalized, etc. for No Blood Relation')
 
-imagesc(video_vert_X[:1000,:].T, title_string='Visual features: normalized, etc. for Vertigo - first 1000 frames')
-imagesc(video_nbr_X[:1000,:].T, title_string='Visual features: normalized, etc. for No Blood Relation - first 1000 frames')
+imagesc(video_vert_X.T, title_string='Visual features: normalized, etc. for Vertigo', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
+imagesc(video_nbr_X.T, title_string='Visual features: normalized, etc. for No Blood Relation', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
+
+imagesc(video_vert_X[:1000,:].T, title_string='Visual features for Vertigo - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
+imagesc(video_nbr_X[:1000,:].T, title_string='Visual features for No Blood Relation - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Visual Features')
 
 
 data_col_means = np.mean(video_vert_X, axis=0)
