@@ -127,6 +127,7 @@ class ActionData:
 		channels = raw_data.shape[1]
 		win_hops = range(0, frames, hop)
 		chunked_data = np.empty_like(raw_data)
+		print "chunked: ", chunked_data.shape
 		chunked_data[:] = raw_data
 		print "chunked: ", chunked_data.shape
 		print "rds: ", raw_data.shape
@@ -376,17 +377,20 @@ class ActionView:
 		for k in default: kwargs.setdefault(k,default[k])
 		return kwargs
 	
-	def plot_hcluster_segments(self, hclusters, nc=100):
+	def plot_hcluster_segments(self, hclusters, nc=100, ttl='', x_lbl='', y_lbl=''):
 		"""
 		2D graph; rows are segments, cols are time points.
 		"""
 		z = np.zeros((nc, len(hclusters)))
 		for k in range (nc):
 			z[k, np.where(hclusters==k)[0]]=k+1
-		imagesc(z)
-		P.show()
+		imagesc(z, ttl=ttl, x_lbl=x_lbl, y_lbl=y_lbl, cbar=False)
+		
+		plt.show()
+		return z
 	
-	def plot_segment_length_distribution(self, segs):
+	
+	def plot_segment_length_distribution(self, segs, ttl='', x_lbl='', y_lbl=''):
 		"""
 		Get an idea of how segment lengths are distributed. Use ad.convert_clustered_frames_to_segs to create segments from clusterings.
 		"""
@@ -394,10 +398,17 @@ class ActionView:
 		print segs_sorted_by_length
 		fig = plt.figure()
 		plt.plot(np.arange(len(segs_sorted_by_length)-1), np.array(segs_sorted_by_length)[:-1,1])
+		if ttl:
+			plt.title(ttl)
+		if x_lbl:
+			plt.xlabel(x_lbl)
+		if y_lbl:
+			plt.ylabel(y_lbl)
 		plt.show()
+		return plt
 	
 	
-	def plot_clusters(self, X, labeling, ttl='1st three dimensions'):	
+	def plot_clusters(self, X, labeling, ttl='1st three dimensions', x_lbl='', y_lbl='', z_lbl=''):	
 		"""
 		Plot the first three dimensions of data clusters---works with any data; doesn't have to be clustered.
 		"""
@@ -408,6 +419,7 @@ class ActionView:
 			ax.plot3D(X[labeling == l, 0], X[labeling == l, 1], X[labeling == l, 2],'o', color=P.cm.jet(np.float(l) / np.max(labeling + 1)))
 		P.title(ttl)
 		P.show()
+		return ax, fig
 	
 # 	def plot_similarity_matrix(self, X, ttl='Similarity/distance matrix'):
 
@@ -502,21 +514,28 @@ def _normalize(x):
     y=y/P.np.max(y)
     return y
 
-def feature_plot(M, normalize=False, dbscale=False, norm=False, title_string=None, interp='nearest', bels=False, nofig=False,**kwargs):
+def feature_plot(M, normalize=False, dbscale=False, norm=False, ttl=None, interp='nearest', bels=False, nofig=False, x_lbl='', y_lbl='', cbar=False, save_image_as=None, **kwargs):
     """
     Static method for plotting a matrix as a time-frequency distribution (audio features)
     """
     X = feature_scale(M, normalize, dbscale, norm, bels)
-    if not nofig: P.figure()
+    if not nofig: plt.figure()
     clip=-100.
     if dbscale or bels:
         if bels: clip/=10.
-        P.imshow(P.clip(X,clip,0),origin='lower',aspect='auto', interpolation=interp, **kwargs)
+        plt.imshow(P.clip(X,clip,0),origin='lower',aspect='auto', interpolation=interp, **kwargs)
     else:
-        P.imshow(X,origin='lower',aspect='auto', interpolation=interp, **kwargs)
-    if title_string:
-        P.title(title_string)
-    P.colorbar()
+        plt.imshow(X,origin='lower',aspect='auto', interpolation=interp, **kwargs)
+    if ttl:
+        plt.title(ttl)
+    if x_lbl:
+    	plt.xlabel(x_lbl)
+    if y_lbl:
+    	plt.ylabel(y_lbl)
+    if cbar:
+    	plt.colorbar()
+    if save_image_as is not None and os.path.exists(save_image_as) is not True: # full path!
+    	plt.savefig(save_image_as)
 
 def feature_scale(M, normalize=False, dbscale=False, norm=False, bels=False):
     """
