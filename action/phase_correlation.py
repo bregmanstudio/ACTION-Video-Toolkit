@@ -322,7 +322,7 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[0].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)[0:-1:access_stride]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[0].reshape(-1, 2)[0:-1:access_stride, :]
 		return self.X
 	
 	def gridded_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -345,7 +345,7 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[::access_stride,-1]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[::access_stride,:]
 		return self.X
 	
 	def center_quad_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -367,7 +367,7 @@ class PhaseCorrelation:
 		
 		"""
 		cq_array = range(18,22)+range(26,30)+range(34,38)+range(42,46)
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[::access_stride,-1]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[::access_stride,:]
 		return self.X
 
 	def middle_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -388,7 +388,7 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1][:,16:47,...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[::access_stride,-1]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[::access_stride,:]
 		return self.X
 	
 	def plus_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
