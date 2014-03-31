@@ -81,20 +81,20 @@ Instead of viewing raw metadata, we can plot distributions of their means and va
 
 .. code-block:: python
 
-data_col_means = np.mean(video_vert_X, axis=0)
-data_col_means2 = np.mean(video_nbr_X, axis=0)
-data_col_vars = np.var(video_vert_X, axis=0)
-data_col_vars2 = np.var(video_nbr_X, axis=0)
+	data_col_means = np.mean(video_vert_X, axis=0)
+	data_col_means2 = np.mean(video_nbr_X, axis=0)
+	data_col_vars = np.var(video_vert_X, axis=0)
+	data_col_vars2 = np.var(video_nbr_X, axis=0)
 
-idx = np.arange(48)
-barwidth = 0.5
-barwidth2 = 0.75
-numfeatures = np.arange(video_vert_X.shape[1])
+	idx = np.arange(48)
+	barwidth = 0.5
+	barwidth2 = 0.75
+	numfeatures = np.arange(video_vert_X.shape[1])
 
-p1 = plt.bar(numfeatures, data_col_vars2, barwidth2, color='y', bottom=data_col_means2)
-p2 = plt.bar(numfeatures, data_col_vars, barwidth, color='g', bottom=data_col_means)
-plt.title('Video features means and variances per bin')
-plt.legend( (p1[0], p2[0]), ('Vertigo', 'No Blood Relation') )
+	p1 = plt.bar(numfeatures, data_col_vars2, barwidth2, color='y', bottom=data_col_means2)
+	p2 = plt.bar(numfeatures, data_col_vars, barwidth, color='g', bottom=data_col_means)
+	plt.title('Video features means and variances per bin')
+	plt.legend( (p1[0], p2[0]), ('Vertigo', 'No Blood Relation') )
 	
 .. image:: /images/action_ex4_all_video_overlaps.png
 
@@ -106,7 +106,7 @@ Zooming in, we can see that there is a lot of detail, but any hopes of saying (o
 Full comparison - add three audio features
 ==========================================
 
-In the above example, you should be able to see that one is color and one is black and white. Since No Blood Relation is also silent, we will only show the audio features for Vertigo.
+In the above example, you might be able to see that one is color and one is black and white just by looking at the data.
 
 .. code-block:: python
 
@@ -140,12 +140,18 @@ In the above example, you should be able to see that one is color and one is bla
 	plt.xlabel('Time (1/4 seconds)')
 	plt.ylabel('Linear Power')
 
-.. image:: /images/action_ex4_powers_vert_plot_zoom.png
+The next three plots show audio features for the first 10 minutes or so of Vertigo (zoomed in on to show detail).
+
+.. image:: /images/action_ex4_power_zoom.png
 .. image:: /images/action_ex4_mfccs_vert_normed_zoom.png
 .. image:: /images/action_ex4_chromas_vert_normed_zoom.png
 
-.. code-block:: python
+Combined features
+-----------------
 
+Finally, we show all the audio features, and then all the audio and video features combined.
+
+.. code-block:: python
 
 	audio_vert_X =  np.c_[np.atleast_1d(powers), mfccs, chromas]
 
