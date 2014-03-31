@@ -262,6 +262,8 @@ class ColorFeaturesLAB:
 		# try to naively get some data and store in a class var
 		if os.path.exists(self.data_path):
 			self.default_color_features_for_segment()
+		else:
+			self.X = None
 	
 	def _check_cflab_params(self, analysis_params=None):
 		"""
@@ -472,7 +474,7 @@ class ColorFeaturesLAB:
 		print 'df: ', dur_frames
 		# memmap
 		
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,17,3,16))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='r') #, offset=onset_frame, shape=(dur_frames,17,3,16))
 		mapped = mapped.reshape((-1,17,3,16))
 		self.before = mapped.reshape((-1, (17*3*16)))
 		mapped = ad.interpolate_time(mapped, ap['afps'])

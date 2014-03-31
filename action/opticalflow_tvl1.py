@@ -233,6 +233,8 @@ class OpticalFlowTVL1:
 		# try to naively get some data and store in a class var
 		if os.path.exists(self.data_path):
 			self.default_tvl1_features_for_segment()
+		else:
+			self.X = None
 	
 	def _check_tvl1_params(self, analysis_params=None):
 		"""
@@ -428,7 +430,7 @@ class OpticalFlowTVL1:
 		
 		# memmap
 		print dur_frames
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,(128+16)))
+		mapped = np.memmap(self.data_path, dtype='float32', mode='r') #, offset=onset_frame, shape=(dur_frames,(128+16)))
 		mapped = mapped.reshape((-1,144))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return (mapped[(onset_frame+dur_frames),:16], mapped[onset:(onset_frame+dur_frames),16:])

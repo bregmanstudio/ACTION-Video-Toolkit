@@ -231,6 +231,8 @@ class PhaseCorrelation:
 		# try to naively get some data and store in a class var
 		if os.path.exists(self.data_path):
 			self.default_phasecorr_features_for_segment()
+		else:
+			self.X = None
 	
 	def _check_pcorr_params(self, analysis_params=None):
 		"""
