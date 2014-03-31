@@ -18,8 +18,8 @@ cfl_vert_X = cfl_vert.middle_band_color_features_for_segment(fullseg_vert)
 cfl_nbr_X = cfl_nbr.middle_band_color_features_for_segment(fullseg_nbr)
 pcorr_vert_X = pcorr_vert.middle_band_phasecorr_features_for_segment(fullseg_vert)
 pcorr_nbr_X = pcorr_nbr.middle_band_phasecorr_features_for_segment(fullseg_nbr)
-oflow_vert_X = oflow_vert.opticalflow_for_segment_with_stride(fullseg_vert)
-oflow_nbr_X = oflow_nbr.opticalflow_for_segment_with_stride(fullseg_nbr)
+oflow_vert_X = oflow_vert.middle_band_opticalflow_features_for_segment(fullseg_vert)
+oflow_nbr_X = oflow_nbr.middle_band_opticalflow_features_for_segment(fullseg_nbr)
 
 
 cfl_vert_X = ad.normalize_data(cfl_vert_X)
@@ -29,16 +29,21 @@ pcorr_nbr_X = ad.normalize_data(ad.standardize_data(pcorr_nbr_X))
 oflow_vert_X = ad.normalize_data(np.power(oflow_vert_X, 0.2))
 oflow_nbr_X = ad.normalize_data(np.power(oflow_nbr_X, 0.2))
 
-video_vert_X = np.c_[cfl_vert_X, pcorr_vert_X, oflow_vert_X]
-video_nbr_X = np.c_[cfl_nbr_X, pcorr_nbr_X, oflow_nbr_X]
+min_time_vert = min([feat.shape[0] for feat in [cfl_vert_X, pcorr_vert_X, oflow_vert_X]])
+min_time_nbr = min([feat.shape[0] for feat in [cfl_nbr_X, pcorr_nbr_X, oflow_nbr_X]])
+
+print min_time_vert
+print min_time_nbr
+
+video_vert_X = np.c_[cfl_vert_X[:min_time_vert,:], pcorr_vert_X[:min_time_vert,:], oflow_vert_X[:min_time_vert,:]]
+video_nbr_X = np.c_[cfl_nbr_X[:min_time_nbr,:], pcorr_nbr_X[:min_time_nbr,:], oflow_nbr_X[:min_time_nbr,:]]
 
 
+imagesc(video_vert_X.T, ttl='Visual features: normalized, etc. for Vertigo', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
+imagesc(video_nbr_X.T, ttl='Visual features: normalized, etc. for No Blood Relation', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
 
-imagesc(video_vert_X.T, title_string='Visual features: normalized, etc. for Vertigo', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
-imagesc(video_nbr_X.T, title_string='Visual features: normalized, etc. for No Blood Relation', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
-
-imagesc(video_vert_X[:1000,:].T, title_string='Visual features for Vertigo - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
-imagesc(video_nbr_X[:1000,:].T, title_string='Visual features for No Blood Relation - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Visual Features')
+imagesc(video_vert_X[:1000,:].T, ttl='Visual features (normalized) for Vertigo - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Frequency')
+imagesc(video_nbr_X[:1000,:].T, ttl='Visual features (normalized) for No Blood Relation - first 1000 frames', x_lbl='Time (1/4 seconds)', y_lbl='Visual Features')
 
 
 data_col_means = np.mean(video_vert_X, axis=0)
@@ -104,18 +109,20 @@ powers = ad.meanmask_data(powers)
 powers = ad.normalize_data(powers)
 powers = ad.meanmask_data(powers)
 
-imagesc(mfccs.T, title_string='MFCCs - normalized - '+str(title))
-imagesc(chromas.T, title_string='Chromas - normalized - '+str(title))
+imagesc(mfccs.T, ttl='MFCCs - normalized - '+str(title), x_lbl='Time (1/4 seconds)', y_lbl='MFCC Coefficients')
+imagesc(chromas.T, ttl='Chromas - normalized - '+str(title), x_lbl='Time (1/4 seconds)', y_lbl='Chromas (12 steps)')
 plt.figure()
 plt.plot(np.atleast_1d(powers))
 plt.title('Normalized power values for whole film - '+str(title))
+plt.xlabel('Time (1/4 seconds)')
+plt.ylabel('Linear Power')
+
 
 audio_vert_X =  np.c_[np.atleast_1d(powers), mfccs, chromas]
 
-imagesc(audio_vert_X, title_string='Power/MFCC/Chromas - normalized - '+str(title))
+imagesc(audio_vert_X.T, ttl='Power/MFCC/Chromas - normalized - '+str(title), x_lbl='Time (1/4) seconds', y_lbl='Audio feature bins')
 
 min_length = min(audio_vert_X.shape[0], video_vert_X.shape[0])
-
 all_vert_X = np.c_[video_vert_X[:min_length,:], audio_vert_X[:min_length,:]]
 
-imagesc(all_vert_X.T, title_string='Video/Audio Features - normalized - '+str(title))
+imagesc(all_vert_X.T, ttl='Video/Audio Features - normalized - '+str(title), x_lbl='Time (1/4) seconds', y_lbl='Combined feature bins')
