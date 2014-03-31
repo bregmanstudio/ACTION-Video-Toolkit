@@ -450,7 +450,11 @@ class OpticalFlow:
 			dur_frames = int(duration_s * frames_per_astride * (ap['afps'] / ap['fps']))
 		
 		print 'df: ', dur_frames
-		mapped = np.memmap(self.data_path, dtype='float32', mode='c') #, offset=onset_frame, shape=(dur_frames,512))
+		try:
+			mapped = np.memmap(self.data_path, dtype='float32', mode='r') #, offset=onset_frame, shape=(dur_frames,512))
+		except IOError:
+			print "Attempting to access data file/mem map that does not exist!"
+			return None
 		mapped = mapped.reshape((-1,512))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
 		return mapped[onset_frame:(onset_frame+dur_frames),:]
@@ -743,7 +747,7 @@ class OpticalFlow:
 			self.prev_gray = frame_gray
 			
 			if ap['display'] is True: 
-				ch = 0xFF & cv2.waitKey(1)
+				ch = 0xFF & cv.WaitKey (int(1000 / ap['afps']))
 				if ch == 27:
 					break
 		
@@ -956,7 +960,7 @@ class OpticalFlow:
 				self.capture.set(cv.CV_CAP_PROP_POS_FRAMES, self.frame_idx)				
 			
 			# handle key events
-			k = cv.WaitKey (1)
+			k = cv.WaitKey (int(1000 / ap['afps']))
 			if verbose is True:
 				print '>>>>>>>>>>>>>>>>>>'
 				print k % 0x100
