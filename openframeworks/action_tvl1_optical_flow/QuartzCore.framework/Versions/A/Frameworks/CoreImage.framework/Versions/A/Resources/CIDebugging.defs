@@ -1,0 +1,29 @@
+#include <mach/std_types.defs>
+#include <mach/mach_types.defs>
+
+import "CIDebugging_types.h";
+
+
+
+subsystem CIDebugging 12345;
+serverprefix _CIXDebug;
+userprefix _CIDebug;
+
+type data_t = ^array [*] of char;
+
+/* Sent when the target process has attached to Quartz Debug */
+
+simpleroutine DidAttach(
+		test_port		: mach_port_t;
+		client_pid		: uint32_t
+);
+
+/* Sent when a CI event happens. The type of the event is in 
+ * `event_type' */
+
+simpleroutine SendEventDescription(
+		test_port		: mach_port_t;
+		client_pid		: uint32_t;
+		event_type		: uint32_t;
+	in	data			: data_t, dealloc
+);

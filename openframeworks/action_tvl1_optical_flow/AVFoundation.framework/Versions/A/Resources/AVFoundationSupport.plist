@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AllowedFormatReaders</key>
+	<array>
+		<string>com.apple.coremedia.formatreader.quicktime-iso</string>
+		<string>com.apple.coremedia.formatreader.audiofile</string>
+		<string>com.apple.coremedia.formatreader.audiofilestream</string>
+		<string>com.apple.coremedia.formatreader.mpeg</string>
+		<string>com.apple.coremedia.formatreader.avi</string>
+	</array>
+	<key>ValidationType</key>
+	<string>RequireOneRecognized</string>
+	<key>TrackTypes</key>
+	<array>
+		<string>vide</string>
+		<string>soun</string>
+		<string>tmcd</string>
+		<string>clcp</string>
+		<string>sbtl</string>
+		<string>odsm</string>
+		<string>sdsm</string>
+		<string>ChapterName</string>
+	</array>
+	<key>AudioCodecs</key>
+	<array>
+		<string>aac </string>
+		<string>.mp3</string>
+		<string>alac</string>
+		<string>lpcm</string>
+		<string>amr </string>
+		<string>ac-3</string>
+		<string>drms</string>
+		<string>paac</string>
+		<string>pac3</string>
+		<string>.mp2</string>
+		<string>.mp1</string>
+		<string>AnyDecodableCodecType</string>
+	</array>
+	<key>VideoCodecs</key>
+	<array>
+		<string>avc1</string>
+		<string>mp4v</string>
+		<string>h263</string>
+		<string>jpeg</string>
+		<string>png </string>
+		<string>drmi</string>
+		<string>mp2v</string>
+		<string>mp1v</string>
+		<string>AnyDecodableCodecType</string>
+	</array>
+	<key>VideoNoFrameReordering</key>
+	<false/>
+	<key>TimecodeMustBeInvisible</key>
+	<true/>
+	<key>VideoNoInterlacing</key>
+	<true/>
+	<key>MaxVideoTrackMatrixType</key>
+	<string>UprightScale</string>
+</dict>
+</plist>

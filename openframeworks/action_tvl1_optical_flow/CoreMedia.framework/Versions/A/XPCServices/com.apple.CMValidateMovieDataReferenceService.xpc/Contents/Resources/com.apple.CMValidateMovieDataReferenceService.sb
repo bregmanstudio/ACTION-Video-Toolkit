@@ -1,0 +1,38 @@
+;;;;;; Copyright (c) 2012 Apple Inc.  All Rights reserved.
+;;;;;;
+;;;;;; WARNING: The sandbox rules in this file currently constitute
+;;;;;; Apple System Private Interface and are subject to change at any time and
+;;;;;; without notice. The contents of this file are also auto-generated and
+;;;;;; not user editable; it may be overwritten at any time.
+
+(version 1)
+(deny default)
+
+(import "system.sb")
+(import "com.apple.corefoundation.sb")
+
+;;; initialize CF sandbox actions
+(corefoundation)
+
+;;; we can read everything and issue read-only extensions
+(allow file-read*)
+(allow file-issue-extension (extension-class "com.apple.app-sandbox.read"))
+
+(if (positive? (string-length (param "DARWIN_COREMEDIA_CACHE_DIR")))
+        (allow file-write* file-read* (subpath (param "DARWIN_COREMEDIA_CACHE_DIR"))))
+
+(if (positive? (string-length (param "DARWIN_COREMEDIA_TEMP_DIR")))
+        (allow file-write* file-read* (subpath (param "DARWIN_COREMEDIA_TEMP_DIR"))))
+
+(system-graphics)
+
+(allow ipc-posix-shm
+       (ipc-posix-name-regex #"^ls\.")
+       (ipc-posix-name-regex #"^/tmp/com\.apple\.csseed\.")
+       (ipc-posix-name "apple.shm.notification_center"))
+
+(allow mach-lookup
+       (global-name "com.apple.CoreServices.coreservicesd")
+       (global-name "com.apple.FontObjectsServer")
+       (global-name "com.apple.windowserver.active")
+       (global-name "com.apple.window_proxies"))

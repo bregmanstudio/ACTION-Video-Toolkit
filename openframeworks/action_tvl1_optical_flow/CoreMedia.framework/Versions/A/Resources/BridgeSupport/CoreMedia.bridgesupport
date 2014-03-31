@@ -1,0 +1,1595 @@
+<?xml version='1.0'?>
+<!DOCTYPE signatures SYSTEM "file://localhost/System/Library/DTDs/BridgeSupport.dtd">
+<signatures version='1.0'>
+<depends_on path='/System/Library/Frameworks/Security.framework'/>
+<depends_on path='/System/Library/Frameworks/ApplicationServices.framework'/>
+<depends_on path='/System/Library/Frameworks/IOKit.framework'/>
+<depends_on path='/System/Library/Frameworks/CoreAudio.framework'/>
+<depends_on path='/System/Library/Frameworks/CoreFoundation.framework'/>
+<depends_on path='/System/Library/Frameworks/CoreVideo.framework'/>
+<depends_on path='/System/Library/Frameworks/Foundation.framework'/>
+<depends_on path='/System/Library/Frameworks/CoreGraphics.framework'/>
+<struct name='CMBlockBufferCustomBlockSource' type='{_CMBlockBufferCustomBlockSource=&quot;version&quot;I&quot;AllocateBlock&quot;^?&quot;FreeBlock&quot;^?&quot;refCon&quot;^v}'/>
+<struct name='CMBufferCallbacks' type='{_CMBufferCallbacks=&quot;version&quot;I&quot;refcon&quot;^v&quot;getDecodeTimeStamp&quot;^?&quot;getPresentationTimeStamp&quot;^?&quot;getDuration&quot;^?&quot;isDataReady&quot;^?&quot;compare&quot;^?&quot;dataBecameReadyNotification&quot;^{__CFString}}'/>
+<struct name='CMSampleTimingInfo' type='{_CMSampleTimingInfo=&quot;duration&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}&quot;presentationTimeStamp&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}&quot;decodeTimeStamp&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}}'/>
+<struct name='CMTime' type='{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}'/>
+<struct name='CMTimeMapping' type='{_CMTimeMapping=&quot;source&quot;{_CMTimeRange=&quot;start&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}&quot;duration&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}}&quot;target&quot;{_CMTimeRange=&quot;start&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}&quot;duration&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}}}'/>
+<struct name='CMTimeRange' type='{_CMTimeRange=&quot;start&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}&quot;duration&quot;{_CMTime=&quot;value&quot;q&quot;timescale&quot;i&quot;flags&quot;I&quot;epoch&quot;q}}'/>
+<struct name='CMVideoDimensions' type='{_CMVideoDimensions=&quot;width&quot;i&quot;height&quot;i}'/>
+<cftype gettypeid_func='CMBlockBufferGetTypeID' name='CMBlockBufferRef' tollfree='__NSCFType' type='^{OpaqueCMBlockBuffer=}'/>
+<cftype gettypeid_func='CMBufferQueueGetTypeID' name='CMBufferQueueRef' tollfree='__NSCFType' type='^{opaqueCMBufferQueue=}'/>
+<cftype gettypeid_func='CMClockGetTypeID' name='CMClockRef' tollfree='__NSCFType' type='^{OpaqueCMClock=}'/>
+<cftype gettypeid_func='CMFormatDescriptionGetTypeID' name='CMFormatDescriptionRef' tollfree='__NSCFType' type='^{opaqueCMFormatDescription=}'/>
+<cftype gettypeid_func='CMMemoryPoolGetTypeID' name='CMMemoryPoolRef' tollfree='__NSCFType' type='^{OpaqueCMMemoryPool=}'/>
+<cftype gettypeid_func='CMSampleBufferGetTypeID' name='CMSampleBufferRef' tollfree='__NSCFType' type='^{opaqueCMSampleBuffer=}'/>
+<cftype gettypeid_func='CMSimpleQueueGetTypeID' name='CMSimpleQueueRef' tollfree='__NSCFType' type='^{opaqueCMSimpleQueue=}'/>
+<cftype gettypeid_func='CMTimebaseGetTypeID' name='CMTimebaseRef' tollfree='__NSCFType' type='^{OpaqueCMTimebase=}'/>
+<opaque name='CMBufferQueueTriggerToken' type='^{opaqueCMBufferQueueTriggerToken=}'/>
+<constant name='kCMFormatDescriptionColorPrimaries_P22' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionConformsToMPEG2VideoProfile' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtensionKey_MetadataKeyTable' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_BytesPerRow' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_Depth' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_FormatName' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_FullRangeVideo' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_ICCProfile' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_OriginalCompressionSettings' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_RevisionLevel' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_SpatialQuality' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_TemporalQuality' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_Vendor' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_VerbatimISOSampleEntry' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_VerbatimSampleDescription' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionExtension_Version' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionKey_CleanApertureHeightRational' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionKey_CleanApertureHorizontalOffsetRational' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionKey_CleanApertureVerticalOffsetRational' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionKey_CleanApertureWidthRational' type='^{__CFString=}'/>
+<constant name='kCMFormatDescriptionVendor_Apple' type='^{__CFString=}'/>
+<constant name='kCMMemoryPoolOption_AgeOutPeriod' type='^{__CFString=}'/>
+<constant name='kCMMetadataFormatDescriptionKey_LocalID' type='^{__CFString=}'/>
+<constant name='kCMMetadataFormatDescriptionKey_Namespace' type='^{__CFString=}'/>
+<constant name='kCMMetadataFormatDescriptionKey_Value' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_DependsOnOthers' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_DisplayImmediately' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_DoNotDisplay' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_EarlierDisplayTimesAllowed' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_HasRedundantCoding' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_IsDependedOnByOthers' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_NotSync' type='^{__CFString=}'/>
+<constant name='kCMSampleAttachmentKey_PartialSync' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_DisplayEmptyMediaImmediately' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_DrainAfterDecoding' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_EmptyMedia' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_EndsPreviousSampleDuration' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_FillDiscontinuitiesWithSilence' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_GradualDecoderRefresh' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_PermanentEmptyMedia' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_PostNotificationWhenConsumed' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_ResetDecoderBeforeDecoding' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_ResumeOutput' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_Reverse' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_SampleReferenceByteOffset' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_SampleReferenceURL' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_SpeedMultiplier' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_TransitionID' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_TrimDurationAtEnd' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferAttachmentKey_TrimDurationAtStart' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotificationParameter_MaxUpcomingOutputPTS' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotificationParameter_MinUpcomingOutputPTS' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotificationParameter_ResumeTag' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotificationParameter_UpcomingOutputPTSRangeMayOverlapQueuedOutputPTSRange' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotification_InhibitOutputUntil' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotification_ResetOutput' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConduitNotification_UpcomingOutputPTSRangeChanged' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferConsumerNotification_BufferConsumed' type='^{__CFString=}'/>
+<constant name='kCMSampleBufferNotification_DataBecameReady' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionColor_Alpha' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionColor_Blue' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionColor_Green' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionColor_Red' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_BackgroundColor' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_DefaultFontName' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_DefaultStyle' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_DefaultTextBox' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_DisplayFlags' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_FontTable' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_HorizontalJustification' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_TextJustification' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionExtension_VerticalJustification' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionRect_Bottom' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionRect_Left' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionRect_Right' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionRect_Top' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_Ascent' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_EndChar' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_Font' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_FontFace' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_FontSize' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_ForegroundColor' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_Height' type='^{__CFString=}'/>
+<constant name='kCMTextFormatDescriptionStyle_StartChar' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAlignmentType_End' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAlignmentType_Left' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAlignmentType_Middle' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAlignmentType_Right' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAlignmentType_Start' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_Alignment' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_BackgroundColorARGB' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_BaseFontSizePercentageRelativeToVideoHeight' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_BoldStyle' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_CharacterBackgroundColorARGB' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_CharacterEdgeStyle' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_FontFamilyName' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_ForegroundColorARGB' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_GenericFontFamilyName' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_ItalicStyle' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_OrthogonalLinePositionPercentageRelativeToWritingDirection' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_RelativeFontSize' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_TextPositionPercentageRelativeToWritingDirection' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_UnderlineStyle' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_VerticalLayout' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupAttribute_WritingDirectionSizePercentage' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupCharacterEdgeStyle_Depressed' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupCharacterEdgeStyle_DropShadow' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupCharacterEdgeStyle_None' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupCharacterEdgeStyle_Raised' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupCharacterEdgeStyle_Uniform' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Casual' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Cursive' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Default' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Fantasy' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Monospace' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_MonospaceSansSerif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_MonospaceSerif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_ProportionalSansSerif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_ProportionalSerif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_SansSerif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_Serif' type='^{__CFString=}'/>
+<constant name='kCMTextMarkupGenericFontName_SmallCapital' type='^{__CFString=}'/>
+<constant name='kCMTextVerticalLayout_LeftToRight' type='^{__CFString=}'/>
+<constant name='kCMTextVerticalLayout_RightToLeft' type='^{__CFString=}'/>
+<constant name='kCMTimeCodeFormatDescriptionExtension_SourceReferenceName' type='^{__CFString=}'/>
+<constant name='kCMTimeCodeFormatDescriptionKey_LangCode' type='^{__CFString=}'/>
+<constant name='kCMTimeCodeFormatDescriptionKey_Value' type='^{__CFString=}'/>
+<constant name='kCMTimeEpochKey' type='^{__CFString=}'/>
+<constant name='kCMTimeFlagsKey' type='^{__CFString=}'/>
+<constant name='kCMTimeIndefinite' type='{_CMTime=qiIq}'/>
+<constant name='kCMTimeInvalid' type='{_CMTime=qiIq}'/>
+<constant name='kCMTimeNegativeInfinity' type='{_CMTime=qiIq}'/>
+<constant name='kCMTimePositiveInfinity' type='{_CMTime=qiIq}'/>
+<constant name='kCMTimeRangeDurationKey' type='^{__CFString=}'/>
+<constant name='kCMTimeRangeInvalid' type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<constant name='kCMTimeRangeStartKey' type='^{__CFString=}'/>
+<constant name='kCMTimeRangeZero' type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<constant name='kCMTimeScaleKey' type='^{__CFString=}'/>
+<constant name='kCMTimeValueKey' type='^{__CFString=}'/>
+<constant name='kCMTimeZero' type='{_CMTime=qiIq}'/>
+<constant name='kCMTimebaseNotificationKey_EventTime' type='^{__CFString=}'/>
+<constant name='kCMTimebaseNotification_EffectiveRateChanged' type='^{__CFString=}'/>
+<constant name='kCMTimebaseNotification_TimeJumped' type='^{__CFString=}'/>
+<constant name='kCMTimingInfoInvalid' type='{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<enum name='kCMAttachmentMode_ShouldNotPropagate' value='0'/>
+<enum name='kCMAttachmentMode_ShouldPropagate' value='1'/>
+<enum name='kCMAudioCodecType_AAC_AudibleProtected' value='1633771875'/>
+<enum name='kCMAudioCodecType_AAC_LCProtected' value='1885430115'/>
+<enum name='kCMAudioFormatDescriptionMask_All' value='15'/>
+<enum name='kCMAudioFormatDescriptionMask_ChannelLayout' value='4'/>
+<enum name='kCMAudioFormatDescriptionMask_Extensions' value='8'/>
+<enum name='kCMAudioFormatDescriptionMask_MagicCookie' value='2'/>
+<enum name='kCMAudioFormatDescriptionMask_StreamBasicDescription' value='1'/>
+<enum name='kCMBlockBufferAlwaysCopyDataFlag' value='2'/>
+<enum name='kCMBlockBufferAssureMemoryNowFlag' value='1'/>
+<enum name='kCMBlockBufferBadCustomBlockSourceErr' value='-12702'/>
+<enum name='kCMBlockBufferBadLengthParameterErr' value='-12704'/>
+<enum name='kCMBlockBufferBadOffsetParameterErr' value='-12703'/>
+<enum name='kCMBlockBufferBadPointerParameterErr' value='-12705'/>
+<enum name='kCMBlockBufferBlockAllocationFailedErr' value='-12701'/>
+<enum name='kCMBlockBufferCustomBlockSourceVersion' value='0'/>
+<enum name='kCMBlockBufferDontOptimizeDepthFlag' value='4'/>
+<enum name='kCMBlockBufferEmptyBBufErr' value='-12706'/>
+<enum name='kCMBlockBufferNoErr' value='0'/>
+<enum name='kCMBlockBufferPermitEmptyReferenceFlag' value='8'/>
+<enum name='kCMBlockBufferStructureAllocationFailedErr' value='-12700'/>
+<enum name='kCMBlockBufferUnallocatedBlockErr' value='-12707'/>
+<enum name='kCMBufferQueueError_AllocationFailed' value='-12760'/>
+<enum name='kCMBufferQueueError_BadTriggerDuration' value='-12765'/>
+<enum name='kCMBufferQueueError_CannotModifyQueueFromTriggerCallback' value='-12766'/>
+<enum name='kCMBufferQueueError_EnqueueAfterEndOfData' value='-12763'/>
+<enum name='kCMBufferQueueError_InvalidBuffer' value='-12769'/>
+<enum name='kCMBufferQueueError_InvalidCMBufferCallbacksStruct' value='-12762'/>
+<enum name='kCMBufferQueueError_InvalidTriggerCondition' value='-12767'/>
+<enum name='kCMBufferQueueError_InvalidTriggerToken' value='-12768'/>
+<enum name='kCMBufferQueueError_QueueIsFull' value='-12764'/>
+<enum name='kCMBufferQueueError_RequiredParameterMissing' value='-12761'/>
+<enum name='kCMBufferQueueTrigger_WhenBufferCountBecomesGreaterThan' value='11'/>
+<enum name='kCMBufferQueueTrigger_WhenBufferCountBecomesLessThan' value='10'/>
+<enum name='kCMBufferQueueTrigger_WhenDataBecomesReady' value='7'/>
+<enum name='kCMBufferQueueTrigger_WhenDurationBecomesGreaterThan' value='3'/>
+<enum name='kCMBufferQueueTrigger_WhenDurationBecomesGreaterThanOrEqualTo' value='4'/>
+<enum name='kCMBufferQueueTrigger_WhenDurationBecomesLessThan' value='1'/>
+<enum name='kCMBufferQueueTrigger_WhenDurationBecomesLessThanOrEqualTo' value='2'/>
+<enum name='kCMBufferQueueTrigger_WhenEndOfDataReached' value='8'/>
+<enum name='kCMBufferQueueTrigger_WhenMaxPresentationTimeStampChanges' value='6'/>
+<enum name='kCMBufferQueueTrigger_WhenMinPresentationTimeStampChanges' value='5'/>
+<enum name='kCMBufferQueueTrigger_WhenReset' value='9'/>
+<enum name='kCMClockError_AllocationFailed' value='-12747'/>
+<enum name='kCMClockError_InvalidParameter' value='-12746'/>
+<enum name='kCMClockError_MissingRequiredParameter' value='-12745'/>
+<enum name='kCMClockError_UnsupportedOperation' value='-12756'/>
+<enum name='kCMClosedCaptionFormatType_ATSC' value='1635017571'/>
+<enum name='kCMClosedCaptionFormatType_CEA608' value='1664495672'/>
+<enum name='kCMClosedCaptionFormatType_CEA708' value='1664561208'/>
+<enum name='kCMFormatDescriptionError_AllocationFailed' value='-12711'/>
+<enum name='kCMFormatDescriptionError_InvalidParameter' value='-12710'/>
+<enum name='kCMFormatDescriptionError_ValueNotAvailable' value='-12718'/>
+<enum name='kCMMPEG2VideoProfile_HDV_1080i50' value='1751414323'/>
+<enum name='kCMMPEG2VideoProfile_HDV_1080i60' value='1751414322'/>
+<enum name='kCMMPEG2VideoProfile_HDV_1080p24' value='1751414326'/>
+<enum name='kCMMPEG2VideoProfile_HDV_1080p25' value='1751414327'/>
+<enum name='kCMMPEG2VideoProfile_HDV_1080p30' value='1751414328'/>
+<enum name='kCMMPEG2VideoProfile_HDV_720p24' value='1751414324'/>
+<enum name='kCMMPEG2VideoProfile_HDV_720p25' value='1751414325'/>
+<enum name='kCMMPEG2VideoProfile_HDV_720p30' value='1751414321'/>
+<enum name='kCMMPEG2VideoProfile_HDV_720p50' value='1751414369'/>
+<enum name='kCMMPEG2VideoProfile_HDV_720p60' value='1751414329'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_1080i50_VBR35' value='2019849827'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_1080i60_VBR35' value='2019849826'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_1080p24_VBR35' value='2019849828'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_1080p25_VBR35' value='2019849829'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_1080p30_VBR35' value='2019849830'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_720p24_VBR35' value='2019849780'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_720p25_VBR35' value='2019849781'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_720p30_VBR35' value='2019849777'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_720p50_VBR35' value='2019849825'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_EX_720p60_VBR35' value='2019849785'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_1080i50_CBR50' value='2019833187'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_1080i60_CBR50' value='2019833186'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_1080p24_CBR50' value='2019833188'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_1080p25_CBR50' value='2019833189'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_1080p30_CBR50' value='2019833190'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_540p' value='2019846194'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_720p24_CBR50' value='2019833140'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_720p25_CBR50' value='2019833141'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_720p30_CBR50' value='2019833137'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_720p50_CBR50' value='2019833185'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD422_720p60_CBR50' value='2019833145'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_1080i50_VBR35' value='2019849779'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_1080i60_VBR35' value='2019849778'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_1080p24_VBR35' value='2019849782'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_1080p25_VBR35' value='2019849783'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_1080p30_VBR35' value='2019849784'/>
+<enum name='kCMMPEG2VideoProfile_XDCAM_HD_540p' value='2019846244'/>
+<enum name='kCMMPEG2VideoProfile_XF' value='2019981873'/>
+<enum name='kCMMediaType_Audio' value='1936684398'/>
+<enum name='kCMMediaType_ClosedCaption' value='1668047728'/>
+<enum name='kCMMediaType_Metadata' value='1835365473'/>
+<enum name='kCMMediaType_Muxed' value='1836415096'/>
+<enum name='kCMMediaType_Subtitle' value='1935832172'/>
+<enum name='kCMMediaType_Text' value='1952807028'/>
+<enum name='kCMMediaType_TimeCode' value='1953325924'/>
+<enum name='kCMMediaType_Video' value='1986618469'/>
+<enum name='kCMMetadataFormatType_Boxed' value='1835360888'/>
+<enum name='kCMMetadataFormatType_ICY' value='1768126752'/>
+<enum name='kCMMetadataFormatType_ID3' value='1768174368'/>
+<enum name='kCMMuxedStreamType_DV' value='1685463072'/>
+<enum name='kCMMuxedStreamType_MPEG1System' value='1836069235'/>
+<enum name='kCMMuxedStreamType_MPEG2Program' value='1836069488'/>
+<enum name='kCMMuxedStreamType_MPEG2Transport' value='1836069492'/>
+<enum name='kCMPersistentTrackID_Invalid' value='0'/>
+<enum name='kCMPixelFormat_16BE555' value='16'/>
+<enum name='kCMPixelFormat_16BE565' value='1110783541'/>
+<enum name='kCMPixelFormat_16LE555' value='1278555445'/>
+<enum name='kCMPixelFormat_16LE5551' value='892679473'/>
+<enum name='kCMPixelFormat_16LE565' value='1278555701'/>
+<enum name='kCMPixelFormat_24RGB' value='24'/>
+<enum name='kCMPixelFormat_32ARGB' value='32'/>
+<enum name='kCMPixelFormat_32BGRA' value='1111970369'/>
+<enum name='kCMPixelFormat_422YpCbCr10' value='1983000880'/>
+<enum name='kCMPixelFormat_422YpCbCr16' value='1983000886'/>
+<enum name='kCMPixelFormat_422YpCbCr8' value='846624121'/>
+<enum name='kCMPixelFormat_422YpCbCr8_yuvs' value='2037741171'/>
+<enum name='kCMPixelFormat_4444YpCbCrA8' value='1983131704'/>
+<enum name='kCMPixelFormat_444YpCbCr10' value='1983131952'/>
+<enum name='kCMPixelFormat_444YpCbCr8' value='1983066168'/>
+<enum name='kCMPixelFormat_8IndexedGray_WhiteIsZero' value='40'/>
+<enum name='kCMSampleBufferError_AllocationFailed' value='-12730'/>
+<enum name='kCMSampleBufferError_AlreadyHasDataBuffer' value='-12732'/>
+<enum name='kCMSampleBufferError_ArrayTooSmall' value='-12737'/>
+<enum name='kCMSampleBufferError_BufferHasNoSampleSizes' value='-12735'/>
+<enum name='kCMSampleBufferError_BufferHasNoSampleTimingInfo' value='-12736'/>
+<enum name='kCMSampleBufferError_BufferNotReady' value='-12733'/>
+<enum name='kCMSampleBufferError_CannotSubdivide' value='-12739'/>
+<enum name='kCMSampleBufferError_InvalidEntryCount' value='-12738'/>
+<enum name='kCMSampleBufferError_InvalidMediaFormat' value='-12743'/>
+<enum name='kCMSampleBufferError_InvalidMediaTypeForOperation' value='-12741'/>
+<enum name='kCMSampleBufferError_InvalidSampleData' value='-12742'/>
+<enum name='kCMSampleBufferError_Invalidated' value='-12744'/>
+<enum name='kCMSampleBufferError_RequiredParameterMissing' value='-12731'/>
+<enum name='kCMSampleBufferError_SampleIndexOutOfRange' value='-12734'/>
+<enum name='kCMSampleBufferError_SampleTimingInfoInvalid' value='-12740'/>
+<enum name='kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment' value='1'/>
+<enum name='kCMSimpleQueueError_AllocationFailed' value='-12770'/>
+<enum name='kCMSimpleQueueError_ParameterOutOfRange' value='-12772'/>
+<enum name='kCMSimpleQueueError_QueueIsFull' value='-12773'/>
+<enum name='kCMSimpleQueueError_RequiredParameterMissing' value='-12771'/>
+<enum name='kCMSubtitleFormatType_3GText' value='1954034535'/>
+<enum name='kCMSubtitleFormatType_WebVTT' value='2004251764'/>
+<enum name='kCMSyncError_AllocationFailed' value='-12754'/>
+<enum name='kCMSyncError_InvalidParameter' value='-12753'/>
+<enum name='kCMSyncError_MissingRequiredParameter' value='-12752'/>
+<enum name='kCMSyncError_RateMustBeNonZero' value='-12755'/>
+<enum name='kCMTextDisplayFlag_allSubtitlesForced' value='2147483648'/>
+<enum name='kCMTextDisplayFlag_continuousKaraoke' value='2048'/>
+<enum name='kCMTextDisplayFlag_fillTextRegion' value='262144'/>
+<enum name='kCMTextDisplayFlag_forcedSubtitlesPresent' value='1073741824'/>
+<enum name='kCMTextDisplayFlag_obeySubtitleFormatting' value='536870912'/>
+<enum name='kCMTextDisplayFlag_scrollDirectionMask' value='384'/>
+<enum name='kCMTextDisplayFlag_scrollDirection_bottomToTop' value='0'/>
+<enum name='kCMTextDisplayFlag_scrollDirection_leftToRight' value='384'/>
+<enum name='kCMTextDisplayFlag_scrollDirection_rightToLeft' value='128'/>
+<enum name='kCMTextDisplayFlag_scrollDirection_topToBottom' value='256'/>
+<enum name='kCMTextDisplayFlag_scrollIn' value='32'/>
+<enum name='kCMTextDisplayFlag_scrollOut' value='64'/>
+<enum name='kCMTextDisplayFlag_writeTextVertically' value='131072'/>
+<enum name='kCMTextFormatType_3GText' value='1954034535'/>
+<enum name='kCMTextFormatType_QTText' value='1952807028'/>
+<enum name='kCMTextJustification_bottom_right' value='-1'/>
+<enum name='kCMTextJustification_centered' value='1'/>
+<enum name='kCMTextJustification_left_top' value='0'/>
+<enum name='kCMTimeCodeFlag_24HourMax' value='2'/>
+<enum name='kCMTimeCodeFlag_DropFrame' value='1'/>
+<enum name='kCMTimeCodeFlag_NegTimesOK' value='4'/>
+<enum name='kCMTimeCodeFormatType_Counter32' value='1668166450'/>
+<enum name='kCMTimeCodeFormatType_Counter64' value='1668167220'/>
+<enum name='kCMTimeCodeFormatType_TimeCode32' value='1953325924'/>
+<enum name='kCMTimeCodeFormatType_TimeCode64' value='1952658996'/>
+<enum name='kCMTimeFlags_HasBeenRounded' value='2'/>
+<enum name='kCMTimeFlags_ImpliedValueFlagsMask' value='28'/>
+<enum name='kCMTimeFlags_Indefinite' value='16'/>
+<enum name='kCMTimeFlags_NegativeInfinity' value='8'/>
+<enum name='kCMTimeFlags_PositiveInfinity' value='4'/>
+<enum name='kCMTimeFlags_Valid' value='1'/>
+<enum name='kCMTimeMaxTimescale' value='2147483647'/>
+<enum name='kCMTimeRoundingMethod_Default' value='1'/>
+<enum name='kCMTimeRoundingMethod_QuickTime' value='4'/>
+<enum name='kCMTimeRoundingMethod_RoundAwayFromZero' value='3'/>
+<enum name='kCMTimeRoundingMethod_RoundHalfAwayFromZero' value='1'/>
+<enum name='kCMTimeRoundingMethod_RoundTowardNegativeInfinity' value='6'/>
+<enum name='kCMTimeRoundingMethod_RoundTowardPositiveInfinity' value='5'/>
+<enum name='kCMTimeRoundingMethod_RoundTowardZero' value='2'/>
+<enum name='kCMTimebaseError_AllocationFailed' value='-12750'/>
+<enum name='kCMTimebaseError_InvalidParameter' value='-12749'/>
+<enum name='kCMTimebaseError_MissingRequiredParameter' value='-12748'/>
+<enum name='kCMTimebaseError_ReadOnly' value='-12757'/>
+<enum name='kCMTimebaseError_TimerIntervalTooShort' value='-12751'/>
+<enum name='kCMTimebaseFarFutureCFAbsoluteTime' value='8073216000'/>
+<enum name='kCMTimebaseVeryLongCFTimeInterval' value='8073216000'/>
+<enum name='kCMVideoCodecType_422YpCbCr8' value='846624121'/>
+<enum name='kCMVideoCodecType_Animation' value='1919706400'/>
+<enum name='kCMVideoCodecType_AppleProRes422' value='1634755438'/>
+<enum name='kCMVideoCodecType_AppleProRes422HQ' value='1634755432'/>
+<enum name='kCMVideoCodecType_AppleProRes422LT' value='1634755443'/>
+<enum name='kCMVideoCodecType_AppleProRes422Proxy' value='1634755439'/>
+<enum name='kCMVideoCodecType_AppleProRes4444' value='1634743400'/>
+<enum name='kCMVideoCodecType_Cinepak' value='1668704612'/>
+<enum name='kCMVideoCodecType_DVCNTSC' value='1685480224'/>
+<enum name='kCMVideoCodecType_DVCPAL' value='1685480304'/>
+<enum name='kCMVideoCodecType_DVCPROHD1080i50' value='1685481525'/>
+<enum name='kCMVideoCodecType_DVCPROHD1080i60' value='1685481526'/>
+<enum name='kCMVideoCodecType_DVCPROHD1080p25' value='1685481522'/>
+<enum name='kCMVideoCodecType_DVCPROHD1080p30' value='1685481523'/>
+<enum name='kCMVideoCodecType_DVCPROHD720p50' value='1685481585'/>
+<enum name='kCMVideoCodecType_DVCPROHD720p60' value='1685481584'/>
+<enum name='kCMVideoCodecType_DVCPro50NTSC' value='1685468526'/>
+<enum name='kCMVideoCodecType_DVCPro50PAL' value='1685468528'/>
+<enum name='kCMVideoCodecType_DVCProPAL' value='1685483632'/>
+<enum name='kCMVideoCodecType_H263' value='1748121139'/>
+<enum name='kCMVideoCodecType_H264' value='1635148593'/>
+<enum name='kCMVideoCodecType_JPEG' value='1785750887'/>
+<enum name='kCMVideoCodecType_JPEG_OpenDML' value='1684890161'/>
+<enum name='kCMVideoCodecType_MPEG1Video' value='1836069238'/>
+<enum name='kCMVideoCodecType_MPEG2Video' value='1836069494'/>
+<enum name='kCMVideoCodecType_MPEG4Video' value='1836070006'/>
+<enum name='kCMVideoCodecType_SorensonVideo' value='1398165809'/>
+<enum name='kCMVideoCodecType_SorensonVideo3' value='1398165811'/>
+<function name='CMAudioDeviceClockCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CFString=}'/>
+<arg type='^^{OpaqueCMClock}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioDeviceClockCreateFromAudioDeviceID'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='^^{OpaqueCMClock}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioDeviceClockGetAudioDevice'>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='^^{__CFString}'/>
+<arg type='^I'/>
+<arg type='^B'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioDeviceClockSetAudioDeviceID'>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='L' type64='I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioDeviceClockSetAudioDeviceUID'>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='^{__CFString=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioFormatDescriptionCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{AudioStreamBasicDescription=dIIIIIIII}'/>
+<arg type='L' type64='Q'/>
+<arg type='^{AudioChannelLayout=III[1{AudioChannelDescription=II[3f]}]}'/>
+<arg type='L' type64='Q'/>
+<arg type='^v'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioFormatDescriptionCreateSummary'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CFArray=}'/>
+<arg type='I'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMAudioFormatDescriptionEqual'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='I'/>
+<arg type='^I'/>
+<retval type='B'/>
+</function>
+<function name='CMAudioFormatDescriptionGetChannelLayout'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^I' type64='^Q'/>
+<retval type='^{AudioChannelLayout=III[1{AudioChannelDescription=II[3f]}]}'/>
+</function>
+<function name='CMAudioFormatDescriptionGetFormatList'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^I' type64='^Q'/>
+<retval type='^{AudioFormatListItem={AudioStreamBasicDescription=dIIIIIIII}I}'/>
+</function>
+<function name='CMAudioFormatDescriptionGetMagicCookie'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^I' type64='^Q'/>
+<retval type='^v'/>
+</function>
+<function name='CMAudioFormatDescriptionGetMostCompatibleFormat'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='^{AudioFormatListItem={AudioStreamBasicDescription=dIIIIIIII}I}'/>
+</function>
+<function name='CMAudioFormatDescriptionGetRichestDecodableFormat'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='^{AudioFormatListItem={AudioStreamBasicDescription=dIIIIIIII}I}'/>
+</function>
+<function name='CMAudioFormatDescriptionGetStreamBasicDescription'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='^{AudioStreamBasicDescription=dIIIIIIII}'/>
+</function>
+<function name='CMAudioSampleBufferCreateWithPacketDescriptions'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='B'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='l' type64='q'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='^{AudioStreamPacketDescription=qII}'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferAccessDataBytes'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='^v'/>
+<arg type='^*'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferAppendBufferReference'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferAppendMemoryBlock'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='^v'/>
+<arg type='L' type64='Q'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{_CMBlockBufferCustomBlockSource=I^?^?^v}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferAssureBlockMemory'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferCopyDataBytes'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferCreateContiguous'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{_CMBlockBufferCustomBlockSource=I^?^?^v}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='I'/>
+<arg type='^^{OpaqueCMBlockBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferCreateEmpty'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='I'/>
+<arg type='I'/>
+<arg type='^^{OpaqueCMBlockBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferCreateWithBufferReference'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='I'/>
+<arg type='^^{OpaqueCMBlockBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferCreateWithMemoryBlock'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^v'/>
+<arg type='L' type64='Q'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{_CMBlockBufferCustomBlockSource=I^?^?^v}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<arg type='I'/>
+<arg type='^^{OpaqueCMBlockBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferFillDataBytes'>
+<arg type='c'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferGetDataLength'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMBlockBufferGetDataPointer'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^*'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBlockBufferGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMBlockBufferIsEmpty'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<retval type='B'/>
+</function>
+<function name='CMBlockBufferIsRangeContiguous'>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<retval type='B'/>
+</function>
+<function name='CMBlockBufferReplaceDataBytes'>
+<arg type='^v'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='L' type64='Q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueCallForEachBuffer'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='@'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueContainsEndOfData'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='B'/>
+</function>
+<function name='CMBufferQueueCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMBufferCallbacks=I^v^?^?^?^?^?^{__CFString}}'/>
+<arg type='^^{opaqueCMBufferQueue}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueDequeueAndRetain'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='@'/>
+</function>
+<function name='CMBufferQueueDequeueIfDataReadyAndRetain'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='@'/>
+</function>
+<function name='CMBufferQueueEnqueue'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg type='@'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueGetBufferCount'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='l' type64='q'/>
+</function>
+<function name='CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS'>
+<retval type='^{_CMBufferCallbacks=I^v^?^?^?^?^?^{__CFString}}'/>
+</function>
+<function name='CMBufferQueueGetCallbacksForUnsortedSampleBuffers'>
+<retval type='^{_CMBufferCallbacks=I^v^?^?^?^?^?^{__CFString}}'/>
+</function>
+<function name='CMBufferQueueGetDuration'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetEndPresentationTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetFirstDecodeTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetFirstPresentationTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetHead'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='@'/>
+</function>
+<function name='CMBufferQueueGetMaxPresentationTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetMinDecodeTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetMinPresentationTimeStamp'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMBufferQueueGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMBufferQueueInstallTrigger'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^v'/>
+<arg type='^{opaqueCMBufferQueueTriggerToken=}'/>
+<retval type='v'/>
+</arg>
+<arg type='^v'/>
+<arg type='i'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='^^{opaqueCMBufferQueueTriggerToken}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueInstallTriggerWithIntegerThreshold'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^v'/>
+<arg type='^{opaqueCMBufferQueueTriggerToken=}'/>
+<retval type='v'/>
+</arg>
+<arg type='^v'/>
+<arg type='i'/>
+<arg type='l' type64='q'/>
+<arg type='^^{opaqueCMBufferQueueTriggerToken}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueIsAtEndOfData'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='B'/>
+</function>
+<function name='CMBufferQueueIsEmpty'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='B'/>
+</function>
+<function name='CMBufferQueueMarkEndOfData'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueRemoveTrigger'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg type='^{opaqueCMBufferQueueTriggerToken=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueReset'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueResetWithCallback'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='@'/>
+<arg type='^v'/>
+<retval type='v'/>
+</arg>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueSetValidationCallback'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg type='@'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMBufferQueueTestTrigger'>
+<arg type='^{opaqueCMBufferQueue=}'/>
+<arg type='^{opaqueCMBufferQueueTriggerToken=}'/>
+<retval type='B'/>
+</function>
+<function name='CMClockConvertHostTimeToSystemUnits'>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='Q'/>
+</function>
+<function name='CMClockGetAnchorTime'>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='^{_CMTime=qiIq}'/>
+<arg type='^{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMClockGetHostTimeClock'>
+<retval type='^{OpaqueCMClock=}'/>
+</function>
+<function name='CMClockGetTime'>
+<arg type='^{OpaqueCMClock=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMClockGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMClockInvalidate'>
+<arg type='^{OpaqueCMClock=}'/>
+</function>
+<function name='CMClockMakeHostTimeFromSystemUnits'>
+<arg type='Q'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMClockMightDrift'>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='^{OpaqueCMClock=}'/>
+<retval type='B'/>
+</function>
+<function name='CMCopyDictionaryOfAttachments'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='@'/>
+<arg type='I'/>
+<retval already_retained='true' type='^{__CFDictionary=}'/>
+</function>
+<function name='CMFormatDescriptionCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='L' type64='I'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMFormatDescriptionEqual'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='B'/>
+</function>
+<function name='CMFormatDescriptionEqualIgnoringExtensionKeys'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='@'/>
+<arg type='@'/>
+<retval type='B'/>
+</function>
+<function name='CMFormatDescriptionGetExtension'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{__CFString=}'/>
+<retval type='@'/>
+</function>
+<function name='CMFormatDescriptionGetExtensions'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='^{__CFDictionary=}'/>
+</function>
+<function name='CMFormatDescriptionGetMediaSubType'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='L' type64='I'/>
+</function>
+<function name='CMFormatDescriptionGetMediaType'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='L' type64='I'/>
+</function>
+<function name='CMFormatDescriptionGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMGetAttachment'>
+<arg type='@'/>
+<arg type='^{__CFString=}'/>
+<arg type='^I'/>
+<retval type='@'/>
+</function>
+<function name='CMMemoryPoolCreate'>
+<arg type='^{__CFDictionary=}'/>
+<retval already_retained='true' type='^{OpaqueCMMemoryPool=}'/>
+</function>
+<function name='CMMemoryPoolFlush'>
+<arg type='^{OpaqueCMMemoryPool=}'/>
+</function>
+<function name='CMMemoryPoolGetAllocator'>
+<arg type='^{OpaqueCMMemoryPool=}'/>
+<retval type='^{__CFAllocator=}'/>
+</function>
+<function name='CMMemoryPoolGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMMemoryPoolInvalidate'>
+<arg type='^{OpaqueCMMemoryPool=}'/>
+</function>
+<function name='CMMetadataFormatDescriptionCreateWithKeys'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='^{__CFArray=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMMetadataFormatDescriptionGetKeyWithLocalID'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='L' type64='I'/>
+<retval type='^{__CFDictionary=}'/>
+</function>
+<function name='CMMuxedFormatDescriptionCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMPropagateAttachments'>
+<arg type='@'/>
+<arg type='@'/>
+</function>
+<function name='CMRemoveAllAttachments'>
+<arg type='@'/>
+</function>
+<function name='CMRemoveAttachment'>
+<arg type='@'/>
+<arg type='^{__CFString=}'/>
+</function>
+<function name='CMSampleBufferCallForEachSample'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCopyPCMDataIntoAudioBufferList'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='i'/>
+<arg type='i'/>
+<arg type='^{AudioBufferList=I[1{AudioBuffer=II^v}]}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCopySampleBufferForRange'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='{_CFRange=ii}' type64='{_CFRange=qq}'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<arg type='B'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='l' type64='q'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='l' type64='q'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCreateCopy'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCreateCopyWithNewTiming'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferCreateForImageBuffer'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CVBuffer=}'/>
+<arg type='B'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</arg>
+<arg type='^v'/>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='^^{opaqueCMSampleBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferDataIsReady'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='B'/>
+</function>
+<function name='CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^{AudioBufferList=I[1{AudioBuffer=II^v}]}'/>
+<arg type='L' type64='Q'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='I'/>
+<arg type='^^{OpaqueCMBlockBuffer}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetAudioStreamPacketDescriptions'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='L' type64='Q'/>
+<arg type='^{AudioStreamPacketDescription=qII}'/>
+<arg type='^I' type64='^Q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetAudioStreamPacketDescriptionsPtr'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^^{AudioStreamPacketDescription}'/>
+<arg type='^I' type64='^Q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetDataBuffer'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='^{OpaqueCMBlockBuffer=}'/>
+</function>
+<function name='CMSampleBufferGetDecodeTimeStamp'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetDuration'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetFormatDescription'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='^{opaqueCMFormatDescription=}'/>
+</function>
+<function name='CMSampleBufferGetImageBuffer'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='^{__CVBuffer=}'/>
+</function>
+<function name='CMSampleBufferGetNumSamples'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='l' type64='q'/>
+</function>
+<function name='CMSampleBufferGetOutputDecodeTimeStamp'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetOutputDuration'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetOutputPresentationTimeStamp'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetOutputSampleTimingInfoArray'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='^i' type64='^q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetPresentationTimeStamp'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSampleBufferGetSampleAttachmentsArray'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='B'/>
+<retval type='^{__CFArray=}'/>
+</function>
+<function name='CMSampleBufferGetSampleSize'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMSampleBufferGetSampleSizeArray'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^i' type64='^q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetSampleTimingInfo'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetSampleTimingInfoArray'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='l' type64='q'/>
+<arg type='^{_CMSampleTimingInfo={_CMTime=qiIq}{_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='^i' type64='^q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferGetTotalSampleSize'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMSampleBufferGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMSampleBufferInvalidate'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferIsValid'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='B'/>
+</function>
+<function name='CMSampleBufferMakeDataReady'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferSetDataBuffer'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^{OpaqueCMBlockBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferSetDataBufferFromAudioBufferList'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CFAllocator=}'/>
+<arg type='I'/>
+<arg type='^{AudioBufferList=I[1{AudioBuffer=II^v}]}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferSetDataReady'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferSetInvalidateCallback'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg function_pointer='true' type='^?'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='Q'/>
+<retval type='v'/>
+</arg>
+<arg type='Q'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferSetOutputPresentationTimeStamp'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSampleBufferTrackDataReadiness'>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<arg type='^{opaqueCMSampleBuffer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSetAttachment'>
+<arg type='@'/>
+<arg type='^{__CFString=}'/>
+<arg type='@'/>
+<arg type='I'/>
+</function>
+<function name='CMSetAttachments'>
+<arg type='@'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='I'/>
+</function>
+<function name='CMSimpleQueueCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='i'/>
+<arg type='^^{opaqueCMSimpleQueue}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSimpleQueueDequeue'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<retval type='^v'/>
+</function>
+<function name='CMSimpleQueueEnqueue'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<arg type='^v'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSimpleQueueGetCapacity'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<retval type='i'/>
+</function>
+<function name='CMSimpleQueueGetCount'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<retval type='i'/>
+</function>
+<function name='CMSimpleQueueGetHead'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<retval type='^v'/>
+</function>
+<function name='CMSimpleQueueGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMSimpleQueueReset'>
+<arg type='^{opaqueCMSimpleQueue=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSyncConvertTime'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='@'/>
+<arg type='@'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSyncGetRelativeRate'>
+<arg type='@'/>
+<arg type='@'/>
+<retval type='d'/>
+</function>
+<function name='CMSyncGetRelativeRateAndAnchorTime'>
+<arg type='@'/>
+<arg type='@'/>
+<arg type='^d'/>
+<arg type='^{_CMTime=qiIq}'/>
+<arg type='^{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMSyncGetTime'>
+<arg type='@'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMSyncMightDrift'>
+<arg type='@'/>
+<arg type='@'/>
+<retval type='B'/>
+</function>
+<function name='CMTextFormatDescriptionGetDefaultStyle'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^S'/>
+<arg type='^B'/>
+<arg type='^B'/>
+<arg type='^B'/>
+<arg type='^f' type64='^d'/>
+<arg type='^f' type64='^d'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTextFormatDescriptionGetDefaultTextBox'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='B'/>
+<arg type='f' type64='d'/>
+<arg type='^{CGRect={CGPoint=ff}{CGSize=ff}}' type64='^{CGRect={CGPoint=dd}{CGSize=dd}}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTextFormatDescriptionGetDisplayFlags'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTextFormatDescriptionGetFontName'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='S'/>
+<arg type='^^{__CFString}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTextFormatDescriptionGetJustification'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='*'/>
+<arg type='*'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimeAbsoluteValue'>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeAdd'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeClampToRange'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeCodeFormatDescriptionCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='I'/>
+<arg type='I'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimeCodeFormatDescriptionGetFrameDuration'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeCodeFormatDescriptionGetFrameQuanta'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='I'/>
+</function>
+<function name='CMTimeCodeFormatDescriptionGetTimeCodeFlags'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='I'/>
+</function>
+<function name='CMTimeCompare'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='i'/>
+</function>
+<function name='CMTimeConvertScale'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='i'/>
+<arg type='I'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeCopyAsDictionary'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='^{__CFAllocator=}'/>
+<retval already_retained='true' type='^{__CFDictionary=}'/>
+</function>
+<function name='CMTimeCopyDescription'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval already_retained='true' type='^{__CFString=}'/>
+</function>
+<function name='CMTimeGetSeconds'>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='d'/>
+</function>
+<function name='CMTimeMake'>
+<arg type='q'/>
+<arg type='i'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMakeFromDictionary'>
+<arg type='^{__CFDictionary=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMakeWithEpoch'>
+<arg type='q'/>
+<arg type='i'/>
+<arg type='q'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMakeWithSeconds'>
+<arg type='d'/>
+<arg type='i'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMapDurationFromRangeToRange'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMapTimeFromRangeToRange'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMaximum'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMinimum'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMultiply'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='i'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeMultiplyByFloat64'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='d'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeRangeContainsTime'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='B'/>
+</function>
+<function name='CMTimeRangeContainsTimeRange'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='B'/>
+</function>
+<function name='CMTimeRangeCopyAsDictionary'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='^{__CFAllocator=}'/>
+<retval already_retained='true' type='^{__CFDictionary=}'/>
+</function>
+<function name='CMTimeRangeCopyDescription'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval already_retained='true' type='^{__CFString=}'/>
+</function>
+<function name='CMTimeRangeEqual'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='B'/>
+</function>
+<function name='CMTimeRangeFromTimeToTime'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeRangeGetEnd'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeRangeGetIntersection'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeRangeGetUnion'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+<retval type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeRangeMake'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeRangeMakeFromDictionary'>
+<arg type='^{__CFDictionary=}'/>
+<retval type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeRangeShow'>
+<arg type='{_CMTimeRange={_CMTime=qiIq}{_CMTime=qiIq}}'/>
+</function>
+<function name='CMTimeShow'>
+<arg type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimeSubtract'>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimebaseAddTimer'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^{__CFRunLoopTimer=}'/>
+<arg type='^{__CFRunLoop=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseAddTimerDispatchSource'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='@'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseCreateWithMasterClock'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMClock=}'/>
+<arg type='^^{OpaqueCMTimebase}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseCreateWithMasterTimebase'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^^{OpaqueCMTimebase}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseGetEffectiveRate'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='d'/>
+</function>
+<function name='CMTimebaseGetMaster'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='@'/>
+</function>
+<function name='CMTimebaseGetMasterClock'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='^{OpaqueCMClock=}'/>
+</function>
+<function name='CMTimebaseGetMasterTimebase'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='^{OpaqueCMTimebase=}'/>
+</function>
+<function name='CMTimebaseGetRate'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='d'/>
+</function>
+<function name='CMTimebaseGetTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimebaseGetTimeAndRate'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^{_CMTime=qiIq}'/>
+<arg type='^d'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseGetTimeWithTimeScale'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='i'/>
+<arg type='I'/>
+<retval type='{_CMTime=qiIq}'/>
+</function>
+<function name='CMTimebaseGetTypeID'>
+<retval type='L' type64='Q'/>
+</function>
+<function name='CMTimebaseGetUltimateMasterClock'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='^{OpaqueCMClock=}'/>
+</function>
+<function name='CMTimebaseNotificationBarrier'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseRemoveTimer'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^{__CFRunLoopTimer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseRemoveTimerDispatchSource'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='@'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetAnchorTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetRate'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='d'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetRateAndAnchorTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='d'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='{_CMTime=qiIq}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetTimerDispatchSourceNextFireTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='@'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetTimerDispatchSourceToFireImmediately'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='@'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetTimerNextFireTime'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^{__CFRunLoopTimer=}'/>
+<arg type='{_CMTime=qiIq}'/>
+<arg type='I'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMTimebaseSetTimerToFireImmediately'>
+<arg type='^{OpaqueCMTimebase=}'/>
+<arg type='^{__CFRunLoopTimer=}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMVideoFormatDescriptionCreate'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='I'/>
+<arg type='i'/>
+<arg type='i'/>
+<arg type='^{__CFDictionary=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMVideoFormatDescriptionCreateForImageBuffer'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='^{__CVBuffer=}'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMVideoFormatDescriptionCreateFromH264ParameterSets'>
+<arg type='^{__CFAllocator=}'/>
+<arg type='L' type64='Q'/>
+<arg type='^*'/>
+<arg type='^I' type64='^Q'/>
+<arg type='i'/>
+<arg type='^^{opaqueCMFormatDescription}'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMVideoFormatDescriptionGetCleanAperture'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='B'/>
+<retval type='{CGRect={CGPoint=ff}{CGSize=ff}}' type64='{CGRect={CGPoint=dd}{CGSize=dd}}'/>
+</function>
+<function name='CMVideoFormatDescriptionGetDimensions'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<retval type='{_CMVideoDimensions=ii}'/>
+</function>
+<function name='CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers'>
+<retval type='^{__CFArray=}'/>
+</function>
+<function name='CMVideoFormatDescriptionGetH264ParameterSetAtIndex'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='L' type64='Q'/>
+<arg type='^*'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^I' type64='^Q'/>
+<arg type='^i'/>
+<retval type='l' type64='i'/>
+</function>
+<function name='CMVideoFormatDescriptionGetPresentationDimensions'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='B'/>
+<arg type='B'/>
+<retval type='{CGSize=ff}' type64='{CGSize=dd}'/>
+</function>
+<function name='CMVideoFormatDescriptionMatchesImageBuffer'>
+<arg type='^{opaqueCMFormatDescription=}'/>
+<arg type='^{__CVBuffer=}'/>
+<retval type='B'/>
+</function>
+</signatures>
