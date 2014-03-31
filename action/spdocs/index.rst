@@ -82,20 +82,20 @@ Examples
 	Example One - simple clustering <example_one_clustering>
 	Example Two - centers of mass and random sampling <example_two_centers_of_mass>
 	Example Three - dissimilarity plots <example_three_dissimilarity_plots>
-	Example Four - viewing distributions of color data <example_four_distributions>
+	Example Four - view distributions of color data <example_four_distributions>
 	Example Five - in-depth example of segmentation <example_five_segmentation>
 	Example Six - in-depth example of a simple director prediction ML task <example_six_director_prediction>
-	Example Seven - example of viewing relationships amonng films with multidimensional scaling (MDS) - <example_seven_mds>
+	Example Seven - view relationships among films with multidimensional scaling (MDS)  <example_seven_mds>
 
 ACTION Python Modules
 =====================
 .. toctree::
    :maxdepth: 1
    
-	color_features_lab - color and spatial frame-by-frame analysis and visulaization <color_features_lab>
-	opticalflow - Lukas-Kanade optical flow/motion vector frame-to-frame analysis and visulaization <opticalflow>
-	opticalflow_tvl1 - TVL optical flow frame-to-frame analysis and visulaization <opticalflow_tvl1>
-	phase_correlation - phase correlation frame-to-frame analysis and visulaization <phase_correlation>
+	color_features_lab - color and spatial frame-by-frame analysis and visualization <color_features_lab>
+	opticalflow - Lukas-Kanade optical flow/motion vector frame-to-frame analysis and visualization <opticalflow>
+	opticalflow_tvl1 - TVL optical flow frame-to-frame analysis and visualization <opticalflow_tvl1>
+	phase_correlation - phase correlation frame-to-frame analysis and visualization <phase_correlation>
 	segment - segmentation and container data structure <segment>
 	actiondata - data analysis and view routines <actiondata>
 
