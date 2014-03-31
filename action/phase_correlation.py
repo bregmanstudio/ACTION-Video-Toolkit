@@ -343,7 +343,7 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[::access_stride]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1].reshape(-1, 128)[::access_stride,-1]
 		return self.X
 	
 	def center_quad_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -365,7 +365,7 @@ class PhaseCorrelation:
 		
 		"""
 		cq_array = range(18,22)+range(26,30)+range(34,38)+range(42,46)
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[::access_stride]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,cq_array,...].reshape(-1, 32)[::access_stride,-1]
 		return self.X
 
 	def middle_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -386,7 +386,7 @@ class PhaseCorrelation:
 			phasecorr_features_for_segment(...)[1][:,16:47,...].reshape((segment.time_span.duration*4), -1)
 		
 		"""
-		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[::access_stride]
+		self.X = self._phasecorr_features_for_segment_from_onset_with_duration(int(segment.time_span.start_time), int(segment.time_span.duration))[1][:,16:48,...].reshape(-1, 64)[::access_stride,-1]
 		return self.X
 	
 	def plus_band_phasecorr_features_for_segment(self, segment=Segment(0, -1), access_stride=6):
@@ -410,7 +410,7 @@ class PhaseCorrelation:
 		
 		"""
 		plus_array = range(2,6)+range(10,14)+range(16,48)+range(50,54)+range(58,62)
-		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)[::access_stride]
+		return self._phasecorr_features_for_segment_from_onset_with_duration(segment.time_span.start_time, segment.time_span.duration)[1][:,plus_array,...].reshape(-1, 96)[::access_stride,-1]
 
 	def default_phasecorr_features_for_segment(self, func='middle_band_phasecorr_features_for_segment', segment=Segment(0, -1), access_stride=6):
 		"""
@@ -418,27 +418,6 @@ class PhaseCorrelation:
 		"""
 		return getattr(self,func)(segment, access_stride)
 
-# 	def phasecorr_features_for_segment_with_stride(self, grid_flag=1, segment=Segment(0, -1), access_stride=6):
-# 
-# 		ap = self._check_pcorr_params()
-# 		
-# 		onset_frame = int(segment.time_span.start_time * (ap['fps'] / ap['stride']))
-# 		print onset_frame
-# 		if segment.time_span.duration < 0:
-# 			dur_frames = int(self.determine_movie_length() * (ap['fps'] / ap['stride']))
-# 		else:
-# 			dur_frames = int(segment.time_span.duration * (ap['fps'] / ap['stride']))
-# 		print self.determine_movie_length()
-# 		print dur_frames
-# 		
-# 		if grid_flag == 0:
-# 			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[0]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 2))
-# 		else:
-# 			data24 = self._phasecorr_features_for_segment_from_onset_with_duration(onset_frame, dur_frames)[1]
-# 			# probably should have some error handling here if the reshape fails
-# 			return np.reshape(data24[onset_frame:dur_frames:access_stride,:], (-1, 128))
 
 	def _phasecorr_features_for_segment_from_onset_with_duration(self, onset_s=0, duration_s=-1):
 		"""
@@ -461,7 +440,11 @@ class PhaseCorrelation:
 		
 		print 'df: ', dur_frames
 		# print "data path: ", self.data_path
-		mapped = np.memmap(self.data_path, dtype='float32', mode='r')
+		try:
+			mapped = np.memmap(self.data_path, dtype='float32', mode='r')
+		except IOError:
+			print "Attempting to access data file/mem map that does not exist!"
+			return None
 		print mapped.shape
 		mapped = mapped.reshape((-1,65,2))
 		mapped = ad.interpolate_time(mapped, ap['afps'])
