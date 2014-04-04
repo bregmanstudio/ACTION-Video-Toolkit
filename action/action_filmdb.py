@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import json
 
 class FilmDB:
 	
@@ -9,7 +11,7 @@ class FilmDB:
 		# mapping title_string to t_s/dir. inits./color flag/year
 		self.actionDB = {
 			'3_Bad_Men' : ['3_Bad_Men', 'JF', 0, 1926],
-			'3_Godfathers' : ['3_Godfathers', 'JF', 0, 1948],
+			'3_Godfathers' : ['3_Godfathers', 'JF', 1, 1948],
 			'A_Serious_Man': ['A_Serious_Man', 'CB', 1, 2009],
 			'A_Woman_is_a_Woman': ['A_Woman_is_a_Woman' , 'JLG', 1, 1961],
 			'Alphaville': ['Alphaville', 'JLG', 0, 1965],
@@ -24,7 +26,6 @@ class FilmDB:
 			'Burn_After_Reading': ['Burn_After_Reading', 'CB', 1, 2008],
 			'Catch_Me_If_You_Can': ['Catch_Me_If_You_Can', 'SS', 1, 2002],
 			'Cheyenne_Autumn': ['Cheyenne_Autumn', 'JF', 1, 1964],
-			'Color_Purple': ['Color_Purple', 'SS', 1, 1985],
 			'Death_in_the_Garden' : ['Death_in_the_Garden', 'LB', 1, 1956],
 			'Dersu_Uzala': ['Dersu_Uzala', 'AK', 1, 1975],
 			'Detective': ['Detective', 'JLG', 1, 1985],
@@ -44,7 +45,7 @@ class FilmDB:
 			'Fargo': ['Fargo', 'CB', 1, 1996],
 			'Fata_Morgana': ['Fata_Morgana', 'WH', 1, 1971],
 			'Foreign_Correspondent': ['Foreign_Correspondent', 'AH', 0, 1940],
-			'Fort_Apache' : ['Fort_Apache', 'JF', 1, 1948],
+			'Fort_Apache' : ['Fort_Apache', 'JF', 0, 1948],
 			'Frenzy': ['Frenzy', 'AH', 1, 1972],
 			'Gentlemen_Prefer_Blondes': ['Gentlemen_Prefer_Blondes', 'HH', 1, 1953],
 			'Grapes_of_Wrath' : ['Grapes_of_Wrath', 'JF', 0, 1940],
@@ -54,7 +55,7 @@ class FilmDB:
 			'How_Green_Was_My_Valley' : ['How_Green_Was_My_Valley', 'JF', 0, 1941],
 			'How_to_Survive_a_Plague' : ['How_to_Survive_a_Plague', 'DFr', 1, 2012],
 			'I_Was_Born_But' : ['I_Was_Born_But', 'YO', 0, 1932],
-			'In_Praise_of_Love' : ['In_Praise_of_Love', 'JLG', 0, 2001],
+			'In_Praise_of_Love' : ['In_Praise_of_Love', 'JLG', 1, 2001],
 			'Indiana_Jones_and_the_Last_Crusade' : ['Indiana_Jones_and_the_Last_Crusade', 'SS', 1, 1989],
 			'Indiana_Jones_and_the_Temple_of_Doom' : ['Indiana_Jones_and_the_Temple_of_Doom', 'SS', 1, 1984],	
 			'Inland_Empire' : ['Inland_Empire', 'DL', 1, 2006],
@@ -117,13 +118,14 @@ class FilmDB:
 			'The_Big_Lebowski': ['The_Big_Lebowski', 'CB', 1, 1998],
 			'The_Big_Sleep': ['The_Big_Sleep', 'HH', 0, 1946],
 			'The_Birds': ['The_Birds', 'AH', 1, 1963],
+			'The_Color_Purple': ['The_Color_Purple', 'SS', 1, 1985],
 			'The_End_of_Summer': ['The_End_of_Summer', 'YO', 1, 1961],
 			'The_Fountain': ['The_Fountain', 'DA', 1, 2006],
 			'The_Hidden_Fortress': ['The_Hidden_Fortress', 'AK', 0, 1958],
 			'The_Hudsucker_Proxy': ['The_Hudsucker_Proxy', 'CB', 1, 1994],
 			'The_Lady_Vanishes': ['The_Lady_Vanishes', 'AH', 0, 1938],
 			'The_Man_Who_Knew_Too_Much': ['The_Man_Who_Knew_Too_Much', 'AH', 1, 1956],
-			'The_Man_Who_Shot_Liberty_Valence': ['The_Man_Who_Shot_Liberty_Valence', 'JF', 0, 1962],
+			'The_Man_Who_Shot_Liberty_Valance': ['The_Man_Who_Shot_Liberty_Valance', 'JF', 0, 1962],
 			'The_Milky_Way': ['The_Milky_Way', 'LB', 1, 1969],
 			'The_Mirror': ['The_Mirror', 'AT', 0, 1975],
 			#'The_Phantom_of_Liberty': ['The_Phantom_of_Liberty', 'LB', 1, 1974],
@@ -140,8 +142,8 @@ class FilmDB:
 			'Torn_Curtain': ['Torn_Curtain', 'AH', 1, 1966],
 			'Tout_Va_Bien': ['Tout_Va_Bien', 'JLG', 1, 1972],
 			'Tristana': ['Tristana', 'LB', 1, 1970],
-			'Twin_Peaks': ['Twin_Peaks', 'DL', 1, 1990],
-			'Twin_Peaks_Ep1': ['Twin_Peaks_Ep1', 'DL', 1, 1992],
+			'Twin_Peaks': ['Twin_Peaks', 'DL', 1, 1992],
+			'Twin_Peaks_Ep1': ['Twin_Peaks_Ep1', 'DL', 1, 1990],
 			'Un_Chien_Andalou': ['Un_Chien_Andalou', 'LB', 0, 1929],
 			'Uncle_Boonme_Who_Can_Recall_His_Past_Lives': ['Uncle_Boonme_Who_Can_Recall_His_Past_Lives', 'AWe', 1, 2010],
 			'Vampyr': ['Vampyr', 'CTD', 0, 1932],
@@ -150,7 +152,7 @@ class FilmDB:
 			'War_Horse': ['War_Horse', 'SS', 1, 2011],
 			'Weekend': ['Weekend', 'JLG', 1, 1967],
 			'Wild_at_Heart': ['Wild_at_Heart', 'DL', 1, 1990],
-			'Young_Mr_Lincoln': ['Young_Mr_Lincoln', 'JF', 1, 1939]}
+			'Young_Mr_Lincoln': ['Young_Mr_Lincoln', 'JF', 0, 1939]}
 		
 		self.actionDocumentariesDB = {
 			'About_Russian_Ark' : ['About_Russian_Ark', '', 1, 9999],
@@ -202,7 +204,7 @@ class FilmDB:
 		self.actionDirectors = {
 			'AH'  : ['Alfred Hitchcock', 0, 0],
 			'AHa' : ['Alexander Hammid', 0, 0],
-			'AK'  : ['Akira Kurisawa', 0, 0],
+			'AK'  : ['Akira Kurosawa', 0, 0],
 			'AT'  : ['Andrei Tarkovsky', 0, 0],
 			'AWe' : ['Apichatpong Weerasethakul', 0, 0],
 			'CB'  : ['Coen Brothers', 0, 0],
@@ -215,7 +217,7 @@ class FilmDB:
 			'JLG' : ['Jean-Luc Godard', 0, 0],
 			'JF'  : ['John Ford', 0, 0],
 			'GoR' : ['Godfrey Reggio', 0, 0],
-			'HH'  : ['Howard Hawkes', 0, 0],
+			'HH'  : ['Howard Hawks', 0, 0],
 			'LB'  : ['Luis Bunuel', 0, 0],
 			'MD'  : ['Maya Deren', 0, 0],
 			#'MFr' : ['Michelangelo Frammartino', 0, 0],
@@ -285,8 +287,62 @@ class FilmDB:
 		Returns a sorted list of all black and white film titles
 		"""
 		return [ttl for ttl in sorted(self.actionDB.keys()) if self.actionDB[ttl][2] == 0]
+
 	def all_color_films(self):
 		"""
 		Returns a sorted list of all color film titles
 		"""
 		return [ttl for ttl in sorted(self.actionDB.keys()) if self.actionDB[ttl][2] == 1]
+
+	def as_structured_array(self):
+		fields=[('title','|S64'),('director','|S32'),('color','int'),('year','int')]
+		A = self.actionDB_ordered_by_title()
+		np.savetxt('actionDB.txt',np.array(A),fmt='%s %s %s %s')
+		A = np.loadtxt('actionDB.txt', dtype=fields)
+		return A
+
+	def write_actionDB_html_table(self, fname='action_db.html', write_metadata_files=False, json_file_dir='actiondata'):
+		A = self.actionDB_ordered_by_title()
+		with open(fname,'w') as outfile:
+			outfile.writelines(['<html>\n','<head>','</head>\n','<body>\n'])
+			outfile.write('<h1>List of ActionDB Films</h1>\n')
+			outfile.write('<h3>Click titles for example segmentations and similarity matrices.</h3>\n')
+			outfile.write('<table cellpadding="4" style="border: 1px solid #000000; border-collapse: collapse;" border="1">\n')
+			title = ''
+			for film in A:
+				outfile.write('<tr>')
+				s = None
+				for i,entry in enumerate(film):
+					outfile.write('<td>')
+					if i==0: # print film title without underscores
+						title = entry
+						s ='<a href="film_detail_trio.php?hash=%s">%s</a>'%(title,title.replace('_',' '))
+					elif i==1: # print director full name from key
+						s = self.actionDirectors[entry][0]
+					elif i==2: # map 0/1 to B&W/COL
+						if entry==0:
+							s = 'B&W'
+						else:
+							s = 'COL'
+					else: # year
+						s = str(entry)
+					outfile.write(s)
+					outfile.write('</td>')
+				outfile.write('</tr>\n')
+			outfile.writelines(['</table>','</body>','</html>'])
+
+		if write_metadata_files:
+			for film in A:
+				data= json.load(open(json_file_dir + os.sep + film[0] + '.json'))
+				with open(json_file_dir + os.sep + film[0] + '.txt', 'w') as outfile:
+					outfile.write(film[0]+'\n')
+					outfile.write(film[0]+'\n')
+					outfile.write('<a href="film_detail_trio.php?%s">Structure Visualization</a>\n'%film[0])
+					outfile.write(self.actionDirectors[film[1]][0]+'\n')
+					outfile.write(str(self.actionDB[film[0]][3])+'\n')
+					if self.actionDB[film[0]][2]==0:
+						outfile.write('B&W\n')
+					else:
+						outfile.write('COL\n')
+					outfile.write(str(np.round(data['length'],2))+'s\n')
+
