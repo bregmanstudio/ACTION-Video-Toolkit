@@ -10,7 +10,7 @@ Welcome to the ACTION toolbox from the Bregman Music and Audio Research Studio a
 What is ACTION?
 ---------------
 
-Audio-visual Cinematic Toolkit for Interaction, Organization, and Navigation
+Audio-visual Cinematic Toolkit for Interaction, Organization, and Navigation (for video)
 
 ACTION provides a work bench to study such features in combination with machine learning methods to yield latent stylistic patterns distributed among films and directors. As such, ACTION is a platform for researching new methodologies in the study of film and media history.
 
